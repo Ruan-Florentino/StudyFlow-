@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-primary: #00FF88;
+  --color-primary-glow: rgba(0, 255, 136, 0.3);
+  --color-background: #050505;
+  --color-card: #0F0F0F;
+  --color-card-secondary: #161616;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A0A0A0;
+  
+  --radius-3xl: 24px;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-sans antialiased selection:bg-primary selection:text-black overflow-x-hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/80 border border-border rounded-3xl backdrop-blur-xl;
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 20px var(--color-primary-glow);
+  }
+
+  .neon-border {
+    @apply border-primary shadow-[0_0_15px_rgba(0,255,136,0.2)];
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .tech-grid {
+    background-image: radial-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+}
+
+.prose-invert {
+  --tw-prose-body: #A0A0A0;
+  --tw-prose-headings: #FFFFFF;
+  --tw-prose-links: #00FF88;
+  --tw-prose-bold: #FFFFFF;
+  --tw-prose-counters: #00FF88;
+  --tw-prose-bullets: #00FF88;
+  --tw-prose-hr: rgba(255, 255, 255, 0.1);
+  --tw-prose-quotes: #FFFFFF;
+  --tw-prose-quote-borders: #00FF88;
+  --tw-prose-captions: #A0A0A0;
+  --tw-prose-code: #00FF88;
+  --tw-prose-pre-code: #00FF88;
+  --tw-prose-pre-bg: #0F0F0F;
+  --tw-prose-th-borders: rgba(255, 255, 255, 0.1);
+  --tw-prose-td-borders: rgba(255, 255, 255, 0.1);
+}
