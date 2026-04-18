@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, BookOpen } from 'lucide-react';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,7 +17,7 @@ export const AnimatedButton = ({
   glow = false
 }: { 
   children: React.ReactNode; 
-  onClick?: () => void; 
+  onClick?: (e?: any) => void; 
   className?: string;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   disabled?: boolean;
@@ -25,9 +25,9 @@ export const AnimatedButton = ({
 }) => {
   const variants = {
     primary: 'bg-primary text-black font-bold hover:bg-primary/90',
-    secondary: 'bg-card text-white border border-border hover:bg-card-secondary',
+    secondary: 'bg-white/5 text-white border border-white/10 hover:bg-white/10 backdrop-blur-md',
     ghost: 'bg-transparent text-white hover:bg-white/5',
-    danger: 'bg-red-500 text-white font-bold hover:bg-red-600',
+    danger: 'bg-red-500/10 text-red-500 font-bold hover:bg-red-500/20 border border-red-500/20 backdrop-blur-md',
   };
 
   return (
@@ -37,9 +37,9 @@ export const AnimatedButton = ({
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       className={cn(
-        'px-6 py-4 rounded-3xl transition-all flex items-center justify-center gap-2',
+        'px-6 py-3.5 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-sm',
         variants[variant],
-        glow && 'green-glow-strong',
+        glow && 'shadow-[0_0_20px_rgba(0,232,143,0.25)]',
         disabled && 'opacity-50 cursor-not-allowed grayscale',
         className
       )}
@@ -49,18 +49,19 @@ export const AnimatedButton = ({
   );
 };
 
-export const GlassCard = ({ children, className, glow = false, onClick }: { children: React.ReactNode; className?: string; glow?: boolean; onClick?: () => void }) => (
+export const GlassCard = ({ children, className, glow = false, onClick, id }: { children: React.ReactNode; className?: string; glow?: boolean; onClick?: () => void; id?: string }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
+    id={id}
+    initial={{ opacity: 0, scale: 0.98, y: 10 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    transition={{ duration: 0.4, ease: "easeOut" }}
     onClick={onClick}
     className={cn(
-      'glass p-6 rounded-[24px] border border-white/5 relative overflow-hidden', 
-      glow && 'green-glow border-primary/20', 
+      'bg-black/40 backdrop-blur-2xl border border-white/10 p-6 rounded-[24px] relative overflow-hidden transition-all duration-300 hover:border-white/20 hover:bg-black/50', 
+      glow && 'shadow-[0_0_30px_rgba(0,232,143,0.1)] border-primary/30', 
       className
     )}
   >
-    {glow && <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />}
     {children}
   </motion.div>
 );
@@ -70,83 +71,85 @@ export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = 
     whileTap={{ scale: 0.95 }}
     whileHover={{ scale: 1.02 }}
     onClick={onClick}
-    className="glass p-5 rounded-[24px] flex flex-col gap-4 cursor-pointer hover:bg-white/5 transition-all border-white/5 group relative overflow-hidden"
+    className="bg-black/40 backdrop-blur-xl p-5 rounded-[24px] flex flex-col gap-4 cursor-pointer hover:bg-black/60 transition-all duration-300 border border-white/10 hover:border-white/20 group relative overflow-hidden shadow-lg"
   >
-    <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-      <div className="w-1 h-1 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(0,255,148,0.8)]" />
-    </div>
-    <div className={cn(bg, color, "w-11 h-11 rounded-2xl flex items-center justify-center group-hover:green-glow transition-all border border-transparent group-hover:border-primary/30")}>
-      <Icon size={22} />
+    <div className={cn(bg, color, "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 border border-transparent group-hover:border-primary/30 shadow-inner")}>
+      <Icon size={24} strokeWidth={1.5} />
     </div>
     <div className="space-y-1">
-      <span className="font-premium-title text-sm block group-hover:text-primary transition-colors tracking-tight">{title}</span>
-      <span className="text-[9px] text-text-secondary uppercase font-premium-mono font-bold tracking-[0.25em]">{subtitle}</span>
+      <span className="font-display font-bold text-base block group-hover:text-primary transition-colors tracking-tight">{title}</span>
+      <span className="text-[10px] text-text-secondary uppercase font-premium-mono tracking-widest">{subtitle}</span>
     </div>
   </motion.div>
 );
 
-export const Logo = ({ size = "md", className }: { size?: "sm" | "md" | "lg" | "xl"; className?: string }) => {
+export const LogoIcon = ({ size = 24, color = "currentColor", strokeWidth = 2.5 }: { size?: number; color?: string; strokeWidth?: number }) => (
+  <div style={{ width: size, height: size }} className="relative flex items-center justify-center">
+    <BookOpen size={size} color={color} strokeWidth={strokeWidth} className="drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+    <motion.div
+      animate={{ 
+        scale: [1, 1.2, 1],
+        opacity: [0.5, 1, 0.5],
+        rotate: [0, 15, -15, 0]
+      }}
+      transition={{ 
+        duration: 3, 
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className="absolute -top-1 -right-1"
+    >
+      <Sparkles size={size * 0.4} className="text-white fill-white" />
+    </motion.div>
+  </div>
+);
+
+export const Logo = ({ size = "md", className, showText = false }: { size?: "sm" | "md" | "lg" | "xl" | "xxl"; className?: string; showText?: boolean }) => {
   const sizes = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-20 h-20",
-    xl: "w-32 h-32"
+    sm: { container: "w-[22px] h-[22px]", icon: 12, text: "text-sm" },
+    md: { container: "w-[28px] h-[28px]", icon: 16, text: "text-lg" },
+    lg: { container: "w-16 h-16", icon: 32, text: "text-3xl" },
+    xl: { container: "w-[90px] h-[90px]", icon: 48, text: "text-4xl" },
+    xxl: { container: "w-[120px] h-[120px]", icon: 64, text: "text-5xl" }
   };
 
   return (
     <motion.div
-      initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
-      animate={{ scale: 1, opacity: 1, rotate: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className={cn(
-        "relative flex items-center justify-center",
-        sizes[size],
-        className
-      )}
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={cn("flex items-center gap-3", className)}
     >
-      {/* Outer Glow */}
-      <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
-      
-      {/* Futuristic 'S' + Brain SVG */}
-      <svg viewBox="0 0 100 100" className="w-full h-full relative z-10 drop-shadow-[0_0_15px_rgba(0,255,136,0.5)]">
-        {/* Minimalist Brain Pattern */}
-        <path 
-          d="M50 20C35 20 25 30 25 45C25 60 35 70 50 70C65 70 75 60 75 45C75 30 65 20 50 20Z" 
-          fill="none" 
-          stroke="url(#logo-gradient)" 
-          strokeWidth="2" 
-          strokeDasharray="4 2"
-          className="opacity-40"
+      <div className={cn(
+        "relative flex items-center justify-center rounded-2xl bg-black border border-primary/50 shadow-[0_0_20px_rgba(0,232,143,0.2)] overflow-hidden group",
+        sizes[size].container
+      )}>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/10 opacity-50" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00E88F10_1px,transparent_1px),linear-gradient(to_bottom,#00E88F10_1px,transparent_1px)] bg-[size:4px_4px]" />
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -inset-1 border border-primary/20 border-dashed rounded-full" 
         />
-        
-        {/* Futuristic 'S' */}
-        <path 
-          d="M70 35C70 25 60 20 50 20C40 20 30 25 30 35C30 45 50 45 50 55C50 65 40 70 30 70M30 65C30 75 40 80 50 80C60 80 70 75 70 65C70 55 50 55 50 45C50 35 60 30 70 30" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="8" 
-          strokeLinecap="round"
-          className="text-primary"
-        />
-        
-        {/* Central Node */}
-        <circle cx="50" cy="50" r="4" fill="currentColor" className="text-primary animate-pulse" />
-        
-        <defs>
-          <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00FF88" />
-            <stop offset="100%" stopColor="#00BDFF" />
-          </linearGradient>
-        </defs>
-      </svg>
+        <LogoIcon size={sizes[size].icon} color="#00E88F" />
+      </div>
+      {showText && (
+        <div className="flex flex-col">
+          <span className={cn("font-display font-black tracking-tighter text-white italic uppercase", sizes[size].text)}>
+            Study<span className="text-primary">Flow</span>
+          </span>
+          <span className="text-[8px] font-premium-mono font-bold text-primary/60 uppercase tracking-[0.3em] -mt-1">Neural Core v3.1</span>
+        </div>
+      )}
     </motion.div>
   );
 };
 
-export const ProgressRing = ({ progress, size = 120, strokeWidth = 8, color = "#00FF94" }: { progress: number; size?: number; strokeWidth?: number; color?: string }) => {
+export const ProgressRing = ({ progress, size = 120, strokeWidth = 8, color }: { progress: number; size?: number; strokeWidth?: number; color?: string }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
+  const themeColor = color || getComputedStyle(document.documentElement).getPropertyValue('--theme-primary').trim() || '#10B981';
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
@@ -163,7 +166,7 @@ export const ProgressRing = ({ progress, size = 120, strokeWidth = 8, color = "#
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={color}
+          stroke={themeColor}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}
@@ -180,7 +183,7 @@ export const ProgressRing = ({ progress, size = 120, strokeWidth = 8, color = "#
   );
 };
 
-export const Badge = ({ children, variant = "primary" }: { children: React.ReactNode; variant?: "primary" | "secondary" | "danger" | "warning" | "orange" | "success" }) => {
+export const Badge = ({ children, variant = "primary", className }: { children: React.ReactNode; variant?: "primary" | "secondary" | "danger" | "warning" | "orange" | "success"; className?: string }) => {
   const variants = {
     primary: "bg-primary/10 text-primary border-primary/20",
     secondary: "bg-white/5 text-text-secondary border-white/10",
@@ -191,7 +194,7 @@ export const Badge = ({ children, variant = "primary" }: { children: React.React
   };
 
   return (
-    <span className={cn("px-2.5 py-1 text-[9px] font-premium-mono font-bold rounded-full uppercase border tracking-[0.2em] shadow-sm", variants[variant])}>
+    <span className={cn("px-2.5 py-1 text-[9px] font-premium-mono font-bold rounded-full uppercase border tracking-[0.2em] shadow-sm", variants[variant], className)}>
       {children}
     </span>
   );

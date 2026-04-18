@@ -1,5 +1,5 @@
 {
   "name": "StudyFlow",
-  "description": "Smart productivity app for students with AI-powered planning, focus sessions, and flashcards.",
-  "requestFramePermissions": []
+  "description": "Premium AI study platform with smart recommendations, video summarization, mastery tracking, and voice-enabled AI tutor.",
+  "requestFramePermissions": ["camera"]
 }

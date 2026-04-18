@@ -1,0 +1,201 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    // Fields:
+    //   - name: string (required)
+    //   - bio: string (optional)
+    //   - profilePic: string (optional)
+    //   - xp: number (required)
+    //   - level: number (required)
+    //   - streak: number (optional)
+    //   - league: string (optional, enum: ["Bronze", "Prata", "Ouro", "Diamante"])
+    //   - dailyXP: number (optional)
+    //   - lastStudyDate: string (optional, ISO 8601)
+    //   - dailyGoalMinutes: number (optional)
+    //   - coins: number (optional)
+    //
+    // Sub-collections:
+    //   - sessions: StudySession entity
+    //   - flashcards: Flashcard entity
+    //   - decks: Deck entity
+    //   - notes: Note entity
+    //   - chatHistory: Message entity
+    //   - history: QuestionHistory entity
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "wari60shorts@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidString(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is string &&
+          request.resource.data[field].size() >= minLen &&
+          request.resource.data[field].size() <= maxLen);
+    }
+
+    function isValidNumber(field, minVal) {
+      return request.resource.data[field] is number && request.resource.data[field] >= minVal;
+    }
+
+    function isValidOptionalNumber(field, minVal) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is number && request.resource.data[field] >= minVal);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['name', 'xp', 'level']) &&
+        isValidString('name', 1, 100) &&
+        isValidNumber('xp', 0) &&
+        isValidNumber('level', 1) &&
+        isValidOptionalString('bio', 0, 500) &&
+        isValidOptionalString('profilePic', 0, 1000) &&
+        isValidOptionalNumber('streak', 0) &&
+        isValidOptionalNumber('dailyXP', 0) &&
+        isValidOptionalNumber('dailyGoalMinutes', 0) &&
+        isValidOptionalNumber('coins', 0);
+    }
+
+    function isValidSession(data) {
+      return hasRequiredFields(['date', 'duration', 'subject']) &&
+        isValidNumber('duration', 1) &&
+        isValidString('subject', 1, 100);
+    }
+
+    function isValidFlashcard(data) {
+      return hasRequiredFields(['front', 'back', 'subject', 'deckId']) &&
+        isValidString('front', 1, 1000) &&
+        isValidString('back', 1, 1000) &&
+        isValidString('subject', 1, 100) &&
+        isValidString('deckId', 1, 100);
+    }
+
+    function isValidDeck(data) {
+      return hasRequiredFields(['name', 'subject']) &&
+        isValidString('name', 1, 100) &&
+        isValidString('subject', 1, 100);
+    }
+
+    function isValidNote(data) {
+      return hasRequiredFields(['title', 'content', 'subject', 'updatedAt']) &&
+        isValidString('title', 1, 200) &&
+        isValidString('content', 1, 10000) &&
+        isValidString('subject', 1, 100);
+    }
+
+    function isValidMessage(data) {
+      return hasRequiredFields(['role', 'text', 'timestamp']) &&
+        data.role in ['user', 'model'] &&
+        isValidString('text', 1, 5000);
+    }
+
+    function isValidHistory(data) {
+      return hasRequiredFields(['questionId', 'userAnswer', 'isCorrect', 'timestamp']) &&
+        isValidString('questionId', 1, 100) &&
+        request.resource.data.isCorrect is bool;
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+
+      match /sessions/{sessionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidSession(request.resource.data);
+        allow update: if isOwner(userId) && isValidSession(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /flashcards/{cardId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidFlashcard(request.resource.data);
+        allow update: if isOwner(userId) && isValidFlashcard(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /decks/{deckId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidDeck(request.resource.data);
+        allow update: if isOwner(userId) && isValidDeck(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /notes/{noteId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidNote(request.resource.data);
+        allow update: if isOwner(userId) && isValidNote(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /chatHistory/{messageId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidMessage(request.resource.data);
+        allow update: if isOwner(userId) && isValidMessage(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /history/{historyId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidHistory(request.resource.data);
+        allow update: if isOwner(userId) && isValidHistory(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    match /leaderboard/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
