@@ -1,16 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import {
-  User,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { User } from '@supabase/supabase-js';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface UserProfile {
   uid: string;
@@ -34,55 +24,98 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<User | null>(auth.currentUser);
+  const [user, setUser]       = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(false); // Assume auth is ready if we are at this point, or use another hook
+  const [loading, setLoading] = useState(true);
 
-  // Keep it simple without independent listeners to avoid conflicts
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchProfile = async (uid: string) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', uid)
+      .single();
+    
+    if (data && !error) {
+      setProfile({
+        uid: data.id,
+        email: user?.email || '',
+        displayName: data.name,
+        plan: data.plan || 'free',
+        createdAt: new Date(data.created_at).getTime()
+      });
+    }
+  };
   
   const signIn = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
-    setUser(auth.currentUser);
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
   };
   
   const signUp = async (email: string, pass: string, name: string) => {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      // Required by firestore.rules isValidUser
-      name,
-      xp: 0,
-      level: 1,
-      // Optional fields with sensible defaults (matches FirebaseProvider fallback)
-      bio: 'Focado na aprovação! 🚀',
-      profilePic: '',
-      streak: 0,
-      league: 'Bronze',
-      dailyXP: 0,
-      lastStudyDate: null,
-      dailyGoalMinutes: 120,
-      coins: 0,
-      // Extra metadata (allowed — rules don't enforce hasOnlyAllowedFields)
-      uid:         cred.user.uid,
-      email,
-      plan:        'free',
-      createdAt:   Date.now(),
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password: pass,
+      options: {
+        data: {
+          full_name: name
+        }
+      }
     });
-    setUser(cred.user);
+    if (error) throw error;
+    
+    if (data.user) {
+      // Profile creation is typically handled in SupabaseProvider on first load,
+      // or via Supabase triggers. Here we just ensure the user is set.
+      setUser(data.user);
+    }
   };
   
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-    setUser(auth.currentUser);
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    if (error) throw error;
   };
   
   const logout = async () => {
-    await signOut(auth);
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
     setUser(null);
+    setProfile(null);
   };
   
   const resetPassword = async (email: string) => {
-    await sendPasswordResetEmail(auth, email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) throw error;
   };
   
   return (

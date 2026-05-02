@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { db, auth } from '../lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { supabase } from '../lib/supabase';
+import { User } from '@supabase/supabase-js';
 import { chatWithFallback } from '../services/aiService';
 import { AgentKey } from '../config/aiAgents';
 import { GeminiModelKey } from '../config/aiModels';
-import { chatService, ChatMessage as ServiceChatMessage } from '../services/chatService';
+import { chatService } from '../services/chatService';
 
 export interface ChatMessage {
   role: 'user' | 'model';
@@ -16,11 +16,17 @@ export function useAIChat(agentKey: AgentKey | null, sessionId?: string | null) 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(sessionId || null);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, u => setUser(u));
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
 const PLAN_LIMITS = {
@@ -17,15 +16,33 @@ export function useUsage() {
     if (!user) return;
     
     const today = new Date().toISOString().slice(0, 10);
-    const ref   = doc(db, 'usage', `${user.uid}_${today}`);
+    const id = `${user.id}_${today}`;
+
+    // Initial load
+    supabase
+      .from('usage')
+      .select('count')
+      .eq('id', id)
+      .single()
+      .then(({ data }) => {
+        if (data) setUsed(data.count);
+      });
     
-    const unsub = onSnapshot(ref, (snap) => {
-      setUsed(snap.data()?.count || 0);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, `usage/${user.uid}_${today}`);
-    });
+    const subscription = supabase
+      .channel(`public:usage:id=eq.${id}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'usage', 
+        filter: `id=eq.${id}` 
+      }, payload => {
+        setUsed(payload.new.count || 0);
+      })
+      .subscribe();
     
-    return () => unsub();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [user]);
   
   const plan  = profile?.plan || 'free';

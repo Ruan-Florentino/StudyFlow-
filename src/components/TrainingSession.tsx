@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
-import { doc, runTransaction, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   Sparkles, 
@@ -93,26 +92,33 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
     }
     // Sync with backend
     try {
-      if (!loading && user?.uid) {
-        await setDoc(
-          doc(db, 'users', user.uid, 'history', entry.questionId),
-          entry
-        );
+      if (!loading && user?.id) {
+        await supabase
+          .from('history')
+          .insert({
+            user_id: user.id,
+            question_id: currentQuestion.id,
+            user_answer: selectedOption,
+            is_correct: isCorrect,
+            timestamp: entry.timestamp
+          });
         
         if (isCorrect) {
-          await runTransaction(db, async (tx) => {
-            const userRef = doc(db, 'users', user.uid);
-            const snap = await tx.get(userRef);
-            
-            const currentXp = snap.exists() ? (snap.data().xp ?? 0) : 0;
-            const newXp = currentXp + 20;
+          const { data: profile } = await supabase
+            .from('users')
+            .select('xp')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile) {
+            const newXp = (profile.xp || 0) + 20;
             const newLevel = Math.floor(newXp / 1000) + 1;
             
-            tx.set(userRef, { 
-              xp: newXp, 
-              level: newLevel 
-            }, { merge: true });
-          });
+            await supabase
+              .from('users')
+              .update({ xp: newXp, level: newLevel })
+              .eq('id', user.id);
+          }
         }
       }
     } catch (e) {

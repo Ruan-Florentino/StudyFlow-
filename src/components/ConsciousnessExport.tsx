@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Download, CheckCircle } from 'lucide-react';
-import { safeStringify } from '../lib/firebase';
 
 export const ConsciousnessExport = ({ onBack }: { onBack: () => void }) => {
   const [status, setStatus] = useState<'idle' | 'encoding' | 'ready' | 'downloaded'>('idle');
@@ -28,7 +27,7 @@ export const ConsciousnessExport = ({ onBack }: { onBack: () => void }) => {
   };
 
   const handleDownload = () => {
-    const data = safeStringify(localStorage, 2);
+    const data = JSON.stringify(localStorage, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

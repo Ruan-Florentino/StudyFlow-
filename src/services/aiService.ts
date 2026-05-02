@@ -1,21 +1,24 @@
-import { httpsCallable } from "firebase/functions";
-import { fns, safeStringify } from "../lib/firebase";
+import { GoogleGenAI, Type } from "@google/genai";
 import { AI_MODELS, STUDIO_FLOW_SYSTEM_PROMPT, GEMINI_MODELS as _GEMINI_MODELS, GeminiModelKey } from "../config/aiModels";
 import { useAIModel } from "../hooks/useAIModel";
 import { STUDIO_FLOW_PROMPTS, PromptKey } from "../config/aiPrompts";
 import { STUDY_AGENTS, AgentKey } from "../config/aiAgents";
 
-const Type = {
-  OBJECT: "OBJECT",
-  STRING: "STRING",
-  ARRAY: "ARRAY",
-  NUMBER: "NUMBER",
-  BOOLEAN: "BOOLEAN",
-  INTEGER: "INTEGER",
-} as const;
+let _ai: any = null;
 
-// Call Gemini via Firebase Functions
-const callGeminiFn = httpsCallable(fns, 'callGemini');
+const ai = new Proxy({} as any, {
+  get(target, prop) {
+    if (prop === 'then') return undefined;
+    if (!_ai) {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY environment variable is required');
+      }
+      _ai = new GoogleGenAI({ apiKey });
+    }
+    return _ai[prop];
+  }
+});
 
 // Configuration for retrocompatibility
 const GEMINI_MODELS = {
@@ -25,7 +28,7 @@ const GEMINI_MODELS = {
 };
 
 /**
- * Base function for generating content, now calling Firebase Functions instead of direct SDK.
+ * Base function for generating content, now calling Gemini SDK directly.
  * Handles system instructions and model routing.
  */
 async function generateAIContent(args: {
@@ -49,40 +52,37 @@ async function generateAIContent(args: {
   // Clean system instruction from "Gemini" mentions as per brand rules
   systemInstruction = systemInstruction.replace(/Gemini/ig, "Sage");
 
-  // Format contents for the SDK-compatible proxy
-  const contents = [];
-  
-  if (args.history && args.history.length > 0) {
-    for (const h of args.history) {
-      contents.push({
-        role: h.role === 'user' ? 'user' : 'model',
-        parts: Array.isArray(h.parts) ? h.parts : [{ text: h.parts }]
-      });
-    }
-  }
-  
-  contents.push({
-    role: 'user',
-    parts: [{ text: args.prompt }]
-  });
-
   try {
-    const result = await callGeminiFn({
+    const contents = (args.history || []).map(h => ({
+      role: h.role === 'user' ? ('user' as const) : ('model' as const),
+      parts: Array.isArray(h.parts) ? h.parts : [{ text: h.parts }]
+    }));
+
+    // Add current prompt
+    contents.push({
+      role: 'user' as const,
+      parts: [{ text: args.prompt }]
+    });
+
+    const response = await ai.models.generateContent({
       model: modelId,
       contents,
       config: {
         systemInstruction,
-        ...args.config
-      }
+        maxOutputTokens: args.config?.maxOutputTokens,
+        temperature: args.config?.temperature,
+        topP: args.config?.topP,
+        topK: args.config?.topK,
+        responseMimeType: args.config?.responseMimeType,
+        responseSchema: args.config?.responseSchema,
+      },
     });
-    
-    const responseData = result.data as { text: string };
-    return responseData.text;
+
+    return response.text || '';
   } catch (error: any) {
-    console.error(`[AI Proxy] Error with model ${modelId}:`, error);
+    console.error(`[AI SDK] Error with model ${modelId}:`, error);
     
-    const isResourceExhausted = error?.code === 'resource-exhausted' || 
-                                error?.message?.includes('429') ||
+    const isResourceExhausted = error?.message?.includes('429') || 
                                 error?.message?.includes('RESOURCE_EXHAUSTED');
 
     // Attempt fallback logic
@@ -90,22 +90,20 @@ async function generateAIContent(args: {
     
     if (modelId === _GEMINI_MODELS.PRO.id) {
        nextFallback = _GEMINI_MODELS.FLASH.id;
-    } else if (modelId === _GEMINI_MODELS.FLASH.id) {
-       nextFallback = 'gemini-1.5-flash';
     } else if (isResourceExhausted) {
        nextFallback = 'gemini-1.5-flash';
     }
     
     if (nextFallback && modelId !== nextFallback) {
-       console.log(`[AI Proxy] Attempting fallback to ${nextFallback}...`);
-       try {
-         return await generateAIContent({
-           ...args,
-           model: nextFallback
-         });
-       } catch (fallbackError: any) {
-         console.error(`[AI Proxy] Fallback to ${nextFallback} failed:`, fallbackError);
-       }
+        console.log(`[AI SDK] Attempting fallback to ${nextFallback}...`);
+        try {
+          return await generateAIContent({
+            ...args,
+            model: nextFallback
+          });
+        } catch (fallbackError: any) {
+          console.error(`[AI SDK] Fallback to ${nextFallback} failed:`, fallbackError);
+        }
     }
     
     if (isResourceExhausted) {
@@ -213,7 +211,7 @@ export const aiService = {
   async generateSmartRecommendation(history: any[], level: number) {
     const text = await generateAIContent({
       model: GEMINI_MODELS.PRO,
-      prompt: `Com base no histórico: ${safeStringify(history.slice(0, 20))} e nível ${level}, sugira a próxima ação.`,
+      prompt: `Com base no histórico: ${JSON.stringify(history.slice(0, 20))} e nível ${level}, sugira a próxima ação.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -445,7 +443,7 @@ export const aiService = {
   async suggestReview(topic: any, history: any = []) {
     const text = await generateAIContent({
       model: GEMINI_MODELS.FAST,
-      prompt: `Com base no histórico ${safeStringify(history)}, sugira uma estratégia de revisão para: ${safeStringify(topic)}`
+      prompt: `Com base no histórico ${JSON.stringify(history)}, sugira uma estratégia de revisão para: ${JSON.stringify(topic)}`
     });
     return text;
   },
@@ -474,7 +472,7 @@ export const aiService = {
   async explainError(error: any, context: any, ...args: any[]) {
     return await generateAIContent({
       model: GEMINI_MODELS.FAST,
-      prompt: `Explique o seguinte erro: ${error} no contexto: ${safeStringify(context)}. Dados adicionais: ${safeStringify(args)}`
+      prompt: `Explique o seguinte erro: ${error} no contexto: ${JSON.stringify(context)}. Dados adicionais: ${JSON.stringify(args)}`
     });
   },
 
@@ -938,5 +936,3 @@ export const aiService = {
     });
   },
 };
-
-

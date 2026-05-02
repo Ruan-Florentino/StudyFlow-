@@ -11,17 +11,20 @@ import {
   BarChart3, 
   ChevronRight, 
   Sparkles, 
-  Bookmark 
+  Bookmark,
+  Camera,
+  Upload
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useStore } from '../../store';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   AnimatedButton, 
   GlassCard, 
   Badge, 
   Header 
 } from '../../components/UI';
-import { safeStringify } from '../../lib/firebase';
 import {
   ResponsiveContainer,
   BarChart,
@@ -34,6 +37,7 @@ import { useAppNavigation } from '../../app/router/useAppNavigation';
 
 const ProfileView = () => {
   const { goBack, goTo } = useAppNavigation();
+  const { user } = useAuth();
   const { 
     name, 
     bio, 
@@ -54,6 +58,7 @@ const ProfileView = () => {
   } = useStore();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [editName, setEditName] = useState(name || '');
   const [editBio, setEditBio] = useState(bio || '');
 
@@ -101,6 +106,45 @@ const ProfileView = () => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
   }, [featureUsage]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${type}-${Math.random()}.${fileExt}`;
+      const filePath = `${type}s/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-assets')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('profile-assets')
+        .getPublicUrl(filePath);
+
+      const url = data.publicUrl;
+
+      if (type === 'profile') {
+        setProfilePic(url);
+        // Sync to users table
+        await supabase.from('users').update({ profile_pic: url }).eq('id', user.id);
+      } else {
+        setCoverPic(url);
+        // Sync to users table
+        await supabase.from('users').update({ cover_pic: url }).eq('id', user.id);
+      }
+
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = () => {
     setName(editName);
@@ -170,9 +214,19 @@ const ProfileView = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
         )}
 
+        {isEditing && (
+          <label className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity z-10">
+            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'cover')} disabled={uploading} />
+            <div className="flex flex-col items-center gap-2">
+              <Upload size={24} className="text-white" />
+              <span className="text-white text-[10px] font-bold uppercase">Mudar Capa</span>
+            </div>
+          </label>
+        )}
+
         {/* Profile Picture */}
         <div className="absolute -bottom-10 left-6 z-20">
-          <div className="relative">
+          <div className="relative group">
             <div className="w-24 h-24 rounded-full border-4 border-background bg-card overflow-hidden">
               <img 
                 src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} 
@@ -180,6 +234,12 @@ const ProfileView = () => {
                 className="w-full h-full object-cover" 
               />
             </div>
+            {isEditing && (
+              <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'profile')} disabled={uploading} />
+                <Camera size={20} className="text-white" />
+              </label>
+            )}
           </div>
         </div>
       </div>
@@ -381,7 +441,7 @@ const ProfileView = () => {
 
             <GlassCard className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors" onClick={() => {
               const state = useStore.getState();
-              const dataToExport = safeStringify(state, 2);
+              const dataToExport = JSON.stringify(state, null, 2);
               const blob = new Blob([dataToExport], { type: 'application/json' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');

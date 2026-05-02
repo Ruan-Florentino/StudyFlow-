@@ -1,54 +1,5 @@
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  setDoc, 
-  getDocs, 
-  getDoc, 
-  query, 
-  where, 
-  orderBy, 
-  serverTimestamp,
-  Timestamp,
-  limit
-} from 'firebase/firestore';
-import { db, auth } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { AgentKey } from '../config/aiAgents';
-
-export enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-    },
-    operationType,
-    path
-  }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
 
 export interface ChatMessage {
   id?: string;
@@ -69,90 +20,109 @@ export interface ChatSession {
 
 export const chatService = {
   async createSession(agentId: AgentKey, title: string): Promise<string> {
-    const userId = auth.currentUser?.uid;
-    if (!userId) throw new Error('User not authenticated');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-    const path = `users/${userId}/chatSessions`;
-    try {
-      const docRef = await addDoc(collection(db, path), {
-        agentId,
+    const { data, error } = await supabase
+      .from('chat_sessions')
+      .insert({
+        user_id: user.id,
+        agent_id: agentId,
         title,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        lastMessage: ''
-      });
-      return docRef.id;
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, path);
-      return '';
+        last_message: ''
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase Error:', error);
+      throw error;
     }
+    return data.id;
   },
 
   async getSessions(agentId?: AgentKey): Promise<ChatSession[]> {
-    const userId = auth.currentUser?.uid;
-    if (!userId) return [];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
 
-    const path = `users/${userId}/chatSessions`;
-    try {
-      let q = query(collection(db, path), orderBy('updatedAt', 'desc'));
-      if (agentId) {
-        q = query(collection(db, path), where('agentId', '==', agentId), orderBy('updatedAt', 'desc'));
-      }
-      
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: (doc.data().createdAt as Timestamp)?.toDate() || new Date(),
-        updatedAt: (doc.data().updatedAt as Timestamp)?.toDate() || new Date(),
-      } as ChatSession));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.LIST, path);
+    let query = supabase
+      .from('chat_sessions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    if (agentId) {
+      query = query.eq('agent_id', agentId);
+    }
+    
+    const { data, error } = await query;
+    if (error) {
+      console.error('Supabase Error:', error);
       return [];
     }
+
+    return data.map(item => ({
+      id: item.id,
+      agentId: item.agent_id,
+      title: item.title,
+      createdAt: new Date(item.created_at),
+      updatedAt: new Date(item.updated_at),
+      lastMessage: item.last_message
+    }));
   },
 
   async addMessage(sessionId: string, message: Omit<ChatMessage, 'id' | 'timestamp'>): Promise<void> {
-    const userId = auth.currentUser?.uid;
-    if (!userId) throw new Error('User not authenticated');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-    const sessionPath = `users/${userId}/chatSessions/${sessionId}`;
-    const messagesPath = `${sessionPath}/messages`;
-
-    try {
-      // Add message
-      await addDoc(collection(db, messagesPath), {
-        ...message,
-        timestamp: serverTimestamp()
+    // Add message
+    const { error: msgError } = await supabase
+      .from('messages')
+      .insert({
+        session_id: sessionId,
+        user_id: user.id,
+        role: message.role,
+        text: message.text,
+        engine: message.engine
       });
 
-      // Update session last message and timestamp
-      await setDoc(doc(db, sessionPath), {
-        lastMessage: message.text.substring(0, 100),
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+    if (msgError) {
+      console.error('Supabase error adding message:', msgError);
+      throw msgError;
+    }
 
-    } catch (e) {
-      handleFirestoreError(e, OperationType.WRITE, messagesPath);
+    // Update session last message and timestamp
+    const { error: sessionError } = await supabase
+      .from('chat_sessions')
+      .update({
+        last_message: message.text.substring(0, 100),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', sessionId);
+
+    if (sessionError) {
+      console.error('Supabase error updating session:', sessionError);
     }
   },
 
   async getMessages(sessionId: string): Promise<ChatMessage[]> {
-    const userId = auth.currentUser?.uid;
-    if (!userId) return [];
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('timestamp', { ascending: true });
 
-    const path = `users/${userId}/chatSessions/${sessionId}/messages`;
-    try {
-      const q = query(collection(db, path), orderBy('timestamp', 'asc'));
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        timestamp: (doc.data().timestamp as Timestamp)?.toDate() || new Date()
-      } as ChatMessage));
-    } catch (e) {
-      handleFirestoreError(e, OperationType.LIST, path);
+    if (error) {
+      console.error('Supabase Error:', error);
       return [];
     }
+
+    return data.map(item => ({
+      id: item.id,
+      role: item.role,
+      text: item.text,
+      timestamp: new Date(item.timestamp),
+      engine: item.engine
+    }));
   }
 };

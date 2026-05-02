@@ -1,14 +1,24 @@
-import { httpsCallable } from 'firebase/functions';
-import { fns } from '../../lib/firebase';
-import type { Schema } from '@google/genai';
+import { GoogleGenAI, Type } from "@google/genai";
+
+let _ai: any = null;
+
+const ai = new Proxy({} as any, {
+  get(target, prop) {
+    if (prop === 'then') return undefined;
+    if (!_ai) {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY environment variable is required');
+      }
+      _ai = new GoogleGenAI({ apiKey });
+    }
+    return _ai[prop];
+  }
+});
 
 // ─────────────────────────────────────────────
-// FUNÇÕES CALLABLE
+// IA SERVICE CONFIG
 // ─────────────────────────────────────────────
-const callGenerateText = httpsCallable(fns, 'generateText');
-const callGenerateStructured = httpsCallable(fns, 'generateStructured');
-const callChatWithHistory = httpsCallable(fns, 'chatWithHistory');
-const callAnalyzeFile = httpsCallable(fns, 'analyzeFile');
 
 const cache = new Map<string, { value: any; expiresAt: number }>();
 const CACHE_TTL = 1000 * 60 * 30; // 30 min
@@ -37,21 +47,27 @@ export interface GenerateTextOptions {
   cache?: boolean;
 }
 
+const DEFAULT_MODEL = 'gemini-1.5-flash';
+
 export async function generateText(
   prompt: string, 
   options: GenerateTextOptions = {}
 ): Promise<string> {
-  const { model = 'FLASH', cache: useCache = true } = options;
+  const { model: modelId = DEFAULT_MODEL, cache: useCache = true, systemPrompt } = options;
   
-  const key = cacheKey(prompt, model);
+  const key = cacheKey(prompt, modelId);
   if (useCache) {
     const cached = getCached(key);
     if (cached) return cached;
   }
   
   try {
-    const res: any = await callGenerateText({ prompt, options });
-    const text = res.data.text || '';
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: { systemInstruction: systemPrompt }
+    });
+    const text = response.text || "";
     if (useCache) setCached(key, text);
     return text;
   } catch (err: any) {
@@ -62,12 +78,21 @@ export async function generateText(
 
 export async function generateStructured<T = any>(
   prompt: string,
-  schema: Schema,
+  schema: any,
   options: { model?: string; systemPrompt?: string } = {}
 ): Promise<T> {
+  const { model: modelId = DEFAULT_MODEL, systemPrompt } = options;
   try {
-    const res: any = await callGenerateStructured({ prompt, schema, options });
-    const text = res.data.text || '';
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: schema
+      }
+    });
+    const text = response.text || "{}";
     return JSON.parse(text) as T;
   } catch (err: any) {
     console.error('❌ JSON parse or AI error:', err);
@@ -85,9 +110,21 @@ export async function chatWithHistory(
   newMessage: string,
   options: { model?: string; systemPrompt?: string } = {}
 ): Promise<string> {
+  const { model: modelId = DEFAULT_MODEL, systemPrompt } = options;
   try {
-    const res: any = await callChatWithHistory({ history, newMessage, options });
-    return res.data.text || '';
+    const contents = history.map(h => ({
+      role: h.role === 'user' ? ('user' as const) : ('model' as const),
+      parts: h.parts
+    }));
+    contents.push({ role: 'user' as const, parts: [{ text: newMessage }] });
+
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents,
+      config: { systemInstruction: systemPrompt }
+    });
+
+    return response.text || "";
   } catch (err: any) {
     console.error("Chat Error:", err);
     throw new Error(err.message || "Erro ao responder chat");
@@ -99,15 +136,28 @@ export async function analyzeFile(
   prompt: string,
   options: { model?: string; systemPrompt?: string } = {}
 ): Promise<string> {
+  const { model: modelId = DEFAULT_MODEL, systemPrompt } = options;
   const base64 = await fileToBase64(file);
   try {
-    const res: any = await callAnalyzeFile({ 
-      fileData: base64, 
-      mimeType: file.type, 
-      prompt, 
-      options 
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                data: base64,
+                mimeType: file.type
+              }
+            }
+          ]
+        }
+      ],
+      config: { systemInstruction: systemPrompt }
     });
-    return res.data.text || '';
+    return response.text || "";
   } catch (err: any) {
     console.error("Analyze Error:", err);
     throw new Error(err.message || "Erro ao analisar arquivo");

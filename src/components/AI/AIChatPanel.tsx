@@ -4,7 +4,6 @@ import { X, Send, Bot, RefreshCw, ChevronDown } from 'lucide-react';
 import { useAIUI } from '../../hooks/useAIUI';
 import { useAIChat } from '../../hooks/useAIChat';
 import { STUDY_AGENTS, AgentKey } from '../../config/aiAgents';
-import { auth } from '../../lib/firebase';
 import ReactMarkdown from 'react-markdown';
 import { GEMINI_MODELS, GeminiModelKey } from '../../config/aiModels';
 import { AI_BRAND } from '../../config/aiBranding';

@@ -1,17 +1,5 @@
 import { useState, useEffect } from 'react';
-import { auth } from '../lib/firebase';
-
-export const DUMMY_NAMES = [
-  'Ana Carolina', 'João Pedro', 'Maria Santos', 'Lucas Silva', 'Julia Costa',
-  'Pedro Henrique', 'Beatriz Lima', 'Gabriel Souza', 'Leticia Alves', 'Matheus Gomes',
-  'Camila Rocha', 'Rafael Ribeiro', 'Sofia Carvalho', 'Enzo Pereira', 'Isabella Vieira',
-  'Felipe Martins', 'Mariana Barbosa', 'Thiago Pinto', 'Laura Mendes', 'Gustavo Dias',
-  'Vitoria Castro'
-];
-
-const STATUSES = [
-  'focando', 'resolvendo questões', 'lendo', 'fazendo redação', 'assistindo aula', 'no pomodoro'
-];
+import { supabase } from '../lib/supabase';
 
 export interface RoomUser {
   id: string;
@@ -24,6 +12,13 @@ export interface RoomUser {
 
 export function useRoomUsers(roomId: string) {
   const [users, setUsers] = useState<RoomUser[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUserId(user?.id || null);
+    });
+  }, []);
 
   useEffect(() => {
     if (!roomId) {
@@ -31,35 +26,45 @@ export function useRoomUsers(roomId: string) {
       return;
     }
 
-    const mockUsers: RoomUser[] = Array.from({ length: 21 }).map((_, i) => {
-      const name = DUMMY_NAMES[i] || `Estudante ${i + 1}`;
-      const status = STATUSES[Math.floor(Math.random() * STATUSES.length)];
-      // random time between 1 and 120 minutes
-      const mins = Math.floor(Math.random() * 120) + 1;
-      const timeStr = mins > 60 ? `há 1h${(mins - 60).toString().padStart(2, '0')}m` : `há ${mins}min`;
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from('room_presence')
+        .select('*')
+        .eq('room_id', roomId);
 
-      return {
-        id: `mock_user_${i}`,
-        userName: name,
-        userAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${roomId}_${i}`,
-        status,
-        timeStr
-      };
-    });
+      if (error) {
+        console.error('Error fetching room users:', error);
+        return;
+      }
 
-    if (auth.currentUser) {
-      mockUsers.unshift({
-        id: auth.currentUser.uid,
-        userName: auth.currentUser.displayName || 'Você',
-        userAvatar: auth.currentUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.currentUser.uid}`,
-        status: 'focando',
-        timeStr: 'agora',
-        isMe: true
-      });
-    }
+      setUsers(data.map(u => ({
+        id: u.user_id,
+        userName: u.user_name,
+        userAvatar: u.user_avatar,
+        status: u.status,
+        timeStr: u.time_str,
+        isMe: u.user_id === currentUserId
+      })));
+    };
 
-    setUsers(mockUsers);
-  }, [roomId, auth.currentUser]);
+    fetchUsers();
+
+    const subscription = supabase
+      .channel(`room_presence:${roomId}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'room_presence', 
+        filter: `room_id=eq.${roomId}` 
+      }, () => {
+        fetchUsers();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [roomId, currentUserId]);
 
   return users;
 }

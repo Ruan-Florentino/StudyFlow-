@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, MessageCircle, Target, Send, CheckCircle2 } from 'lucide-react';
 import { cn } from '../UI';
-import { auth } from '../../lib/firebase';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface RoomTabsProps {
   activeTab: 'users' | 'chat' | 'goals';
@@ -14,6 +14,7 @@ interface RoomTabsProps {
 }
 
 export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage, accentColor }: RoomTabsProps) => {
+  const { user } = useAuth();
   const [inputText, setInputText] = React.useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -98,9 +99,9 @@ export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage
             >
               <div className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
                 {messages.map(m => (
-                  <div key={m.id} className={cn("flex items-end gap-2", m.userId === auth.currentUser?.uid ? "flex-row-reverse" : "flex-row")}>
+                  <div key={m.id} className={cn("flex items-end gap-2", m.userId === user?.id ? "flex-row-reverse" : "flex-row")}>
                     <img src={m.userAvatar} className="w-8 h-8 rounded-lg opacity-80 shrink-0" />
-                    <div className={cn("flex flex-col gap-1 max-w-[80%]", m.userId === auth.currentUser?.uid ? "items-end" : "items-start")}>
+                    <div className={cn("flex flex-col gap-1 max-w-[80%]", m.userId === user?.id ? "items-end" : "items-start")}>
                        <span className="text-[8px] text-white/30 uppercase font-bold px-1">
                           {m.userName.split(' ')[0]} • {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                        </span>
@@ -108,7 +109,7 @@ export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage
                          <span className="text-3xl">{m.text}</span>
                        ) : (
                          <div className={cn("p-3 rounded-2xl text-[13px] leading-relaxed", 
-                            m.userId === auth.currentUser?.uid ? "bg-emerald-500 text-black font-medium rounded-br-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-white/10 text-white/90 rounded-bl-sm")}>
+                            m.userId === user?.id ? "bg-emerald-500 text-black font-medium rounded-br-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-white/10 text-white/90 rounded-bl-sm")}>
                            {m.text}
                          </div>
                        )}

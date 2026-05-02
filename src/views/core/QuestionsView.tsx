@@ -66,8 +66,7 @@ import {
 } from '../../lib/studyUtils';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { useAIUI } from '../../hooks/useAIUI';
-import { doc, runTransaction, setDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
 // ═══════════════════════════════════════════════════════════
@@ -144,22 +143,32 @@ const QuestionsView = () => {
 
   const syncXP = async (amount: number) => {
     if (loading) return;
-    if (!user?.uid) return;
+    if (!user?.id) return;
 
     try {
-      await runTransaction(db, async (tx) => {
-        const userRef = doc(db, 'users', user.uid);
-        const snap = await tx.get(userRef);
-        
-        const currentXp = snap.exists() ? (snap.data().xp ?? 0) : 0;
-        const newXp = currentXp + amount;
-        const newLevel = Math.floor(newXp / 1000) + 1;
-        
-        tx.set(userRef, { 
+      // Get current user data
+      const { data: userData, error: fetchError } = await supabase
+        .from('users')
+        .select('xp, level')
+        .eq('id', user.id)
+        .single();
+      
+      if (fetchError) throw fetchError;
+
+      const currentXp = userData?.xp ?? 0;
+      const newXp = currentXp + amount;
+      const newLevel = Math.floor(newXp / 1000) + 1;
+      
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ 
           xp: newXp, 
           level: newLevel 
-        }, { merge: true });
-      });
+        })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+      
       setXpGains(prev => [...prev, { id: Date.now(), amount }]);
     } catch (e) {
       console.error("Failed to sync XP", e);
@@ -168,13 +177,19 @@ const QuestionsView = () => {
 
   const syncHistory = async (entry: any) => {
     if (loading) return;
-    if (!user?.uid) return;
+    if (!user?.id) return;
 
     try {
-      await setDoc(
-        doc(db, 'users', user.uid, 'history', entry.questionId),
-        entry
-      );
+      const { error } = await supabase
+        .from('history')
+        .upsert({
+          user_id: user.id,
+          question_id: entry.questionId,
+          content: entry,
+          created_at: new Date().toISOString()
+        }, { onConflict: 'user_id,question_id' });
+
+      if (error) throw error;
     } catch (e) {
       console.error("Failed to sync history", e);
     }

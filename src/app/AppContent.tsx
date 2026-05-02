@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Outlet } from 'react-router-dom';
 import { useStore } from '../store';
@@ -23,19 +22,23 @@ export function AppContent() {
   // Sync with backend on mount
   useEffect(() => {
     if (loading) return;
-    if (!user?.uid) return;
+    if (!user?.id) return;
 
     const sync = async () => {
       try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        const data = snap.exists() ? snap.data() : { name: '' };
-        if (data.name) setName(data.name);
+        const { data, error } = await supabase
+          .from('users')
+          .select('name')
+          .eq('id', user.id)
+          .single();
+        
+        if (!error && data?.name) setName(data.name);
       } catch (e) {
         console.error("Failed to sync with backend", e);
       }
     };
     sync();
-  }, [setName, user?.uid, loading]);
+  }, [setName, user?.id, loading]);
 
   // Global Interaction & Audio
   useEffect(() => {

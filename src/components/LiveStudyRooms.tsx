@@ -5,13 +5,8 @@ import { useStore } from '../store';
 import { GlassCard, AnimatedButton, cn, Header, Badge } from './UI';
 import { RoomCard } from './Rooms/RoomCard';
 import { RoomInterior } from './Rooms/RoomInterior';
-import { db, auth } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { ROOMS } from '../data/rooms';
-import { 
-  collection, doc, setDoc, deleteDoc, 
-  onSnapshot, query, orderBy, limit, serverTimestamp, 
-  arrayUnion, updateDoc, addDoc
-} from 'firebase/firestore';
 
 export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
   const [rooms, setRooms] = useState<any[]>([]);
@@ -21,67 +16,58 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
   const joinRoom = state.joinRoom;
   const userName = state.name;
   const userAvatar = state.profilePic;
+  const [user, setUser] = useState<any>(null);
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
   
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const handleFirestoreError = (error: any, operation: string, path: string | null) => {
-    console.error(`Firestore Error [${operation}] at ${path}:`, error);
-    // Mandatory error structure as per integration rules
-    const errInfo = {
-      error: error instanceof Error ? error.message : String(error),
-      authInfo: {
-        userId: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-      },
-      operationType: operation,
-      path
-    };
-    console.error('Core Error Data:', JSON.stringify(errInfo));
-  };
-
-  // Load Rooms from Firestore
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'studyRooms'), async (snap) => {
-      try {
-        let roomList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        if (roomList.length === 0 && auth.currentUser) {
-          console.log("Seeding study rooms...");
-          setLoading(true);
-          const seedPromises = ROOMS.map(async (r) => {
-            const roomData = {
-              name: r.name,
-              description: r.description,
-              audio: r.audio,
-              color: r.color,
-              icon: r.id, // Use ID or some string representation for the icon in DB
-              onlineUsers: [],
-              createdAt: serverTimestamp()
-            };
-            try {
-              await setDoc(doc(db, 'studyRooms', r.id), roomData);
-            } catch (e) {
-              handleFirestoreError(e, 'create', `studyRooms/${r.id}`);
-            }
-          });
-          await Promise.all(seedPromises);
-          // Snapshot listener will trigger again after seeding
-        } else {
-          setRooms(roomList);
-          setLoading(false);
-        }
-      } catch (err) {
-        handleFirestoreError(err, 'list', 'studyRooms');
-        setLoading(false);
-      }
-    }, (error) => {
-      handleFirestoreError(error, 'list', 'studyRooms');
-      setLoading(false);
-    });
-
-    return () => unsub();
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
   }, []);
+
+  // Load Rooms from Supabase
+  useEffect(() => {
+    const fetchRooms = async () => {
+      const { data, error } = await supabase.from('study_rooms').select('*');
+      
+      if (error) {
+        console.error('Error fetching rooms:', error);
+        return;
+      }
+
+      if (data.length === 0 && user) {
+        console.log("Seeding study rooms...");
+        const seedData = ROOMS.map(r => ({
+          id: r.id,
+          name: r.name,
+          description: r.description,
+          audio: r.audio,
+          color: r.color,
+          icon: r.id
+        }));
+        await supabase.from('study_rooms').insert(seedData);
+        const { data: newData } = await supabase.from('study_rooms').select('*');
+        setRooms(newData || []);
+      } else {
+        setRooms(data);
+      }
+      setLoading(false);
+    };
+
+    fetchRooms();
+
+    // Subscribe to room changes
+    const subscription = supabase
+      .channel('study_rooms_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'study_rooms' }, () => {
+        fetchRooms();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
 
   const lastJoinedRoomRef = useRef<string | null>(null);
 
@@ -115,43 +101,39 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
   }, []);
 
   const enterPresence = async (roomId: string) => {
-    if (!auth.currentUser) return;
-    const uid = auth.currentUser.uid;
+    if (!user) return;
+    const uid = user.id;
     
-    await setDoc(doc(db, 'studyRooms', roomId, 'presence', uid), {
-      userId: uid,
-      userName: userName || 'Estudante',
-      userAvatar: userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
-      joinedAt: serverTimestamp(),
-      lastPing: serverTimestamp(),
+    await supabase.from('room_presence').upsert({
+      room_id: roomId,
+      user_id: uid,
+      user_name: userName || 'Estudante',
+      user_avatar: userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
       status: 'Focando',
-      timeStr: '0m'
+      time_str: '0m',
+      last_ping: new Date().toISOString()
     });
 
-    await updateDoc(doc(db, 'studyRooms', roomId), {
-      onlineUsers: arrayUnion(uid)
-    });
-
-    await addDoc(collection(db, 'studyRooms', roomId, 'messages'), {
-      userId: 'system',
-      userName: 'Sistema',
+    await supabase.from('room_messages').insert({
+      room_id: roomId,
+      user_id: 'system',
+      user_name: 'Sistema',
       text: `${userName || 'Estudante'} entrou na sala.`,
-      timestamp: Date.now(),
       type: 'system'
     });
 
     heartbeatInterval.current = setInterval(() => {
-      updateDoc(doc(db, 'studyRooms', roomId, 'presence', uid), {
-        lastPing: serverTimestamp()
-      });
+      supabase.from('room_presence').update({
+        last_ping: new Date().toISOString()
+      }).eq('room_id', roomId).eq('user_id', uid);
     }, 30000);
   };
 
   const exitPresence = async (forceRoomId?: string) => {
-    if (!auth.currentUser) return;
+    if (!user) return;
     const roomId = forceRoomId || selectedRoom?.id;
     if (!roomId) return;
-    const uid = auth.currentUser.uid;
+    const uid = user.id;
 
     if (heartbeatInterval.current) {
       clearInterval(heartbeatInterval.current);
@@ -159,12 +141,12 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
     }
 
     try {
-      await deleteDoc(doc(db, 'studyRooms', roomId, 'presence', uid));
-      await addDoc(collection(db, 'studyRooms', roomId, 'messages'), {
-        userId: 'system',
-        userName: 'Sistema',
+      await supabase.from('room_presence').delete().eq('room_id', roomId).eq('user_id', uid);
+      await supabase.from('room_messages').insert({
+        room_id: roomId,
+        user_id: 'system',
+        user_name: 'Sistema',
         text: `${userName || 'Estudante'} saiu da sala.`,
-        timestamp: Date.now(),
         type: 'system'
       });
     } catch (e) {
