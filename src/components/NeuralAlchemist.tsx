@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Beaker, ChevronLeft, Zap, Sparkles, Skull, Info, BookOpen, RefreshCw } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
 import { aiService } from '../services/aiService';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const NeuralAlchemist = ({ onBack }: { onBack: () => void }) => {
   const [subjectA, setSubjectA] = useState('');

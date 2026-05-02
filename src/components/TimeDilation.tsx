@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Clock, Zap, ShieldAlert, ChevronLeft, Play, Pause, X, Activity } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const TimeDilation = ({ onBack }: { onBack: () => void }) => {
   const [isActive, setIsActive] = useState(false);

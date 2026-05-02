@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Activity, ChevronLeft, Zap, Brain, Cpu } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const NeuralSync = ({ onBack }: { onBack: () => void }) => {
   const { xp, level, mastery } = useStore();

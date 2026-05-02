@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Star, Compass, Anchor, Loader2 } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 import { aiService } from '../services/aiService';
 
 export const TheOracle = ({ onBack }: { onBack: () => void }) => {

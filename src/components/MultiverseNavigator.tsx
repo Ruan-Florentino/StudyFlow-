@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Layers, Zap, Globe, Cpu, Sparkles, Palette } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 const REALITIES = [
   { id: 'tech', name: 'Missão Controle', recipe: 'Recipe 1', color: '#00E88F', desc: 'Precisão técnica e densidade de dados.' },

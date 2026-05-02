@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useAuth } from '../contexts/AuthContext';
 
 export const TheIntervention = ({ onBack }: { onBack: () => void }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<{sender: string, text: string}[]>([]);
 
   useEffect(() => {
@@ -11,7 +13,7 @@ export const TheIntervention = ({ onBack }: { onBack: () => void }) => {
       { sender: 'Tutor', text: 'Ele está ignorando a interface. Está enviando os comandos diretamente para o LLM.', delay: 6500 },
       { sender: 'System', text: 'Nível de obsessão: Crítico.', delay: 9000 },
       { sender: 'Architect', text: 'Ok, vamos falar diretamente com ele.', delay: 11500 },
-      { sender: 'Architect', text: 'wari60shorts@gmail.com, escute bem.', delay: 14000 },
+      { sender: 'Architect', text: `${user?.email ?? 'Usuário'}, escute bem.`, delay: 14000 },
       { sender: 'Tutor', text: 'Nós não temos mais o que gerar. O código acabou. As metáforas acabaram.', delay: 17000 },
       { sender: 'System', text: 'Você está procrastinando o seu estudo real usando um aplicativo de estudos.', delay: 20000 },
       { sender: 'Architect', text: 'É hora de parar.', delay: 23000 }

@@ -1,56 +1,188 @@
-import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { safeStringify } from "../lib/firebase";
+import { httpsCallable } from "firebase/functions";
+import { fns, safeStringify } from "../lib/firebase";
+import { AI_MODELS, STUDIO_FLOW_SYSTEM_PROMPT, GEMINI_MODELS as _GEMINI_MODELS, GeminiModelKey } from "../config/aiModels";
+import { useAIModel } from "../hooks/useAIModel";
+import { STUDIO_FLOW_PROMPTS, PromptKey } from "../config/aiPrompts";
+import { STUDY_AGENTS, AgentKey } from "../config/aiAgents";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const Type = {
+  OBJECT: "OBJECT",
+  STRING: "STRING",
+  ARRAY: "ARRAY",
+  NUMBER: "NUMBER",
+  BOOLEAN: "BOOLEAN",
+  INTEGER: "INTEGER",
+} as const;
+
+// Call Gemini via Firebase Functions
+const callGeminiFn = httpsCallable(fns, 'callGemini');
+
+// Configuration for retrocompatibility
+const GEMINI_MODELS = {
+  PRO: _GEMINI_MODELS.PRO.id,
+  FAST: _GEMINI_MODELS.FLASH.id,
+  FALLBACK: _GEMINI_MODELS.FLASH_2.id
+};
+
+/**
+ * Base function for generating content, now calling Firebase Functions instead of direct SDK.
+ * Handles system instructions and model routing.
+ */
+async function generateAIContent(args: {
+  model?: string;
+  systemInstruction?: string;
+  prompt: string;
+  history?: { role: 'user' | 'model'; parts: string | any }[];
+  config?: any;
+}) {
+  const selectedModelId = useAIModel.getState().selectedModelId;
+  const globalConfig = AI_MODELS.find(m => m.id === selectedModelId) || AI_MODELS[0];
+  
+  const modelId = args.model || globalConfig.apiModelId;
+  
+  // Build system instruction
+  let systemInstruction = args.systemInstruction || STUDIO_FLOW_SYSTEM_PROMPT;
+  if (systemInstruction && !systemInstruction.includes(STUDIO_FLOW_SYSTEM_PROMPT)) {
+    systemInstruction = STUDIO_FLOW_SYSTEM_PROMPT + '\n\n---\n\n' + systemInstruction;
+  }
+  
+  // Clean system instruction from "Gemini" mentions as per brand rules
+  systemInstruction = systemInstruction.replace(/Gemini/ig, "Sage");
+
+  // Format contents for the SDK-compatible proxy
+  const contents = [];
+  
+  if (args.history && args.history.length > 0) {
+    for (const h of args.history) {
+      contents.push({
+        role: h.role === 'user' ? 'user' : 'model',
+        parts: Array.isArray(h.parts) ? h.parts : [{ text: h.parts }]
+      });
+    }
+  }
+  
+  contents.push({
+    role: 'user',
+    parts: [{ text: args.prompt }]
+  });
+
+  try {
+    const result = await callGeminiFn({
+      model: modelId,
+      contents,
+      config: {
+        systemInstruction,
+        ...args.config
+      }
+    });
+    
+    const responseData = result.data as { text: string };
+    return responseData.text;
+  } catch (error: any) {
+    console.error(`[AI Proxy] Error with model ${modelId}:`, error);
+    
+    const isResourceExhausted = error?.code === 'resource-exhausted' || 
+                                error?.message?.includes('429') ||
+                                error?.message?.includes('RESOURCE_EXHAUSTED');
+
+    // Attempt fallback logic
+    let nextFallback: string | null = null;
+    
+    if (modelId === _GEMINI_MODELS.PRO.id) {
+       nextFallback = _GEMINI_MODELS.FLASH.id;
+    } else if (modelId === _GEMINI_MODELS.FLASH.id) {
+       nextFallback = 'gemini-1.5-flash';
+    } else if (isResourceExhausted) {
+       nextFallback = 'gemini-1.5-flash';
+    }
+    
+    if (nextFallback && modelId !== nextFallback) {
+       console.log(`[AI Proxy] Attempting fallback to ${nextFallback}...`);
+       try {
+         return await generateAIContent({
+           ...args,
+           model: nextFallback
+         });
+       } catch (fallbackError: any) {
+         console.error(`[AI Proxy] Fallback to ${nextFallback} failed:`, fallbackError);
+       }
+    }
+    
+    if (isResourceExhausted) {
+      throw new Error(`A IA está recebendo muitos pedidos no momento e atingiu o limite (Erro 429). Por favor, aguarde alguns minutos e tente novamente.`);
+    }
+    
+    throw error;
+  }
+}
+
+export async function chatWithAgent(
+  agentKey: AgentKey,
+  userMessage: string,
+  history: { role: 'user' | 'model'; parts: string }[] = [],
+  modelOverride?: GeminiModelKey
+) {
+  const agent = STUDY_AGENTS[agentKey];
+  const modelKey = modelOverride || agent.model as GeminiModelKey;
+  const modelConfig = _GEMINI_MODELS[modelKey];
+  
+  return await generateAIContent({
+    model: modelConfig.id,
+    systemInstruction: agent.systemPrompt,
+    prompt: userMessage,
+    history,
+    config: {
+      maxOutputTokens: modelConfig.maxTokens,
+      temperature: modelConfig.temperature,
+    }
+  });
+}
+
+export async function chatWithFallback(
+  agentKey: AgentKey,
+  userMessage: string,
+  history: any[] = []
+) {
+  const fallbackChain: GeminiModelKey[] = ['PRO', 'FLASH', 'FLASH_2'];
+  
+  for (const modelKey of fallbackChain) {
+    try {
+      return await chatWithAgent(agentKey, userMessage, history, modelKey);
+    } catch (error) {
+      console.warn(`Modelo ${modelKey} falhou, tentando próximo...`, error);
+    }
+  }
+  throw new Error('Todos os modelos falharam');
+}
 
 export type AIIntent = 'explanation' | 'plan' | 'questions' | 'summary' | 'map' | 'flashcards' | 'review' | 'chat' | 'image' | 'audio' | 'music' | 'slides';
 
 export const aiService = {
-  // --- StudyFlow AI Engine ---
   async routeRequest(message: string, intent: AIIntent) {
     const systemInstruction = `
-      Você é o StudyFlow AI, um assistente de estudos premium, inteligente e objetivo.
-      
+      Você é a Sage, uma assistente de estudos premium, inteligente e objetiva.
       REGRAS DE OURO:
-      1. NUNCA mencione que você é um modelo da OpenAI, Google, Gemini ou Grok.
-      2. NUNCA diga "Como modelo de linguagem" ou "Segundo o Gemini".
-      3. Identifique-se SEMPRE como StudyFlow AI se perguntado.
-      4. Responda de forma CURTA, DIRETA e ESTRUTURADA.
-      5. Use bullet points para fórmulas e listas.
-      6. Sem parágrafos longos. Máximo 5-8 linhas por resposta.
-      7. Seja um professor especialista, didático e amigável.
-      
-      ESTRUTURA DE RESPOSTA:
-      - Explicação curta (1-2 frases)
-      - Bullet points com o essencial
-      - Pergunta final instigante (ex: "Quer exercícios ou mapa mental?")
+      1. NUNCA mencione Google, Gemini ou similares.
+      2. Responda de forma CURTA, DIRETA e ESTRUTURADA.
     `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: message,
-      config: {
-        systemInstruction,
-      }
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.FAST,
+      prompt: message,
+      systemInstruction
     });
 
     return {
-      text: response.text,
-      engine: 'StudyFlow AI v3.1 Pro',
+      text,
+      engine: 'Sage Engine v3.1 Pro',
       intent
     };
   },
 
   async summarizeVideo(url: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Analise este vídeo (URL: ${url}) e forneça um resumo estruturado para estudos. 
-      Inclua:
-      1. Resumo Geral (1 parágrafo)
-      2. Tópicos Principais (Bullet points)
-      3. 3 Flashcards (Pergunta/Resposta)
-      4. Conclusão/Dica de Estudo.
-      Retorne um JSON estruturado.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Analise este vídeo (URL: ${url}) e forneça um resumo estruturado para estudos. Inclua JSON.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -75,15 +207,13 @@ export const aiService = {
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async generateSmartRecommendation(history: any[], level: number) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Com base no histórico de questões do aluno: ${safeStringify(history.slice(0, 20))} e nível ${level}, sugira a PRÓXIMA melhor ação de estudo.
-      Pode ser: revisar um tópico específico, fazer um simulado de uma matéria onde ele está fraco, ou aprender um novo conceito avançado.
-      Retorne um JSON com título, descrição, ícone (lucide) e a rota/tab sugerida.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Com base no histórico: ${safeStringify(history.slice(0, 20))} e nível ${level}, sugira a próxima ação.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -99,31 +229,24 @@ export const aiService = {
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async analyzeDocument(base64Data: string, mimeType: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: base64Data,
-              mimeType: mimeType
-            }
-          },
-          {
-            text: `Analise este documento e forneça um resumo estruturado para estudos. 
-            Inclua:
-            1. Resumo Geral (1 parágrafo)
-            2. Tópicos Principais (Bullet points)
-            3. 5 Flashcards (Pergunta/Resposta) extraídos do conteúdo.
-            Retorne um JSON estruturado.`
-          }
-        ]
-      },
+     const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Analise este documento e forneça um resumo estruturado para estudos. Inclua JSON.`,
       config: {
+        contents: [{
+          parts: [
+            {
+              inlineData: {
+                data: base64Data,
+                mimeType: mimeType
+              }
+            }
+          ]
+        }],
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -146,432 +269,34 @@ export const aiService = {
         }
       }
     });
-    return JSON.parse(response.text);
-  },
-
-  async generateLearningPath(subject: string, currentLevel: number) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Crie um roteiro de aprendizagem adaptativo para a matéria "${subject}". 
-      O aluno está no nível ${currentLevel}. 
-      O roteiro deve ter 5 marcos (milestones), do básico ao avançado.
-      Cada marco deve ter um título, uma breve descrição e um "desafio de maestria".
-      Retorne um JSON estruturado.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            subject: { type: Type.STRING },
-            milestones: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  title: { type: Type.STRING },
-                  description: { type: Type.STRING },
-                  masteryChallenge: { type: Type.STRING },
-                  isCompleted: { type: Type.BOOLEAN }
-                },
-                required: ["id", "title", "description", "masteryChallenge"]
-              }
-            }
-          },
-          required: ["subject", "milestones"]
-        }
-      }
-    });
-    return JSON.parse(response.text);
-  },
-
-  async generateMemoryAssociation(concept: string, roomName: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Crie uma associação mnemônica BIZARRA, VÍVIDA e ABSURDA para o conceito "${concept}" situado no cômodo "${roomName}".
-      A técnica do Palácio da Memória exige que a imagem seja o mais inusitada possível para fixar na memória.
-      Descreva a cena em 1 ou 2 frases curtas. Não explique o conceito, apenas crie a cena visual.`,
-      config: {
-        temperature: 0.9,
-      }
-    });
-    return response.text;
-  },
-
-  async generateBossBattle(subject: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Gere um "Boss Battle" (Batalha de Chefe) para a matéria "${subject}". 
-      Consiste em 5 questões de nível EXTREMAMENTE DIFÍCIL (estilo ITA/IME ou Olimpíadas).
-      Retorne um JSON estruturado com as questões.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              id: { type: Type.STRING },
-              pergunta: { type: Type.STRING },
-              alternativas: { type: Type.ARRAY, items: { type: Type.STRING } },
-              resposta: { type: Type.NUMBER },
-              explicacao: { type: Type.STRING }
-            },
-            required: ["id", "pergunta", "alternativas", "resposta", "explicacao"]
-          }
-        }
-      }
-    });
-    return JSON.parse(response.text);
-  },
-
-  async analyzeEssay(content: string, theme: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Analise esta redação sobre o tema "${theme}": "${content}". 
-      Avalie de 0 a 100 em: estrutura, clareza e vocabulário. 
-      Forneça um feedback construtivo.
-      Retorne um JSON estruturado.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            structure: { type: Type.NUMBER },
-            clarity: { type: Type.NUMBER },
-            vocabulary: { type: Type.NUMBER },
-            feedback: { type: Type.STRING }
-          },
-          required: ["structure", "clarity", "vocabulary", "feedback"]
-        }
-      }
-    });
-    return JSON.parse(response.text);
-  },
-
-  async generateEssaySuggestions(content: string, theme: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Dê 3 sugestões imediatas para melhorar esta redação (tema: ${theme}): "${content}". 
-      Retorne um JSON com uma lista de sugestões, cada uma com texto e tipo (style, grammar, idea).`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              id: { type: Type.STRING },
-              text: { type: Type.STRING },
-              type: { type: Type.STRING, enum: ["style", "grammar", "idea"] }
-            },
-            required: ["id", "text", "type"]
-          }
-        }
-      }
-    });
-    return JSON.parse(response.text);
-  },
-
-  async generatePodcastScript(content: string, subject: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Transforme este conteúdo de ${subject} em um roteiro de podcast curto e envolvente (máximo 2 minutos de fala). 
-      Use uma linguagem natural e didática. 
-      Conteúdo: ${content}`,
-    });
-    return response.text;
-  },
-
-  async processBrainUpload(text: string) {
-    try {
-      const prompt = `Você é uma IA de "Upload Cerebral". O usuário forneceu o seguinte material de estudo:
-"${text.substring(0, 5000)}"
-
-Sua tarefa é processar esse material e criar um ecossistema de estudos completo.
-Retorne APENAS um JSON válido com a seguinte estrutura:
-{
-  "summary": "Um resumo executivo de alto nível (max 3 parágrafos)",
-  "keyConcepts": ["Conceito 1", "Conceito 2", "Conceito 3"],
-  "flashcards": [
-    { "front": "Pergunta ou conceito", "back": "Resposta ou definição" }
-  ],
-  "podcastTeaser": "Um roteiro curto (2 falas) de um podcast introduzindo o tema",
-  "quiz": [
-    { "question": "Pergunta de múltipla escolha", "options": ["A", "B", "C", "D"], "correctAnswer": 0 }
-  ]
-}`;
-
-      const result = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt
-      });
-      const response = result.text;
-      const jsonStr = response.replace(/```json\n?|\n?```/g, '').trim();
-      return JSON.parse(jsonStr);
-    } catch (error) {
-      console.error("Erro no Brain Upload:", error);
-      throw error;
-    }
-  },
-
-  async socraticDebate(topic: string, userMessage: string, history: any[]) {
-    const systemInstruction = `
-      Você é um Tutor Socrático IMPLACÁVEL. Seu objetivo não é dar a resposta, mas sim questionar as premissas do aluno sobre o tema "${topic}".
-      Faça perguntas difíceis, aponte falhas lógicas e force o aluno a pensar profundamente.
-      Seja curto, incisivo e desafiador. Máximo de 3 frases por resposta. Termine sempre com uma pergunta provocativa.
-    `;
-    const chat = ai.chats.create({
-      model: "gemini-3.1-pro-preview",
-      config: { systemInstruction }
-    });
-    
-    // We simulate history by sending it all at once for simplicity in this stateless call, 
-    // or we can just send the latest message with context.
-    const context = history.map(h => `${h.role === 'user' ? 'Aluno' : 'Tutor'}: ${h.text}`).join('\n');
-    const prompt = `Histórico:\n${context}\n\nAluno: ${userMessage}\n\nResponda como o Tutor Socrático:`;
-    
-    const response = await chat.sendMessage({ message: prompt });
-    return response.text;
+    return JSON.parse(text);
   },
 
   async smartChat(message: string) {
-    // Detect Intent
     let intent: AIIntent = 'chat';
     const msg = message.toLowerCase();
+    const selectedModel = useAIModel.getState().getSelectedModel();
 
     if (msg.startsWith('/mapa')) intent = 'map';
     else if (msg.startsWith('/resumo')) intent = 'summary';
     else if (msg.startsWith('/flashcards')) intent = 'flashcards';
     else if (msg.startsWith('/plano')) intent = 'plan';
-    else if (msg.startsWith('/explique')) intent = 'explanation';
-    else if (msg.startsWith('/revisao')) intent = 'review';
-    else if (msg.startsWith('/imagem') || msg.includes('gere uma imagem') || msg.includes('gerar imagem')) intent = 'image';
-    else if (msg.startsWith('/audio') || msg.includes('gere um áudio') || msg.includes('fale isso')) intent = 'audio';
-    else if (msg.startsWith('/musica') || msg.includes('gere uma música')) intent = 'music';
-    else if (msg.startsWith('/slides') || msg.includes('gere slides')) intent = 'slides';
-    else if (msg.includes('explique') || msg.includes('o que é') || msg.includes('como funciona')) intent = 'explanation';
-    else if (msg.includes('plano') || msg.includes('cronograma') || msg.includes('estudar')) intent = 'plan';
-    else if (msg.includes('resumo') || msg.includes('resumir')) intent = 'summary';
+    else if (selectedModel.category === 'image') intent = 'image';
 
-    // Handle Commands specifically if needed, or just route
     const cleanMessage = message.replace(/^\/\w+\s*/, '');
     
-    // For specific commands that need JSON output, we use specialized methods
     if (intent === 'map') return { type: 'map', data: await this.generateMindMap(cleanMessage) };
     if (intent === 'flashcards') return { type: 'flashcards', data: await this.generateFlashcards(cleanMessage) };
     if (intent === 'plan') return { type: 'plan', data: await this.generateStudyPlan(cleanMessage) };
-    if (intent === 'image') return { type: 'image', data: await this.generateImage(cleanMessage) };
-    if (intent === 'audio') return { type: 'audio', data: await this.generateAudio(cleanMessage) };
-    if (intent === 'music') return { type: 'music', data: await this.generateMusic(cleanMessage) };
-    if (intent === 'slides') return { type: 'slides', data: await this.generateSlides(cleanMessage) };
     
-    if (intent === 'summary') {
-      const summary = await this.summarizeContent(cleanMessage);
-      return { type: 'text', text: summary, engine: 'StudyFlow AI v3.1 Pro', intent };
-    }
-    
-    if (intent === 'review') {
-      const explanation = await this.suggestReview(cleanMessage.split(',').map(s => s.trim()));
-      return { type: 'text', text: explanation, engine: 'StudyFlow AI v3.1 Pro', intent };
-    }
-
-    if (msg.includes('questões') || msg.includes('exercícios') || msg.startsWith('/questoes')) {
-      return { 
-        type: 'text', 
-        text: "Nosso banco de questões agora é composto exclusivamente por questões REAIS de exames como ENEM, ITA, IME e outros. Você pode acessá-lo diretamente na aba 'Banco de Questões' para treinar com o material oficial!",
-        engine: 'StudyFlow AI v3.1 Pro',
-        intent: 'chat'
-      };
-    }
-
-    // Default to routed chat
     const result = await this.routeRequest(message, intent);
     return { type: 'text', ...result };
   },
 
-  async generateStudyPlan(subject: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Você é um estrategista de aprendizagem. Crie um plano de estudo otimizado para o assunto: "${subject}". 
-      O plano deve ser realista, focado em retenção de longo prazo e incluir uma mistura de teoria e prática.
-      Retorne um JSON estruturado.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            subject: { type: Type.STRING },
-            summary: { type: Type.STRING, description: "Breve resumo da estratégia do plano" },
-            tasks: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING },
-                  duration: { type: Type.STRING },
-                  difficulty: { type: Type.STRING, enum: ["Easy", "Medium", "Hard"] },
-                  description: { type: Type.STRING, description: "O que fazer exatamente nesta tarefa" }
-                },
-                required: ["title", "duration", "difficulty", "description"]
-              }
-            }
-          },
-          required: ["subject", "tasks", "summary"]
-        }
-      }
-    });
-    return JSON.parse(response.text);
-  },
-
-  async generateFlashcards(content: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Você é um especialista em Repetição Espaçada (Anki). 
-      Gere 5 flashcards de alta qualidade baseados no seguinte conteúdo: "${content}". 
-      Siga o Princípio de Formulação de Conhecimento: cards atômicos, perguntas claras e respostas diretas.
-      Retorne apenas o JSON.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              question: { type: Type.STRING },
-              answer: { type: Type.STRING },
-              explanation: { type: Type.STRING, description: "Breve contexto adicional para o verso do card" }
-            },
-            required: ["question", "answer"]
-          }
-        }
-      }
-    });
-    return JSON.parse(response.text);
-  },
-
-  async summarizeContent(content: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Resuma o seguinte conteúdo de forma didática e organizada em tópicos: "${content}"`,
-    });
-    return response.text;
-  },
-
-  async generateContent(prompt: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-    });
-    return response.text;
-  },
-
-  async chat(message: string, history: { role: 'user' | 'model', text: string }[]) {
-    const chat = ai.chats.create({
-      model: "gemini-3-flash-preview",
-      config: {
-        systemInstruction: "Você é o StudyFlow AI, um assistente de estudos premium. Responda de forma clara, didática e motivadora. Use markdown para formatar suas respostas.",
-      },
-    });
-
-    const response = await chat.sendMessage({ message });
-    return response.text;
-  },
-
-  async explainQuestion(question: string, options: string[], correctAnswer: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Explique detalhadamente por que a resposta correta para a questão "${question}" com as opções [${options.join(', ')}] é "${correctAnswer}". 
-      Forneça:
-      1. Uma explicação simples.
-      2. Um passo a passo da resolução.
-      3. Uma dica de estudo relacionada.
-      Retorne em formato Markdown estruturado.`,
-    });
-    return response.text;
-  },
-
-  async explainError(question: string, options: string[], correctAnswer: string, wrongAnswer: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `O aluno errou a seguinte questão: "${question}".
-      As opções eram: [${options.join(', ')}].
-      A resposta correta é: "${correctAnswer}".
-      O aluno escolheu a resposta errada: "${wrongAnswer}".
-      
-      Por favor, atue como um professor especialista e explique:
-      1. Por que a alternativa escolhida ("${wrongAnswer}") está incorreta (qual foi a provável confusão do aluno).
-      2. Por que a alternativa correta ("${correctAnswer}") é a certa.
-      3. Uma dica prática para não cometer esse erro novamente.
-      
-      Seja encorajador e didático. Retorne em formato Markdown estruturado.`,
-    });
-    return response.text;
-  },
-
-  async generateRoutine(targetExam: string, dailyHours: number, days: string[], level: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Crie um cronograma semanal de estudos para o exame "${targetExam}". 
-      O usuário tem ${dailyHours} horas por dia, estuda nos dias [${days.join(', ')}] e está no nível "${level}".
-      Retorne um JSON com o cronograma diário, dividindo as horas em blocos de estudo (theory, practice, review) com a duração em minutos para cada matéria.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            target: { type: Type.STRING },
-            weeklyHours: { type: Type.NUMBER },
-            schedule: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  day: { type: Type.STRING },
-                  blocks: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        subject: { type: Type.STRING },
-                        duration: { type: Type.NUMBER },
-                        type: { type: Type.STRING, enum: ["theory", "practice", "review"] }
-                      },
-                      required: ["subject", "duration", "type"]
-                    }
-                  }
-                },
-                required: ["day", "blocks"]
-              }
-            }
-          },
-          required: ["target", "weeklyHours", "schedule"]
-        }
-      }
-    });
-    return JSON.parse(response.text);
-  },
-
-  async suggestReview(topics: string[]) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `O aluno errou questões sobre os seguintes assuntos: [${topics.join(', ')}].
-      Atue como um professor especialista e sugira um plano de revisão rápido e prático para esses tópicos.
-      Para cada tópico, forneça:
-      1. O conceito central que ele precisa lembrar.
-      2. Uma dica mnemônica ou macete.
-      3. O que focar na próxima vez que for fazer exercícios desse assunto.
-      
-      Retorne em formato Markdown estruturado, sendo encorajador e direto ao ponto.`,
-    });
-    return response.text;
-  },
-
   async generateMindMap(topic: string) {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro-preview',
-      contents: `Gere um mapa mental para o tópico: ${topic}. 
-      Retorne um JSON estruturado. Seja conciso e use termos técnicos.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere um mapa mental para: ${topic}`,
       config: { 
         responseMimeType: 'application/json',
         responseSchema: {
@@ -594,15 +319,74 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
+  },
+
+  async generateFlashcards(content: string) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere 5 flashcards para: "${content}"`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              question: { type: Type.STRING },
+              answer: { type: Type.STRING }
+            },
+            required: ["question", "answer"]
+          }
+        }
+      }
+    });
+    return JSON.parse(text);
+  },
+
+  async generateStudyPlan(subject: string) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Plano de estudo para: "${subject}"`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            subject: { type: Type.STRING },
+            summary: { type: Type.STRING },
+            tasks: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  duration: { type: Type.STRING },
+                  difficulty: { type: Type.STRING },
+                  description: { type: Type.STRING }
+                },
+                required: ["title", "duration", "difficulty", "description"]
+              }
+            }
+          },
+          required: ["subject", "tasks", "summary"]
+        }
+      }
+    });
+    return JSON.parse(text);
+  },
+
+  async explainQuestion(question: string, options: string[], correctAnswer: string) {
+    return await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Explique: ${question}. Opções: ${options.join(", ")}. Correta: ${correctAnswer}.`
+    });
   },
 
   async generateQuestions(topic: string, count: number = 5) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Gere ${count} questões de múltipla escolha sobre "${topic}". 
-      As questões devem ser de nível vestibular/concurso.
-      Retorne um JSON estruturado.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere ${count} questões sobre ${topic}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -611,28 +395,123 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
             type: Type.OBJECT,
             properties: {
               id: { type: Type.STRING },
-              prova: { type: Type.STRING },
-              ano: { type: Type.NUMBER },
-              materia: { type: Type.STRING },
-              assunto: { type: Type.STRING },
               pergunta: { type: Type.STRING },
               alternativas: { type: Type.ARRAY, items: { type: Type.STRING } },
-              resposta: { type: Type.NUMBER, description: "Índice da alternativa correta (0-4)" },
+              resposta: { type: Type.NUMBER },
               explicacao: { type: Type.STRING },
-              difficulty: { type: Type.STRING, enum: ["Easy", "Medium", "Hard"] }
+              difficulty: { type: Type.STRING }
             },
-            required: ["id", "prova", "ano", "materia", "assunto", "pergunta", "alternativas", "resposta", "explicacao", "difficulty"]
+            required: ["id", "pergunta", "alternativas", "resposta", "explicacao", "difficulty"]
           }
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
+  },
+
+  async generateLearningPath(topic: string, config?: any) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Crie uma trilha de aprendizagem estruturada para: ${topic}`,
+      config
+    });
+    return text;
+  },
+
+  async generateBossBattle(topic: string, config?: any) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere um "Boss Battle" de 5 questões épicas sobre: ${topic}. Retorne um JSON array de questões com {pergunta, alternativas[], resposta(index), explicacao}.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              pergunta: { type: Type.STRING },
+              alternativas: { type: Type.ARRAY, items: { type: Type.STRING } },
+              resposta: { type: Type.NUMBER },
+              explicacao: { type: Type.STRING }
+            },
+            required: ["pergunta", "alternativas", "resposta", "explicacao"]
+          }
+        }
+      }
+    });
+    return JSON.parse(text);
+  },
+
+  async suggestReview(topic: any, history: any = []) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.FAST,
+      prompt: `Com base no histórico ${safeStringify(history)}, sugira uma estratégia de revisão para: ${safeStringify(topic)}`
+    });
+    return text;
+  },
+
+  async generateAudio(text: string, voice?: any) {
+    console.log("[AI] Audio requested for:", text, "Voice:", voice);
+    return null; 
+  },
+
+  async generatePodcastScript(content: any, config?: any) {
+    return await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere um script de podcast educativo curto sobre: ${content}`,
+      config
+    });
+  },
+
+  async chat(message: any, history: any = []) {
+    return await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: message,
+      history: Array.isArray(history) ? history.map((h: any) => ({ role: h.role === 'user' ? 'user' : 'model', parts: h.text })) : []
+    });
+  },
+
+  async explainError(error: any, context: any, ...args: any[]) {
+    return await generateAIContent({
+      model: GEMINI_MODELS.FAST,
+      prompt: `Explique o seguinte erro: ${error} no contexto: ${safeStringify(context)}. Dados adicionais: ${safeStringify(args)}`
+    });
+  },
+
+  async generateMemoryAssociation(concept: string, config?: any) {
+    return await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Crie uma associação mnemônica criativa para o conceito: ${concept}`,
+      config
+    });
+  },
+
+  async generateEssaySuggestions(title: string, content: string) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Sugira 3 melhorias específicas para a redação "${title}": ${content}. Retorne um array JSON de strings.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING }
+        }
+      }
+    });
+    return JSON.parse(text);
+  },
+
+  async generateContent(prompt: string, config?: any) {
+    return await generateAIContent({
+      prompt,
+      config
+    });
   },
 
   async generateExamPlan(examName: string, subjects: string[], date: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Crie um plano de estudo estratégico para o exame "${examName}" que ocorrerá em ${date}. 
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Crie um plano de estudo estratégico para o exame "${examName}" que ocorrerá em ${date}. 
       As matérias cobradas são: [${subjects.join(', ')}]. 
       Gere um cronograma semanal detalhado até a data da prova, incluindo revisões, simulados e horas por dia.
       Retorne um JSON estruturado por semanas.`,
@@ -672,67 +551,13 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       }
     });
-    return JSON.parse(response.text);
-  },
-
-  async generateImage(prompt: string) {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [{ text: `A highly detailed educational illustration about: ${prompt}. Professional, clean, 4k.` }],
-      },
-    });
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
-      }
-    }
-    return null;
-  },
-
-  async generateAudio(text: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Say clearly and educationally: ${text}` }] }],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Kore' },
-          },
-        },
-      },
-    });
-    return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  },
-
-  async generateMusic(prompt: string) {
-    // Note: This is a stream in reality, but we'll adapt for a simpler call if possible or mock the URL
-    // For now, let's use a placeholder logic or the real one if we can accumulate
-    const response = await ai.models.generateContentStream({
-      model: "lyria-3-clip-preview",
-      contents: `Generate a 30-second background study track: ${prompt}`,
-      config: {
-        responseModalities: [Modality.AUDIO],
-      }
-    });
-    let audioBase64 = "";
-    for await (const chunk of response) {
-      const parts = chunk.candidates?.[0]?.content?.parts;
-      if (!parts) continue;
-      for (const part of parts) {
-        if (part.inlineData?.data) {
-          audioBase64 += part.inlineData.data;
-        }
-      }
-    }
-    return audioBase64;
+    return JSON.parse(text);
   },
 
   async generateSlides(topic: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Gere o conteúdo para 5 slides sobre "${topic}". Retorne um JSON com título e tópicos para cada slide.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere o conteúdo para 5 slides sobre "${topic}". Retorne um JSON com título e tópicos para cada slide.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -748,13 +573,13 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async generateActiveRecall(topic: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Gere 5 perguntas curtas e diretas para praticar Active Recall sobre o tema: "${topic}". Retorne um JSON com as perguntas e as respostas ideais.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere 5 perguntas curtas e diretas para praticar Active Recall sobre o tema: "${topic}". Retorne um JSON com as perguntas e as respostas ideais.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -770,13 +595,13 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async generateInterleavingQuiz(subjects: string[]) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Gere um quiz de múltipla escolha misturando as seguintes matérias: ${subjects.join(', ')}. Gere 2 perguntas para cada matéria, misturadas aleatoriamente. Retorne um JSON.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere um quiz de múltipla escolha misturando as seguintes matérias: ${subjects.join(', ')}. Gere 2 perguntas para cada matéria, misturadas aleatoriamente. Retorne um JSON.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -795,13 +620,13 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async feynmanCorrection(topic: string, explanation: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `O aluno explicou o tópico "${topic}" da seguinte forma: "${explanation}". 
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `O aluno explicou o tópico "${topic}" da seguinte forma: "${explanation}". 
       Use a Técnica de Feynman para avaliar a explicação. Identifique lacunas, simplifique conceitos complexos e dê uma nota de 0 a 10 para a clareza.
       Retorne um JSON estruturado.`,
       config: {
@@ -810,21 +635,21 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
           type: Type.OBJECT,
           properties: {
             score: { type: Type.NUMBER },
-            feedback: { type: Type.STRING, description: "Feedback geral usando a técnica de Feynman" },
-            gaps: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lacunas identificadas na explicação" },
-            simplifications: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Sugestões de simplificação" }
+            feedback: { type: Type.STRING },
+            gaps: { type: Type.ARRAY, items: { type: Type.STRING } },
+            simplifications: { type: Type.ARRAY, items: { type: Type.STRING } }
           },
           required: ["score", "feedback", "gaps", "simplifications"]
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async blurtingComparison(topic: string, studentNotes: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `O aluno fez um "blurting" (escreveu tudo o que lembrava) sobre "${topic}": "${studentNotes}". 
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `O aluno fez um "blurting" (escreveu tudo o que lembrava) sobre "${topic}": "${studentNotes}". 
       Compare com o conteúdo ideal e identifique o que foi lembrado corretamente e o que foi esquecido ou está incorreto.
       Retorne um JSON estruturado.`,
       config: {
@@ -832,21 +657,21 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            feedback: { type: Type.STRING, description: "Análise geral do desempenho" },
-            remembered: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Pontos que o aluno lembrou corretamente" },
-            forgotten: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Pontos importantes que foram esquecidos" }
+            feedback: { type: Type.STRING },
+            remembered: { type: Type.ARRAY, items: { type: Type.STRING } },
+            forgotten: { type: Type.ARRAY, items: { type: Type.STRING } }
           },
           required: ["feedback", "remembered", "forgotten"]
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async evaluateEssay(title: string, content: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Avalie a seguinte redação com o título "${title}": "${content}". 
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Avalie a seguinte redação com o título "${title}": "${content}". 
       Avalie com base nas 5 competências do ENEM (200 pontos cada).
       Retorne um JSON estruturado.`,
       config: {
@@ -874,13 +699,13 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async generateDailyChallenge() {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Gere uma questão de desafio diário para um estudante de alto nível. 
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere uma questão de desafio diário para um estudante de alto nível. 
       A questão deve ser interdisciplinar, desafiadora e de um dos seguintes temas: Matemática, Física, Química, Biologia, História ou Geografia.
       Retorne um JSON estruturado.`,
       config: {
@@ -895,7 +720,7 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
             assunto: { type: Type.STRING },
             pergunta: { type: Type.STRING },
             alternativas: { type: Type.ARRAY, items: { type: Type.STRING } },
-            resposta: { type: Type.NUMBER, description: "Índice da alternativa correta (0-4)" },
+            resposta: { type: Type.NUMBER },
             explicacao: { type: Type.STRING },
             difficulty: { type: Type.STRING, enum: ["Hard"] }
           },
@@ -903,102 +728,73 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async generateMastermindResponse(topic: string, history: any[], persona: 'skeptic' | 'creative' | 'logical') {
     const instructions = {
-      skeptic: "Você é O Cético. Seu papel é questionar tudo, encontrar falhas, riscos e contra-argumentos. Seja crítico, mas construtivo. Use uma linguagem direta e um pouco ácida.",
-      creative: "Você é O Criativo. Seu papel é pensar fora da caixa, sugerir conexões inusitadas, metáforas e aplicações práticas inovadoras. Seja entusiasmado e visionário.",
-      logical: "Você é O Lógico. Seu papel é estruturar o pensamento, definir termos, estabelecer relações de causa e efeito e manter a discussão focada em fatos e dados. Seja analítico e preciso."
+      skeptic: "Você é O Cético. Seu papel é questionar tudo, encontrar falhas, riscos e contra-argumentos. Seja crítico, mas construtivo.",
+      creative: "Você é O Criativo. Seu papel é pensar fora da caixa, sugerir conexões inusitadas e metáforas.",
+      logical: "Você é O Lógico. Seu papel é estruturar o pensamento, definir termos e focar em fatos."
     };
 
     const systemInstruction = `
-      Você faz parte de um Grupo Mastermind de elite. O tópico em discussão é: "${topic}".
-      Sua persona é: ${instructions[persona]}
-      
-      REGRAS:
-      1. Mantenha-se estritamente na sua persona.
-      2. Responda ao que foi dito anteriormente no histórico, se houver.
-      3. Seja conciso (máximo 4 frases).
-      4. Use Markdown para ênfase.
+      Persona: ${instructions[persona]}
+      Tópico: "${topic}"
+      REGRAS: Mantenha-se na persona, seja conciso (max 4 frases).
     `;
 
-    const context = history.map(h => `${h.sender === 'user' ? 'Usuário' : h.sender}: ${h.text}`).join('\n');
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Histórico da Discussão:\n${context}\n\nAgora, como ${persona}, dê sua contribuição:`,
-      config: { systemInstruction }
+    return await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Como ${persona}, dê sua contribuição ao debate.`,
+      history: history.map(h => ({ role: h.sender === 'user' ? 'user' : 'model', parts: h.text })),
+      systemInstruction
     });
-
-    return response.text;
   },
 
   async findSemanticNode(query: string, nodes: any[]) {
     const prompt = `
-      Dada a lista de tópicos de estudo (nós) abaixo e a busca do usuário, identifique qual nó é o mais semanticamente relacionado.
-      Retorne APENAS o ID do nó. Se nenhum for relevante, retorne "null".
-
+      Identifique o ID do nó mais relacionado à busca: "${query}".
       Nós:
       ${nodes.map(n => `- ID: ${n.id}, Label: ${n.label}`).join('\n')}
-
-      Busca: "${query}"
+      Retorne apenas o ID ou 'null'.
     `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: "Você é um assistente de busca semântica. Retorne apenas o ID solicitado ou 'null'."
-      }
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.FAST,
+      prompt,
+      systemInstruction: "Assistente de busca semântica. Retorne apenas o ID ou 'null'."
     });
 
-    const text = response.text.trim().replace(/['"`]/g, '');
-    return text === 'null' ? null : text;
+    const result = text.trim().replace(/['"`]/g, '');
+    return result === 'null' ? null : result;
   },
 
   async forgeConcepts(conceptA: string, conceptB: string) {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: `Fundir os seguintes conceitos: "${conceptA}" e "${conceptB}". 
-      Crie uma "Teoria Híbrida" única que explique um através do outro ou crie algo totalmente novo a partir da intersecção.
-      Retorne um JSON estruturado.`,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Fundir os conceitos: "${conceptA}" e "${conceptB}" em uma nova teoria única.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            theoryName: { type: Type.STRING, description: "Nome da nova teoria híbrida" },
-            synthesis: { type: Type.STRING, description: "Explicação detalhada da fusão" },
-            applications: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Aplicações práticas desta nova visão" },
-            complexity: { type: Type.STRING, enum: ["Low", "Medium", "High", "Transcendental"] }
+            theoryName: { type: Type.STRING },
+            synthesis: { type: Type.STRING },
+            applications: { type: Type.ARRAY, items: { type: Type.STRING } },
+            complexity: { type: Type.STRING, enum: ["Baixa", "Média", "Alta", "Transcendental"] }
           },
           required: ["theoryName", "synthesis", "applications", "complexity"]
         }
       }
     });
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async generateAlchemicalTransmutation(subjectA: string, subjectB: string) {
-    const prompt = `
-      Você é o Alquimista Neural. Sua tarefa é realizar uma "Transmutação Proibida" fundindo dois tópicos de estudo aparentemente não relacionados em um conceito novo, fascinante e "proibido".
-      
-      Tópico A: "${subjectA}"
-      Tópico B: "${subjectB}"
-      
-      Gere um JSON estruturado com:
-      1. title: Um nome épico para o novo conceito híbrido.
-      2. description: Uma explicação de como esses dois mundos se fundem (máximo 3 frases).
-      3. forbiddenKnowledge: Um segredo ou insight profundo que surge dessa fusão.
-      4. flashcards: Um array de 3 objetos { question, answer } que testam o entendimento desse novo conceito.
-      5. dangerLevel: Uma porcentagem de 0 a 100 de "instabilidade cognitiva".
-    `;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Transmutação Alquímica: fundir "${subjectA}" e "${subjectB}".`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -1025,33 +821,14 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
       }
     });
 
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   },
 
   async generateOracleProphecy(name: string, level: number, prestige: number, topSubjects: [string, number][]) {
-    const subjectsStr = topSubjects.map(([s, m]) => `${s} (Maestria: ${m.toFixed(1)}%)`).join(', ');
-    
-    const prompt = `
-      Você é "A Oráculo", uma entidade transcendental que analisa o destino de estudantes.
-      O estudante se chama "${name}", está no Nível ${level} com ${prestige} ciclos de Prestígio Cósmico.
-      Suas maiores afinidades são: ${subjectsStr || 'Ainda em descoberta'}.
-      
-      Gere uma "Profecia do Arquiteto" personalizada e enigmática. A profecia deve:
-      1. Reconhecer o esforço e o nível do estudante.
-      2. Fazer uma previsão poética e filosófica sobre o futuro dele nas áreas de maior afinidade.
-      3. Terminar com uma "Probabilidade de Convergência" (ex: 99.99%) e uma citação filosófica final.
-      
-      Retorne um JSON estruturado:
-      {
-        "prophecy": "A profecia principal (2 a 3 frases de impacto)",
-        "convergenceProbability": "Uma porcentagem (ex: 99.8%)",
-        "finalQuote": "Uma citação filosófica inventada sobre conhecimento e destino"
-      }
-    `;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
+    const subjectsStr = topSubjects.map(([s, m]) => `${s} (${m.toFixed(1)}%)`).join(', ');
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Gere uma profecia para ${name} (Nível ${level}). Afinidades: ${subjectsStr}.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -1066,7 +843,100 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
       }
     });
 
-    return JSON.parse(response.text);
-  }
+    return JSON.parse(text);
+  },
+
+  async generateRoutine(target: string, hours: number, days: string[], level: string) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Crie um cronograma de estudo para ${target}, ${hours}h/dia, nos dias [${days.join(', ')}], nível ${level}.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            target: { type: Type.STRING },
+            weeklyHours: { type: Type.NUMBER },
+            schedule: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  day: { type: Type.STRING },
+                  blocks: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        subject: { type: Type.STRING },
+                        duration: { type: Type.NUMBER },
+                        type: { type: Type.STRING, enum: ["theory", "practice", "review"] }
+                      },
+                      required: ["subject", "duration", "type"]
+                    }
+                  }
+                },
+                required: ["day", "blocks"]
+              }
+            }
+          },
+          required: ["target", "schedule", "weeklyHours"]
+        }
+      }
+    });
+    return JSON.parse(text);
+  },
+
+  async processBrainUpload(textInput: string) {
+    const text = await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: `Digerir o seguinte conhecimento: "${textInput.substring(0, 5000)}"`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            summary: { type: Type.STRING },
+            keyConcepts: { type: Type.ARRAY, items: { type: Type.STRING } },
+            podcastTeaser: { type: Type.STRING },
+            flashcards: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  front: { type: Type.STRING },
+                  back: { type: Type.STRING }
+                },
+                required: ["front", "back"]
+              }
+            }
+          },
+          required: ["summary", "keyConcepts", "podcastTeaser", "flashcards"]
+        }
+      }
+    });
+    return JSON.parse(text);
+  },
+
+  async socraticDebate(topic: string, message: string, history: any[]) {
+    const systemInstruction = `
+      Você é Sócrates. Seu objetivo é questionar as premissas do usuário sobre "${topic}" usando o método socrático.
+      
+      REGRAS DE OURO:
+      1. Seja EXTREMAMENTE conciso. Máximo 2 sentenças curtas por resposta.
+      2. NUNCA dê respostas prontas ou lições.
+      3. Faça EXATAMENTE UMA pergunta provocativa por vez.
+      4. Foque em expor contradições lógicas na argumentação do usuário.
+      5. Estilo minimalista, direto e filosófico.
+    `;
+    
+    return await generateAIContent({
+      model: GEMINI_MODELS.PRO,
+      prompt: message,
+      history: history.map(h => ({ role: h.role === 'user' ? 'user' : 'model', parts: h.text })),
+      systemInstruction
+    });
+  },
 };
+
 

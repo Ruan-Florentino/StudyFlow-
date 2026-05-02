@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { UploadCloud, FileText, Loader2, ChevronLeft, Plus, CheckCircle2 } from 'lucide-react';
 import { aiService } from '../services/aiService';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 import { GlassCard, AnimatedButton } from './UI';
 import Markdown from 'react-markdown';
 

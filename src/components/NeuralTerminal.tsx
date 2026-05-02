@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Terminal as TerminalIcon, ChevronLeft } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const NeuralTerminal = ({ onBack }: { onBack: () => void }) => {
   const [history, setHistory] = useState<string[]>([

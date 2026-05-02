@@ -144,3 +144,12 @@ export const exportToPDF = async (elementId: string, filename: string) => {
     console.error('Error exporting to PDF:', error);
   }
 };
+
+export const calculateDaysLeft = (date: string | undefined) => {
+  if (!date) return null;
+  const today = new Date();
+  const examDate = new Date(date);
+  if (isNaN(examDate.getTime())) return null;
+  const diff = Math.ceil((examDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return diff;
+};

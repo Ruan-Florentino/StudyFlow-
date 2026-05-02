@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, getDocFromServer, Timestamp, addDoc } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase
@@ -8,6 +9,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const googleProvider = new GoogleAuthProvider();
+export const fns = getFunctions(app, 'southamerica-east1');
 
 // Error Handling Spec for Firestore Operations
 export enum OperationType {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Check, Star, Zap } from 'lucide-react';
 import { GlassCard, AnimatedButton } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const PaywallModal = ({ onClose, feature }: { onClose: () => void, feature?: string }) => {
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export const PaywallModal = ({ onClose, feature }: { onClose: () => void, featur
   };
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
+    <div className="absolute inset-0 z-[500] flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

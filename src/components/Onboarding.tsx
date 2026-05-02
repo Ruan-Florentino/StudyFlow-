@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ArrowLeft, Target, Clock, BookOpen, Sparkles } from 'lucide-react';
 import { GlassCard, AnimatedButton } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const Onboarding = ({ onComplete }: { onComplete: () => void }) => {
   const [step, setStep] = useState(1);
@@ -32,7 +32,7 @@ export const Onboarding = ({ onComplete }: { onComplete: () => void }) => {
   const difficultiesList = ['Matemática', 'Português', 'Redação', 'História', 'Geografia', 'Biologia', 'Física', 'Química', 'Inglês'];
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+    <div className="absolute inset-0 z-50 bg-background flex flex-col">
       {/* Progress Bar */}
       <div className="h-1 bg-white/10 w-full relative">
         <motion.div 

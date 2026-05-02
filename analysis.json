@@ -1,0 +1,459 @@
+{
+  "table1": [
+    {
+      "name": "CommandPalette",
+      "start": 164,
+      "end": 267,
+      "linesCount": 104,
+      "stores": [],
+      "services": [],
+      "category": "AUXILIAR"
+    },
+    {
+      "name": "DailyChallenge",
+      "start": 351,
+      "end": 466,
+      "linesCount": 116,
+      "stores": [
+        "dailyChallenge",
+        "setDailyChallenge",
+        "addXP",
+        "addToHistory"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "LearningPath",
+      "start": 467,
+      "end": 568,
+      "linesCount": 102,
+      "stores": [
+        "learningPaths",
+        "setLearningPath",
+        "completeMilestone",
+        "level"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "BossBattle",
+      "start": 569,
+      "end": 706,
+      "linesCount": 138,
+      "stores": [
+        "currentBossBattle",
+        "endBossBattle",
+        "addXP"
+      ],
+      "services": [],
+      "category": "FEATURE"
+    },
+    {
+      "name": "VideoSummarizer",
+      "start": 707,
+      "end": 834,
+      "linesCount": 128,
+      "stores": [
+        "addFlashcard",
+        "addXP"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "SkillTree",
+      "start": 835,
+      "end": 934,
+      "linesCount": 100,
+      "stores": [
+        "mastery",
+        "startBossBattle"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "Dashboard",
+      "start": 935,
+      "end": 1686,
+      "linesCount": 752,
+      "stores": [
+        "setState",
+        "name",
+        "profilePic",
+        "streak",
+        "xp",
+        "level",
+        "sessions",
+        "history",
+        "exams",
+        "league",
+        "dailyXP",
+        "routine",
+        "dailyGoalMinutes",
+        "smartRecommendation",
+        "setSmartRecommendation",
+        "neuralSync"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "CORE"
+    },
+    {
+      "name": "TypingText",
+      "start": 1687,
+      "end": 1719,
+      "linesCount": 33,
+      "stores": [],
+      "services": [],
+      "category": "AUXILIAR"
+    },
+    {
+      "name": "AIChat",
+      "start": 1720,
+      "end": 2053,
+      "linesCount": 334,
+      "stores": [
+        "getState",
+        "chatHistory",
+        "addChatMessage",
+        "addFlashcard",
+        "addNote",
+        "setRoutine"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "CORE"
+    },
+    {
+      "name": "AIPlanView",
+      "start": 2054,
+      "end": 2173,
+      "linesCount": 120,
+      "stores": [
+        "getState",
+        "setRoutine"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "SimuladoView",
+      "start": 2174,
+      "end": 2541,
+      "linesCount": 368,
+      "stores": [
+        "addToHistory",
+        "addXP",
+        "addNote"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "Exams",
+      "start": 2542,
+      "end": 2731,
+      "linesCount": 190,
+      "stores": [
+        "exams",
+        "favoriteExams",
+        "toggleFavoriteExam"
+      ],
+      "services": [],
+      "category": "FEATURE"
+    },
+    {
+      "name": "MindMapScreen",
+      "start": 2732,
+      "end": 2838,
+      "linesCount": 107,
+      "stores": [
+        "addMindMap",
+        "mindMaps"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "SlidesView",
+      "start": 2839,
+      "end": 2943,
+      "linesCount": 105,
+      "stores": [],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "ActiveRecallScreen",
+      "start": 2944,
+      "end": 3042,
+      "linesCount": 99,
+      "stores": [],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "InterleavingScreen",
+      "start": 3043,
+      "end": 3198,
+      "linesCount": 156,
+      "stores": [],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "FeynmanMethod",
+      "start": 3199,
+      "end": 3328,
+      "linesCount": 130,
+      "stores": [],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "BlurtingMethod",
+      "start": 3329,
+      "end": 3447,
+      "linesCount": 119,
+      "stores": [],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "AnkiSystem",
+      "start": 3448,
+      "end": 3800,
+      "linesCount": 353,
+      "stores": [
+        "getState",
+        "decks",
+        "flashcards",
+        "addDeck",
+        "addFlashcard",
+        "reviewFlashcard"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "CORE"
+    },
+    {
+      "name": "Heatmap",
+      "start": 3801,
+      "end": 3839,
+      "linesCount": 39,
+      "stores": [],
+      "services": [],
+      "category": "FEATURE"
+    },
+    {
+      "name": "Reports",
+      "start": 3840,
+      "end": 4468,
+      "linesCount": 629,
+      "stores": [
+        "history",
+        "xp",
+        "streak",
+        "themeColor",
+        "trackFeature"
+      ],
+      "services": [],
+      "category": "CORE"
+    },
+    {
+      "name": "XPGain",
+      "start": 4469,
+      "end": 4485,
+      "linesCount": 17,
+      "stores": [],
+      "services": [],
+      "category": "FEATURE"
+    },
+    {
+      "name": "InlineQuestionCard",
+      "start": 4486,
+      "end": 4718,
+      "linesCount": 233,
+      "stores": [
+        "addXP",
+        "addToHistory",
+        "toggleFavorite",
+        "favorites",
+        "reviewLater",
+        "toggleReviewLater",
+        "updateMastery"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "AUXILIAR"
+    },
+    {
+      "name": "Questions",
+      "start": 4719,
+      "end": 6038,
+      "linesCount": 1320,
+      "stores": [
+        "getState",
+        "setState",
+        "addXP",
+        "addToHistory",
+        "toggleFavorite",
+        "favorites",
+        "history",
+        "reviewLater",
+        "toggleReviewLater",
+        "updateMastery"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "CORE"
+    },
+    {
+      "name": "Profile",
+      "start": 6063,
+      "end": 6438,
+      "linesCount": 376,
+      "stores": [
+        "getState",
+        "name",
+        "bio",
+        "profilePic",
+        "coverPic",
+        "xp",
+        "level",
+        "streak",
+        "league",
+        "setName",
+        "setBio",
+        "setProfilePic",
+        "setCoverPic",
+        "history",
+        "sessions",
+        "featureUsage",
+        "plan",
+        "setThemeColor",
+        "themeColor"
+      ],
+      "services": [],
+      "category": "CORE"
+    },
+    {
+      "name": "NotesView",
+      "start": 6439,
+      "end": 6651,
+      "linesCount": 213,
+      "stores": [
+        "notes",
+        "addFlashcard",
+        "addDeck",
+        "decks"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "FloatingAITutor",
+      "start": 6652,
+      "end": 6814,
+      "linesCount": 163,
+      "stores": [
+        "getState",
+        "themeColor",
+        "voiceEnabled",
+        "toggleVoice"
+      ],
+      "services": [
+        "aiService"
+      ],
+      "category": "FEATURE"
+    },
+    {
+      "name": "App",
+      "start": 6855,
+      "end": 7208,
+      "linesCount": 354,
+      "stores": [
+        "getState",
+        "hasCompletedOnboarding",
+        "checkStreak",
+        "themeColor",
+        "setName",
+        "addXP",
+        "updateMastery",
+        "currentBossBattle",
+        "studyRooms"
+      ],
+      "services": [],
+      "category": "AUXILIAR"
+    }
+  ],
+  "table2": [
+    {
+      "name": "StudyMethods",
+      "start": 268,
+      "end": 350,
+      "linesCount": 83,
+      "stores": [],
+      "services": [],
+      "category": "EASTER_EGG"
+    }
+  ],
+  "table3": [
+    {
+      "name": "AppBlockerOverlay",
+      "start": 6039,
+      "end": 6062,
+      "linesCount": 24,
+      "stores": [],
+      "services": [],
+      "category": "MODAL"
+    },
+    {
+      "name": "LevelUpModal",
+      "start": 6815,
+      "end": 6854,
+      "linesCount": 40,
+      "stores": [
+        "levelUpData",
+        "clearLevelUp",
+        "themeColor"
+      ],
+      "services": [],
+      "category": "MODAL"
+    }
+  ]
+}

@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skull, AlertTriangle, ChevronLeft, Zap, RotateCcw } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
-import { ALL_QUESTIONS } from '../data/questions';
-import { useStore } from '../store/useStore';
+import { useAllQuestions } from '../hooks/useQuestions';
+import { QuestionsLoadingSkeleton } from './shared/QuestionsLoadingSkeleton';
+import { QuestionsLoadError } from './shared/QuestionsLoadError';
+import { useStore } from '../store';
 import { playSuccessSound } from '../lib/studyUtils';
 
 export const Singularity = ({ onBack }: { onBack: () => void }) => {
+  const { questions: ALL_QUESTIONS, loading: qLoading, error: qError } = useAllQuestions();
+  
   const [isActive, setIsActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
@@ -24,6 +28,7 @@ export const Singularity = ({ onBack }: { onBack: () => void }) => {
   };
 
   const nextQuestion = () => {
+    if (!ALL_QUESTIONS) return;
     const q = ALL_QUESTIONS[Math.floor(Math.random() * ALL_QUESTIONS.length)];
     setCurrentQuestion(q);
   };
@@ -58,6 +63,9 @@ export const Singularity = ({ onBack }: { onBack: () => void }) => {
       nextQuestion();
     }
   };
+
+  if (qLoading) return <GlassCard className="w-full max-w-4xl mx-auto mt-10 min-h-[400px]"><QuestionsLoadingSkeleton /></GlassCard>;
+  if (qError) return <GlassCard className="w-full max-w-4xl mx-auto mt-10 min-h-[400px]"><QuestionsLoadError error={qError} /></GlassCard>;
 
   return (
     <div className={cn("p-6 space-y-8 pb-32 min-h-screen transition-colors duration-300", isActive ? "bg-red-950/20" : "bg-black")}>

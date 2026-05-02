@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Cpu, Zap, Activity, ChevronLeft, Lock, Unlock, Network } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 const IMPLANTS = [
   { id: 'cortex', name: 'Overclock Pré-Frontal', desc: 'Aumenta a capacidade de foco profundo em 300%.', reqLevel: 2, icon: Cpu, color: 'text-pink-500', bg: 'bg-pink-500/20', pos: 'top-10 left-1/2 -translate-x-1/2' },

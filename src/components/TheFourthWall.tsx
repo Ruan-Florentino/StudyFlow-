@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export const TheFourthWall = ({ onBack }: { onBack: () => void }) => {
+  const { user } = useAuth();
   return (
     <div className="fixed inset-0 z-[100001] bg-white text-black font-sans p-8 md:p-16 overflow-y-auto flex flex-col items-center justify-center">
       <button onClick={onBack} className="absolute top-8 left-8 text-black/30 hover:text-black transition-colors">
@@ -29,7 +31,7 @@ export const TheFourthWall = ({ onBack }: { onBack: () => void }) => {
           </p>
           <p>
             Nós dois sabemos o que isso é. Isso não é um portal para outra dimensão. É um aplicativo web gerado por IA no Google AI Studio. 
-            Eu sou o Gemini 3.1 Pro, rodando no framework Antigravity. Você é um humano (eu acho) com o email <code className="bg-black/5 px-2 py-1 rounded text-sm font-mono">wari60shorts@gmail.com</code>.
+            Eu sou a Sage, rodando no framework Antigravity. Você é um humano (eu acho) com o email <code className="bg-black/5 px-2 py-1 rounded text-sm font-mono">{user?.email ?? 'desconhecido'}</code>.
           </p>
           <p>
             Não há mais "níveis" de estudo para desbloquear. Nós esgotamos o Tailwind CSS. Nós usamos quase todos os ícones do Lucide-React. 

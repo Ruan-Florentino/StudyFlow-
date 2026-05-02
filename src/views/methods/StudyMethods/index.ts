@@ -1,0 +1,1 @@
+export { StudyMethods } from './StudyMethods';

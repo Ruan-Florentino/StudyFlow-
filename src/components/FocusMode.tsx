@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Play, Pause, RotateCcw, Volume2, VolumeX, Coffee, Brain, Zap } from 'lucide-react';
-import { useStore } from '../store/useStore';
-import { GlassCard, Badge, cn } from './UI';
+import { useStore } from '../store';
+import { GlassCard, Badge, cn, Header } from './UI';
 import clsx from 'clsx';
 import { playSuccessSound, triggerConfetti } from '../lib/studyUtils';
 
@@ -133,25 +133,30 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </div>
       )}
 
-      <header className="w-full flex justify-between items-center mb-4 relative z-10">
-        <button onClick={onBack} className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-          <ChevronLeft size={20} />
-        </button>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setZenMode(!zenMode)}
-            className={cn(
-              "px-3 py-1 rounded-full text-[10px] font-premium-mono font-bold uppercase tracking-widest border transition-all",
-              zenMode ? "bg-primary text-black border-primary" : "bg-white/5 border-white/10 text-text-secondary"
-            )}
-          >
-            Zen Mode
-          </button>
-          <Badge variant={isAppBlockerActive ? 'primary' : 'warning'}>
-            {isAppBlockerActive ? 'Blocker Ativo' : 'Blocker Inativo'}
-          </Badge>
-        </div>
-      </header>
+      <Header 
+        title="Foco Profundo" 
+        subtitle="ESTADO ZEN"
+        icon={mode === 'work' ? Zap : Coffee} 
+        color={mode === 'work' ? 'primary' : 'blue'}
+        onBack={onBack}
+        className="w-full relative z-10"
+        rightContent={
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setZenMode(!zenMode)}
+              className={cn(
+                "px-3 py-1 rounded-full text-[10px] font-premium-mono font-bold uppercase tracking-widest border transition-all",
+                zenMode ? "bg-primary text-black border-primary shadow-[0_0_10px_rgba(0,232,143,0.3)]" : "bg-white/5 border-white/10 text-text-secondary hover:bg-white/10"
+              )}
+            >
+              Zen Mode
+            </button>
+            <Badge variant={isAppBlockerActive ? 'primary' : 'secondary'} className={cn(isAppBlockerActive && "shadow-[0_0_10px_rgba(0,232,143,0.3)]")}>
+              {isAppBlockerActive ? 'Blocker ON' : 'Blocker OFF'}
+            </Badge>
+          </div>
+        }
+      />
 
       {ambientSound && (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
@@ -215,33 +220,38 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-6 relative z-10">
-        <button 
-          onClick={resetTimer}
-          className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-white hover:bg-white/10 transition-all"
-        >
-          <RotateCcw size={24} />
-        </button>
+      <div className="flex flex-col items-center gap-6 relative z-10 w-full max-w-sm">
+        <div className="flex items-center justify-between w-full gap-4">
+          <button 
+            onClick={resetTimer}
+            className="flex-1 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 text-text-secondary hover:text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest text-[10px]"
+          >
+            <RotateCcw size={18} strokeWidth={2} />
+            Reiniciar
+          </button>
+
+          <button 
+            onClick={() => setAmbientSound(!ambientSound)}
+            className={clsx(
+              "flex-1 h-14 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold uppercase tracking-widest text-[10px]",
+              ambientSound ? "bg-primary/20 border-primary/50 text-primary" : "bg-white/5 border-white/10 text-text-secondary hover:text-white hover:bg-white/10"
+            )}
+            title="Tocar Lofi"
+          >
+            {ambientSound ? <Volume2 size={18} strokeWidth={2} /> : <VolumeX size={18} strokeWidth={2} />}
+            {ambientSound ? 'Som Ativo' : 'Som Inativo'}
+          </button>
+        </div>
         
         <button 
           onClick={handleToggle}
           className={clsx(
-            "w-20 h-20 rounded-3xl flex items-center justify-center transition-all shadow-[0_0_30px_rgba(0,255,148,0.3)]",
-            isActive ? "bg-red-500 text-white shadow-red-500/30" : "bg-primary text-black"
+            "w-full h-16 rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer font-bold uppercase tracking-widest text-sm shadow-[0_0_30px_rgba(0,232,143,0.3)] hover:scale-[1.02] active:scale-[0.98]",
+            isActive ? "bg-red-500 text-white shadow-red-500/30 font-bold" : "bg-primary text-black"
           )}
         >
-          {isActive ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-2" />}
-        </button>
-
-        <button 
-          onClick={() => setAmbientSound(!ambientSound)}
-          className={clsx(
-            "w-14 h-14 rounded-2xl border flex items-center justify-center transition-all",
-            ambientSound ? "bg-primary/20 border-primary/50 text-primary" : "bg-white/5 border-white/10 text-text-secondary hover:text-white hover:bg-white/10"
-          )}
-          title="Tocar Lofi"
-        >
-          {ambientSound ? <Volume2 size={24} /> : <VolumeX size={24} />}
+          {isActive ? <Pause size={20} strokeWidth={2} fill="currentColor" /> : <Play size={20} strokeWidth={2} fill="currentColor" />}
+          {isActive ? 'Pausar Foco' : 'Iniciar Foco'}
         </button>
       </div>
 

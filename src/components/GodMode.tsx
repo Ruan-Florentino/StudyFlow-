@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Eye, Brain, Zap, Activity, Shield, ChevronLeft, Lock } from 'lucide-react';
 import { GlassCard, AnimatedButton, ProgressRing, cn } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const GodMode = ({ onBack }: { onBack: () => void }) => {
   const { level, xp, streak, mastery, neuralSync } = useStore();

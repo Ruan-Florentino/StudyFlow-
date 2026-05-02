@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ChevronLeft, AlertTriangle } from 'lucide-react';
 import { AnimatedButton, GlassCard } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const CosmicPrestige = ({ onBack }: { onBack: () => void }) => {
   const { level, prestigeLevel, prestige } = useStore();

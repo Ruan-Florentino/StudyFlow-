@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Download, ChevronLeft, Cpu, CheckCircle2 } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 const SUBJECTS = [
   'Física Quântica', 'Direito Constitucional', 'Neurociência Aplicada', 

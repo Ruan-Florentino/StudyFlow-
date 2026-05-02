@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Calendar, Clock, BookOpen, Target, Zap, CheckCircle2, Brain } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 import { GlassCard, Badge } from './UI';
 import { aiService } from '../services/aiService';
 import clsx from 'clsx';

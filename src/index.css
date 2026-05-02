@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:wght@300;400;500;600;700;800;900&family=Anton&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -8,10 +8,10 @@
   --font-premium-title: "Outfit", sans-serif;
   --font-premium-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   --font-premium-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Cormorant Garamond", serif;
-  --font-anton: "Anton", sans-serif;
-  --font-accent: "Montserrat", sans-serif;
-  --font-tech: "Space Grotesk", sans-serif;
+  --font-serif: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-anton: "Outfit", sans-serif;
+  --font-accent: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-tech: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --color-primary: var(--theme-primary, #00E88F);
   --color-primary-glow: var(--theme-primary-glow, rgba(0, 232, 143, 0.05));
@@ -140,6 +140,33 @@
   }
 }
 
+@keyframes neon-pulse {
+  0%, 100% { filter: drop-shadow(0 0 2px var(--color)); opacity: 0.8; }
+  50% { filter: drop-shadow(0 0 10px var(--color)); opacity: 1; }
+}
+
+@keyframes icon-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes animate-flicker {
+  0% { opacity: 0.8; }
+  10% { opacity: 0.4; }
+  15% { opacity: 0.9; }
+  25% { opacity: 0.3; }
+  30% { opacity: 1; }
+  70% { opacity: 0.9; }
+  72% { opacity: 0.2; }
+  77% { opacity: 0.9; }
+  100% { opacity: 0.8; }
+}
+
+.neon-pulse { animation: neon-pulse 2s ease-in-out infinite; }
+.icon-float { animation: icon-float 3s ease-in-out infinite; }
+.animate-spin-slow { animation: spin 8s linear infinite; }
+.animate-flicker { animation: animate-flicker 2s linear infinite; }
+
 @keyframes scanline {
   0% {
     transform: translateY(-100%);
@@ -178,4 +205,28 @@
   --tw-prose-pre-bg: rgba(20, 20, 20, 0.8);
   --tw-prose-th-borders: rgba(255, 255, 255, 0.08);
   --tw-prose-td-borders: rgba(255, 255, 255, 0.08);
+}
+
+/* Esconde scrollbar em horizontal scrolls */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Background do "fora do app" quando em desktop */
+html, body {
+  background: #000;
+  overscroll-behavior: none;
+}
+
+/* Suaviza o liquid glass em Safari */
+@supports (backdrop-filter: blur(1px)) {
+  .liquid-glass {
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+  }
+}
+
+
+/* Remove tap highlight azul chato do mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
 }

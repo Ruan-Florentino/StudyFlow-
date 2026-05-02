@@ -1,0 +1,322 @@
+[
+  {
+    "name": "CommandPalette",
+    "start": 164,
+    "end": 266,
+    "length": 103,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "StudyMethods",
+    "start": 268,
+    "end": 349,
+    "length": 82,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "DailyChallenge",
+    "start": 351,
+    "end": 465,
+    "length": 115,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "LearningPath",
+    "start": 467,
+    "end": 567,
+    "length": 101,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "BossBattle",
+    "start": 569,
+    "end": 705,
+    "length": 137,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "VideoSummarizer",
+    "start": 707,
+    "end": 833,
+    "length": 127,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "SkillTree",
+    "start": 835,
+    "end": 933,
+    "length": 99,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "Dashboard",
+    "start": 935,
+    "end": 1685,
+    "length": 751,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "TypingText",
+    "start": 1687,
+    "end": 1718,
+    "length": 32,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "AIChat",
+    "start": 1720,
+    "end": 2037,
+    "length": 318,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "SUBJECTS",
+    "start": 2039,
+    "end": 2052,
+    "length": 14,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "AIPlanView",
+    "start": 2054,
+    "end": 2172,
+    "length": 119,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "SimuladoView",
+    "start": 2174,
+    "end": 2540,
+    "length": 367,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "Exams",
+    "start": 2542,
+    "end": 2730,
+    "length": 189,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "MindMapScreen",
+    "start": 2732,
+    "end": 2837,
+    "length": 106,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "SlidesView",
+    "start": 2839,
+    "end": 2942,
+    "length": 104,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "ActiveRecallScreen",
+    "start": 2944,
+    "end": 3041,
+    "length": 98,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "InterleavingScreen",
+    "start": 3043,
+    "end": 3197,
+    "length": 155,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "FeynmanMethod",
+    "start": 3199,
+    "end": 3327,
+    "length": 129,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "BlurtingMethod",
+    "start": 3329,
+    "end": 3446,
+    "length": 118,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "AnkiSystem",
+    "start": 3448,
+    "end": 3799,
+    "length": 352,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "Heatmap",
+    "start": 3801,
+    "end": 3838,
+    "length": 38,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "Reports",
+    "start": 3840,
+    "end": 4467,
+    "length": 628,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "XPGain",
+    "start": 4469,
+    "end": 4484,
+    "length": 16,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "InlineQuestionCard",
+    "start": 4486,
+    "end": 4717,
+    "length": 232,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "Questions",
+    "start": 4719,
+    "end": 6037,
+    "length": 1319,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "AppBlockerOverlay",
+    "start": 6039,
+    "end": 6061,
+    "length": 23,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "Profile",
+    "start": 6063,
+    "end": 6437,
+    "length": 375,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "NotesView",
+    "start": 6439,
+    "end": 6650,
+    "length": 212,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "FloatingAITutor",
+    "start": 6652,
+    "end": 6813,
+    "length": 162,
+    "stores": [],
+    "hasAiService": true,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "LevelUpModal",
+    "start": 6815,
+    "end": 6853,
+    "length": 39,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  },
+  {
+    "name": "App",
+    "start": 6855,
+    "end": 7208,
+    "length": 354,
+    "stores": [],
+    "hasAiService": false,
+    "hasSetCurrentView": false,
+    "isEasterEgg": false
+  }
+]

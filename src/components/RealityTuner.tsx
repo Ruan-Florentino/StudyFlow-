@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Sliders, Zap, Eye, Wind, Sun } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const RealityTuner = ({ onBack }: { onBack: () => void }) => {
   const { themeColor, setThemeColor } = useStore();

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { PenTool, FileText, Bookmark, ChevronLeft, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
-import { GlassCard } from './UI';
-import { useStore } from '../store/useStore';
+import { PenTool, FileText, Bookmark, ChevronLeft, Sparkles, CheckCircle2, AlertCircle, Bot } from 'lucide-react';
+import { GlassCard, Header, IconTile } from './UI';
+import { useStore } from '../store';
 import { aiService } from '../services/aiService';
 import { exportToPDF } from '../lib/studyUtils';
 import clsx from 'clsx';
+import { useAIUI } from '../hooks/useAIUI';
 
 const PROPOSTAS = [
   { tema: "Desafios para a formação educacional de surdos no Brasil", ano: "ENEM 2017" },
@@ -42,6 +43,7 @@ const PROPOSTAS = [
 
 export const Redacao = ({ onBack }: { onBack: () => void }) => {
   const { essays, savedTopics, addEssay, toggleSavedTopic, essayCoPilot, toggleEssayCoPilot, addEssaySuggestion, clearEssaySuggestions } = useStore();
+  const { openChat } = useAIUI();
   const [view, setView] = useState<'home' | 'write' | 'history' | 'saved'>('home');
   const [selectedProposta, setSelectedProposta] = useState<string | null>(null);
   const [essayText, setEssayText] = useState('');
@@ -131,24 +133,26 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
   if (view === 'write' && selectedProposta) {
     return (
       <div className="p-6 space-y-6 pb-32 h-full flex flex-col">
-        <header className="flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-4">
-            <button onClick={() => { setView('home'); setEvaluation(null); setEssayText(''); }} className="p-2 bg-white/5 rounded-xl border border-white/10">
-              <ChevronLeft size={20} />
+        <Header 
+          title="Escrever"
+          subtitle="Redação"
+          icon={PenTool}
+          color="rose"
+          onBack={() => { setView('home'); setEvaluation(null); setEssayText(''); }}
+          className="shrink-0 mb-2"
+          rightContent={
+            <button 
+              onClick={toggleEssayCoPilot}
+              className={clsx(
+                "p-2 rounded-xl border transition-all flex items-center gap-2",
+                essayCoPilot.enabled ? "bg-primary/10 border-primary/30 text-primary shadow-[0_0_10px_rgba(0,232,143,0.2)]" : "bg-white/5 border-white/10 text-text-secondary"
+              )}
+            >
+              <Sparkles size={16} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Co-Pilot</span>
             </button>
-            <h2 className="text-xl font-premium-title italic">ESCREVER<span className="text-primary font-normal not-italic ml-2 text-sm tracking-widest uppercase opacity-50">Redação</span></h2>
-          </div>
-          <button 
-            onClick={toggleEssayCoPilot}
-            className={clsx(
-              "p-2 rounded-xl border transition-all flex items-center gap-2",
-              essayCoPilot.enabled ? "bg-primary/10 border-primary/30 text-primary" : "bg-white/5 border-white/10 text-text-secondary"
-            )}
-          >
-            <Sparkles size={16} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Co-pilot</span>
-          </button>
-        </header>
+          }
+        />
 
         <GlassCard className="p-4 border-white/5 shrink-0">
           <p className="text-[10px] font-premium-mono text-text-secondary uppercase tracking-widest mb-1">Tema Proposto</p>
@@ -278,12 +282,22 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
 
   return (
     <div className="p-6 space-y-8 pb-32">
-      <header className="flex items-center gap-4">
-        <button onClick={onBack} className="p-2 bg-white/5 rounded-xl border border-white/10">
-          <ChevronLeft size={20} />
-        </button>
-        <h2 className="text-2xl font-premium-title italic">REDAÇÃO<span className="text-primary font-normal not-italic ml-2 text-sm tracking-widest uppercase opacity-50">Treino</span></h2>
-      </header>
+      <Header 
+        title="Redação"
+        subtitle="Treino"
+        icon={PenTool}
+        color="rose"
+        onBack={onBack}
+        rightContent={
+          <button 
+            onClick={() => openChat('CORRETOR_REDACAO')}
+            className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+          >
+            <Bot size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">IA Corretora</span>
+          </button>
+        }
+      />
 
       <div className="grid grid-cols-3 gap-3">
         <button 

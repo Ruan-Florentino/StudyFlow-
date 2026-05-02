@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Plus, Brain, Map as MapIcon, Sparkles, Trash2 } from 'lucide-react';
 import { GlassCard, AnimatedButton } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 import { aiService } from '../services/aiService';
 
 export const MemoryPalace = ({ onBack }: { onBack: () => void }) => {

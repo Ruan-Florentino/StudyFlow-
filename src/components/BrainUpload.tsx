@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { UploadCloud, Brain, Zap, FileText, Headphones, CheckCircle2, ChevronLeft, Play } from 'lucide-react';
 import { GlassCard, AnimatedButton, cn } from './UI';
 import { aiService } from '../services/aiService';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const BrainUpload = ({ onBack }: { onBack: () => void }) => {
   const [text, setText] = useState('');

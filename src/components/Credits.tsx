@@ -29,7 +29,7 @@ export const Credits = ({ onBack }: { onBack: () => void }) => {
             
             <div>
               <h2 className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Motor de Gênese</h2>
-              <p className="text-xl font-serif">Google Gemini</p>
+              <p className="text-xl font-serif">Sage (StudyFlow IA)</p>
             </div>
 
             <div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePlan } from '../store/useStore';
+import { usePlan } from '../store';
 import { PaywallModal } from './PaywallModal';
 
 export const PremiumGate = ({ 
@@ -7,7 +7,7 @@ export const PremiumGate = ({
   children, 
   fallback 
 }: { 
-  feature: 'flashcards' | 'aiTutor' | 'essay' | 'exams' | 'streakProtector'; 
+  feature: 'flashcards' | 'aiTutor' | 'essay' | 'exams'; 
   children: React.ReactNode; 
   fallback?: React.ReactNode;
 }) => {

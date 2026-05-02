@@ -44,7 +44,7 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() &&
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          (request.auth.token.email == "wari60shorts@gmail.com" && request.auth.token.email_verified == true));
+          request.auth.token.admin == true);
     }
 
     function hasRequiredFields(fields) {
@@ -124,7 +124,8 @@ service cloud.firestore {
     function isValidMessage(data) {
       return hasRequiredFields(['role', 'text', 'timestamp']) &&
         data.role in ['user', 'model'] &&
-        isValidString('text', 1, 5000);
+        isValidString('text', 1, 10000) &&
+        (!data.keys().hasAny(['engine']) || data.engine is string);
     }
 
     function isValidHistory(data) {
@@ -133,9 +134,55 @@ service cloud.firestore {
         request.resource.data.isCorrect is bool;
     }
 
+    function isValidChatSession(data) {
+      return request.resource.data.keys().hasAll(['agentId', 'createdAt', 'updatedAt']) &&
+        request.resource.data.agentId is string;
+    }
+
+    function isValidStudyRoom(data) {
+      return hasRequiredFields(['name', 'audio', 'color', 'icon', 'description']) &&
+        isValidString('name', 1, 100) &&
+        isValidString('audio', 1, 200) &&
+        data.color is map &&
+        data.color.primary is string &&
+        isValidString('description', 1, 500);
+    }
+
+    function isValidRoomMessage(data) {
+      return hasRequiredFields(['userId', 'userName', 'text', 'timestamp', 'type']) &&
+        (data.userId == request.auth.uid || data.userId == 'system') &&
+        isValidString('text', 1, 1000) &&
+        data.type in ['text', 'system', 'reaction'];
+    }
+
+    function isValidRoomPresence(data) {
+      return hasRequiredFields(['userId', 'joinedAt', 'lastPing']) &&
+        data.userId == request.auth.uid;
+    }
+
     // ===============================================================
     // Match Rules
     // ===============================================================
+
+    match /studyRooms/{roomId} {
+      allow read: if true;
+      allow create: if isAuthenticated(); // Allow seeding
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && isValidRoomMessage(request.resource.data);
+        allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      }
+
+      match /presence/{userId} {
+        allow read: if isAuthenticated();
+        allow create: if isOwner(userId) && isValidRoomPresence(request.resource.data);
+        allow update: if isOwner(userId) && isValidRoomPresence(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
@@ -155,6 +202,10 @@ service cloud.firestore {
         allow create: if isOwner(userId) && isValidFlashcard(request.resource.data);
         allow update: if isOwner(userId) && isValidFlashcard(request.resource.data);
         allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /aiConversations/{agentId} {
+        allow read, write: if isOwner(userId) || isAdmin();
       }
 
       match /decks/{deckId} {
@@ -178,6 +229,20 @@ service cloud.firestore {
         allow delete: if isOwner(userId) || isAdmin();
       }
 
+      match /chatSessions/{sessionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidChatSession(request.resource.data);
+        allow update: if isOwner(userId) && isValidChatSession(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+
+        match /messages/{messageId} {
+          allow read: if isOwner(userId) || isAdmin();
+          allow create: if isOwner(userId) && isValidMessage(request.resource.data);
+          allow update: if isOwner(userId) && isValidMessage(request.resource.data);
+          allow delete: if isOwner(userId) || isAdmin();
+        }
+      }
+
       match /history/{historyId} {
         allow read: if isOwner(userId) || isAdmin();
         allow create: if isOwner(userId) && isValidHistory(request.resource.data);
@@ -191,6 +256,11 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidUser(request.resource.data);
       allow update: if isOwner(userId) && isValidUser(request.resource.data);
       allow delete: if isAdmin();
+    }
+
+    match /usage/{docId} {
+      allow read: if isAuthenticated() && docId.split('_')[0] == request.auth.uid;
+      allow write: if false;
     }
 
     // Default deny

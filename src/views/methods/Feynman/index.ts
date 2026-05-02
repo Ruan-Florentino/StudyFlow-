@@ -1,0 +1,1 @@
+export { FeynmanMethod } from './FeynmanMethod';

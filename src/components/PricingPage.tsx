@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Check, Star, ArrowLeft } from 'lucide-react';
 import { GlassCard, AnimatedButton, Badge } from './UI';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const PricingPage = ({ onBack }: { onBack: () => void }) => {
   const [loading, setLoading] = useState(false);

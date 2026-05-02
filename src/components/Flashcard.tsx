@@ -4,7 +4,7 @@ import { RotateCw, Check, X, HelpCircle, Zap, Volume2, Loader2, Star } from 'luc
 import { Badge } from './UI';
 import { aiService } from '../services/aiService';
 import { safePlayAudio } from '../lib/studyUtils';
-import { useStore, usePlan } from '../store/useStore';
+import { useStore, usePlan } from '../store';
 import { PaywallModal } from './PaywallModal';
 
 interface FlashcardProps {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, GitCommit, History, Database } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useStore } from '../store';
 
 export const TheArchive = ({ onBack }: { onBack: () => void }) => {
   const { sessions, history, prestigeLevel, xp } = useStore();
