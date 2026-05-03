@@ -96,7 +96,10 @@ export default defineConfig(({mode}) => {
             'vendor-react': ['react', 'react-dom'],
             'vendor-router': ['react-router-dom'],
             'vendor-utils': ['lucide-react', 'framer-motion', 'zustand'],
-          }
+          },
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
         }
       }
     },
