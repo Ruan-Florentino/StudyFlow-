@@ -9,6 +9,11 @@ import { useAIUI } from '../../hooks/useAIUI';
 const QuestionsView = lazy(() => import('../../views/core/QuestionsView').then(m => ({ default: m.default })));
 const ExploreView = lazy(() => import('../../views/core/ExploreView').then(m => ({ default: m.default })));
 const ProfileView = lazy(() => import('../../views/core/ProfileView').then(m => ({ default: m.default })));
+const DadosPessoais = lazy(() => import('../../pages/perfil/DadosPessoais').then(m => ({ default: m.DadosPessoais })));
+const SuportePage = lazy(() => import('../../pages/perfil/Suporte').then(m => ({ default: m.Suporte })));
+const TermosDeUsoPage = lazy(() => import('../../pages/perfil/TermosDeUso').then(m => ({ default: m.TermosDeUso })));
+const PoliticaPrivacidadePage = lazy(() => import('../../pages/perfil/PoliticaPrivacidade').then(m => ({ default: m.PoliticaPrivacidade })));
+const SobrePage = lazy(() => import('../../pages/perfil/Sobre').then(m => ({ default: m.Sobre })));
 const FlashcardsView = lazy(() => import('../../views/core/FlashcardsView').then(m => ({ default: m.default })));
 const StatsView = lazy(() => import('../../views/core/StatsView').then(m => ({ default: m.default })));
 const NotesView = lazy(() => import('../../views/core/NotesView').then(m => ({ default: m.default })));
@@ -79,12 +84,18 @@ export const routes: RouteConfig[] = [
   { path: '/', label: 'Dashboard', Component: DashboardView },
   { path: '/notas', label: 'Notas', Component: NotesView },
   { path: '/upgrade', label: 'Premium', Component: PricingPage },
+  { path: '/premium', label: 'Upgrade Premium', Component: PricingPage },
   { path: '/explorar', label: 'Explorar', Component: ExploreView },
   { path: '/foco', label: 'Focus Mode', Component: FocusMode },
   { path: '/ai', label: 'AI Tutor', Component: AIWrapper },
   { path: '/questoes', label: 'Questões', Component: QuestionsView },
   { path: '/redacao', label: 'Redação', Component: () => <PremiumGate feature="essay"><Redacao onBack={() => {}} /></PremiumGate> },
   { path: '/perfil', label: 'Perfil', Component: ProfileView },
+  { path: '/perfil/dados-pessoais', label: 'Dados Pessoais', Component: DadosPessoais },
+  { path: '/perfil/suporte', label: 'Suporte', Component: SuportePage },
+  { path: '/perfil/termos-de-uso', label: 'Termos de Uso', Component: TermosDeUsoPage },
+  { path: '/perfil/politica-de-privacidade', label: 'Política de Privacidade', Component: PoliticaPrivacidadePage },
+  { path: '/perfil/sobre', label: 'Sobre', Component: SobrePage },
   { path: '/comunidade', label: 'Comunidade', Component: ComunidadePage },
   { path: '/palacio-memoria', label: 'Palácio da Memória', Component: MemoryPalace },
   { path: '/duelo-socratico', label: 'Duelo Socrático', Component: () => <PremiumGate feature="aiTutor"><SocraticDuel onBack={() => {}} /></PremiumGate> },

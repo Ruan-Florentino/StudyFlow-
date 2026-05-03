@@ -179,13 +179,14 @@ export const AnimatedButton = ({
   );
 };
 
-export const GlassCard = ({ children, className, glow = false, onClick, id }: { children: React.ReactNode; className?: string; glow?: boolean; onClick?: () => void; id?: string }) => (
+export const GlassCard = ({ children, className, glow = false, onClick, id, style }: { children: React.ReactNode; className?: string; glow?: boolean; onClick?: () => void; id?: string; style?: React.CSSProperties }) => (
   <motion.div
     id={id}
     initial={{ opacity: 0, scale: 0.98, y: 10 }}
     animate={{ opacity: 1, scale: 1, y: 0 }}
     transition={{ duration: 0.4, ease: "easeOut" }}
     onClick={onClick}
+    style={style}
     className={cn(
       'bg-black/40 backdrop-blur-2xl border border-white/10 p-6 rounded-[24px] relative overflow-hidden transition-all duration-300 hover:border-white/20 hover:bg-black/50', 
       glow && 'shadow-[0_0_30px_rgba(0,232,143,0.1)] border-primary/30', 

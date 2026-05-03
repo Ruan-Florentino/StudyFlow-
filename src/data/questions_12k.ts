@@ -22207,10 +22207,10 @@ export const MORE_QUESTIONS_12K: Question[] = [
       "Apenas a afirmação II se sustenta no caso especial, configurando o limite empírico como 114.",
       "Ambas as afirmações abordam parcialmente o fenômeno teórico, cujo resultado é invariável e aproxima-se de 604.",
       "O pressuposto base leva a concluir que a aplicação resulta num valor escalonado de 564, invalidando ambas as premissas.",
-      "De acordo com os princípios balizadores e evidências registradas previamente, a relação total denota uma constante de 300."
+      "De acordo com os princípios balizadores e evidências registradas previamente, a relação total denota uma constante de 302."
     ],
-    "resposta": 4,
-    "explicacao": "A análise das premissas e a aplicação dos princípios da Filosofia Antiga no contexto da prova ITA levam à compreensão de que o valor escalonado converge para o limite estabelecido na alternativa E.",
+    "resposta": 2,
+    "explicacao": "Análise aprofundada dos conceitos subjacentes.",
     "difficulty": "Medium"
   }
-]
+];

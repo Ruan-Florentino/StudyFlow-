@@ -36,6 +36,7 @@ async function generateAIContent(args: {
   systemInstruction?: string;
   prompt: string;
   history?: { role: 'user' | 'model'; parts: string | any }[];
+  media?: { data: string; mimeType: string }[];
   config?: any;
 }) {
   const selectedModelId = useAIModel.getState().selectedModelId;
@@ -53,15 +54,30 @@ async function generateAIContent(args: {
   systemInstruction = systemInstruction.replace(/Gemini/ig, "Sage");
 
   try {
-    const contents = (args.history || []).map(h => ({
+    const contents: any[] = (args.history || []).map(h => ({
       role: h.role === 'user' ? ('user' as const) : ('model' as const),
       parts: Array.isArray(h.parts) ? h.parts : [{ text: h.parts }]
     }));
 
+    // Build parts for current prompt
+    const currentParts: any[] = [{ text: args.prompt }];
+    
+    // Add media if present
+    if (args.media && args.media.length > 0) {
+      args.media.forEach(m => {
+        currentParts.push({
+          inlineData: {
+            data: m.data,
+            mimeType: m.mimeType
+          }
+        });
+      });
+    }
+
     // Add current prompt
     contents.push({
       role: 'user' as const,
-      parts: [{ text: args.prompt }]
+      parts: currentParts
     });
 
     const response = await ai.models.generateContent({
@@ -234,17 +250,11 @@ export const aiService = {
      const text = await generateAIContent({
       model: GEMINI_MODELS.PRO,
       prompt: `Analise este documento e forneça um resumo estruturado para estudos. Inclua JSON.`,
+      media: [{
+        data: base64Data,
+        mimeType: mimeType
+      }],
       config: {
-        contents: [{
-          parts: [
-            {
-              inlineData: {
-                data: base64Data,
-                mimeType: mimeType
-              }
-            }
-          ]
-        }],
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,

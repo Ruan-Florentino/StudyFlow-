@@ -3,19 +3,22 @@ import { motion } from 'motion/react';
 import { X, Check, Star, Zap } from 'lucide-react';
 import { GlassCard, AnimatedButton } from './UI';
 import { useStore } from '../store';
+import { PAYMENT_CONFIG } from '../config/payment';
+import { toast } from '../store/useToastStore';
 
 export const PaywallModal = ({ onClose, feature }: { onClose: () => void, feature?: string }) => {
   const [loading, setLoading] = useState(false);
-  const { setPlan } = useStore();
+  const planDetails = PAYMENT_CONFIG.premium;
 
   const handleCheckout = () => {
     setLoading(true);
-    // Mock Stripe flow
+    toast.success("Checkout", "Redirecionando para o pagamento seguro...");
+    
     setTimeout(() => {
-      setPlan('premium');
+      window.open(planDetails.mercadoPagoUrl, '_blank');
       setLoading(false);
       onClose();
-    }, 1500);
+    }, 1000);
   };
 
   return (

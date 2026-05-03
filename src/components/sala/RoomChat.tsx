@@ -1,55 +1,101 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Send, Loader2, MessageCircle } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Message {
   id: string;
-  user: string;
-  text: string;
-  timestamp: number;
+  user_id: string;
+  user_name: string;
+  content: string;
   color: string;
+  created_at: string;
 }
 
-const MOCK_MESSAGES: Message[] = [
-  { id: '1', user: 'Marina', text: 'Bom dia, galera 💚', timestamp: Date.now() - 600000, color: '#34d399' },
-  { id: '2', user: 'João',   text: 'Bora estudar!', timestamp: Date.now() - 540000, color: '#38bdf8' },
-  { id: '3', user: 'Ana',    text: 'Alguém tem dica de exercício?', timestamp: Date.now() - 300000, color: '#f472b6' },
-  { id: '4', user: 'Pedro',  text: 'Tem na aba questões 👍', timestamp: Date.now() - 240000, color: '#fbbf24' },
-  { id: '5', user: 'Sofia',  text: 'Esse lofi é viciante kkk', timestamp: Date.now() - 60000, color: '#a78bfa' },
-];
-
 interface RoomChatProps {
+  roomId: string;
   color: string;
   glow: string;
 }
 
-export function RoomChat({ color, glow }: RoomChatProps) {
-  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
+export function RoomChat({ roomId, color, glow }: RoomChatProps) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
+    if (!roomId) return;
+    
+    fetchMessages();
+    
+    // Subscribe to new messages
+    const channel = supabase
+      .channel(`room:${roomId}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'room_messages',
+        filter: `room_id=eq.${roomId}`
+      }, (payload) => {
+        setMessages(prev => [...prev, payload.new as Message]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId]);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
-  
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    const newMsg: Message = {
-      id: Date.now().toString(),
-      user: 'Você',
-      text: input,
-      timestamp: Date.now(),
-      color,
-    };
-    setMessages([...messages, newMsg]);
-    setInput('');
+
+  const fetchMessages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('room_messages')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: true })
+        .limit(50);
+      
+      if (error) throw error;
+      setMessages(data || []);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setLoading(false);
+    }
   };
   
-  const formatTime = (ts: number) => {
-    const diff = Math.floor((Date.now() - ts) / 60000);
-    if (diff < 1) return 'agora';
-    if (diff < 60) return `${diff}m`;
-    return `${Math.floor(diff / 60)}h`;
+  const sendMessage = async () => {
+    if (!input.trim() || !user) return;
+    
+    const content = input;
+    setInput('');
+
+    try {
+      const { error } = await supabase.from('room_messages').insert({
+        room_id: roomId,
+        user_id: user.id,
+        user_name: user.user_metadata?.name || user.email?.split('@')[0] || 'Estudante',
+        content,
+        color
+      });
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Optional: show error to user
+    }
+  };
+  
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
   return (
@@ -65,46 +111,44 @@ export function RoomChat({ color, glow }: RoomChatProps) {
       {/* Lista de mensagens */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-3 space-y-2"
+        className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar"
       >
-        {messages.map((msg) => (
-          <motion.div
-            key={msg.id}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-start gap-2"
-          >
-            {/* Avatar */}
-            <div 
-              className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
-              style={{
-                background: `linear-gradient(135deg, ${msg.color}, rgba(0,0,0,0.3))`,
-                color: '#fff',
-                boxShadow: `0 0 8px ${msg.color}40`,
-              }}
+        {loading ? (
+          <div className="h-full flex flex-col items-center justify-center opacity-30">
+            <Loader2 className="animate-spin mb-2" size={20} />
+            <p className="text-[10px] font-premium-mono tracking-widest uppercase">Sincronizando...</p>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-30">
+            <MessageCircle size={32} className="mb-2" />
+            <p className="text-[10px] font-premium-mono tracking-widest font-bold uppercase">Silêncio Produtivo</p>
+            <p className="text-[10px] mt-1 italic">Mande um "olá" para os outros fifeiros!</p>
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col gap-1"
             >
-              {msg.user.charAt(0)}
-            </div>
-            
-            {/* Mensagem */}
-            <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2">
                 <span 
-                  className="text-[11px] font-bold"
-                  style={{ color: msg.color }}
+                  className="text-[10px] font-bold uppercase"
+                  style={{ color: msg.color || color }}
                 >
-                  {msg.user}
+                  {msg.user_name}
                 </span>
-                <span className="text-[9px] text-white/30">
-                  {formatTime(msg.timestamp)}
+                <span className="text-[8px] text-white/20">
+                  {formatTime(msg.created_at)}
                 </span>
               </div>
-              <p className="text-xs text-white/85 break-words">
-                {msg.text}
+              <p className="text-sm text-white/80 leading-relaxed bg-white/5 p-2 rounded-xl rounded-tl-none border border-white/5">
+                {msg.content}
               </p>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))
+        )}
       </div>
       
       {/* Input */}

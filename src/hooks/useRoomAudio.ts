@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 export type AudioState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
-export function useRoomAudio(audioSrc: string | undefined, fallbackSrc?: string, defaultVolume: number = 0.5) {
+export function useRoomAudio(audioSrc: string | undefined, fallbackSrc?: string, defaultVolume: number = 0.5, roomName: string = 'Study') {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [state, setState] = useState<AudioState>('idle');
   const [volume, setVolumeState] = useState(() => {
@@ -77,13 +77,40 @@ export function useRoomAudio(audioSrc: string | undefined, fallbackSrc?: string,
   const play = useCallback(async () => {
     if (!audioRef.current) return;
     try {
-      await audioRef.current.play();
+      // Ensure AudioContext is resumed if any (not used here but good practice)
+      // For standard HTMLAudioElement, just play()
+      const playPromise = audioRef.current.play();
+      
+      if (playPromise !== undefined) {
+        await playPromise;
+        
+        // Setup Media Session API
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: `${roomName} Ambient`,
+            artist: 'StudyFlow Study Rooms',
+            album: 'StudyFlow Lo-Fi & Ambience',
+            artwork: [
+              { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+              { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+            ]
+          });
+
+          navigator.mediaSession.setActionHandler('play', () => audioRef.current?.play());
+          navigator.mediaSession.setActionHandler('pause', () => audioRef.current?.pause());
+          navigator.mediaSession.setActionHandler('stop', () => {
+            if (audioRef.current) {
+              audioRef.current.pause();
+              audioRef.current.currentTime = 0;
+            }
+          });
+        }
+      }
     } catch (err) {
       console.warn('[useRoomAudio] Autoplay blocked or interrupted', err);
-      // We don't set error here, just keep the state as paused
       setState('paused');
     }
-  }, []);
+  }, [roomName]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();

@@ -18,7 +18,7 @@ export const AudioPlayer = ({ audioUrl, fallbackAudio, defaultVolume = 0.5, room
     toggle,
     toggleMute,
     setVolume
-  } = useRoomAudio(audioUrl, fallbackAudio, defaultVolume);
+  } = useRoomAudio(audioUrl, fallbackAudio, defaultVolume, roomName);
 
   const volumePercent = Math.round((isMuted ? 0 : volume) * 100);
 

@@ -13,12 +13,18 @@ import {
   Sparkles, 
   Bookmark,
   Camera,
-  Upload
+  Upload,
+  Smartphone,
+  Mail,
+  FileText,
+  Lock,
+  Info
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useStore } from '../../store';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { 
   AnimatedButton, 
   GlassCard, 
@@ -56,6 +62,7 @@ const ProfileView = () => {
     setThemeColor, 
     themeColor 
   } = useStore();
+  const { setShowPrompt, isInstalled } = usePWAInstall();
 
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -114,12 +121,15 @@ const ProfileView = () => {
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${type}-${Math.random()}.${fileExt}`;
-      const filePath = `${type}s/${fileName}`;
+      const fileName = `${type}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('profile-assets')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
 
@@ -300,7 +310,7 @@ const ProfileView = () => {
                 <p className="text-[10px] text-text-secondary">Acesse todos os recursos agora.</p>
               </div>
               <AnimatedButton 
-                onClick={() => goTo('/pricing')} 
+                onClick={() => goTo('/premium')} 
                 className="px-4 py-2 text-[10px] font-bold uppercase bg-primary text-black border-primary"
                 glow
               >
@@ -438,6 +448,21 @@ const ProfileView = () => {
                 ))}
               </div>
             </GlassCard>
+            
+            {!isInstalled && (
+              <GlassCard 
+                className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors" 
+                onClick={() => setShowPrompt(true)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-xl text-white">
+                    <Smartphone size={20} className="text-primary" />
+                  </div>
+                  <span className="font-bold">Instalar como App</span>
+                </div>
+                <ChevronRight size={16} className="text-white/20" />
+              </GlassCard>
+            )}
 
             <GlassCard className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors" onClick={() => {
               const state = useStore.getState();
@@ -458,6 +483,30 @@ const ProfileView = () => {
               </div>
               <ChevronRight size={16} className="text-white/20" />
             </GlassCard>
+            
+            <div className="pt-6 space-y-3">
+              <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Legal e Suporte</h3>
+              {[
+                { label: 'Suporte Oficial', icon: Mail, path: '/perfil/suporte' },
+                { label: 'Termos de Uso', icon: FileText, path: '/perfil/termos-de-uso' },
+                { label: 'Política de Privacidade', icon: Lock, path: '/perfil/politica-de-privacidade' },
+                { label: 'Sobre o StudyFlow', icon: Info, path: '/perfil/sobre' },
+              ].map((item, i) => (
+                <GlassCard 
+                  key={i}
+                  className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors"
+                  onClick={() => goTo(item.path)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/5 rounded-xl text-white">
+                      <item.icon size={20} className="text-primary" />
+                    </div>
+                    <span className="font-bold">{item.label}</span>
+                  </div>
+                  <ChevronRight size={16} className="text-white/20" />
+                </GlassCard>
+              ))}
+            </div>
           </div>
         </div>
       </div>

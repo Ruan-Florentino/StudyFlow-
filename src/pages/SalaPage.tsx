@@ -1,13 +1,10 @@
-import { motion } from 'framer-motion';
-import { ArrowLeft, Users, MessageCircle } from 'lucide-react';
+import { motion } from 'motion/react';
+import { ArrowLeft, Users, MessageCircle, Music } from 'lucide-react';
 import { LofiPlayer } from '../components/sala/LofiPlayer';
 import { RoomChat } from '../components/sala/RoomChat';
 import { SUBJECTS } from './ComunidadePage';
-
-const MOCK_PEOPLE = [
-  'Marina', 'João', 'Ana', 'Pedro', 'Sofia', 'Carlos',
-  'Julia', 'Lucas', 'Beatriz', 'Rafael', 'Camila', 'Bruno',
-];
+import { GlassCard } from '../components/UI';
+import { useAuth } from '../contexts/AuthContext';
 
 const PERSON_COLORS = [
   '#fbbf24', '#a78bfa', '#34d399', '#38bdf8',
@@ -15,6 +12,7 @@ const PERSON_COLORS = [
 ];
 
 export function SalaPage({ roomId, onLeave }: { roomId: string, onLeave: () => void }) {
+  const { user } = useAuth();
   const subject = SUBJECTS.find(s => s.id === roomId) || SUBJECTS[0];
   
   return (
@@ -92,74 +90,51 @@ export function SalaPage({ roomId, onLeave }: { roomId: string, onLeave: () => v
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Users size={12} style={{ color: subject.color }} />
+              <Users size={14} className="text-pink-400" />
               <span className="text-[10px] uppercase tracking-widest text-white/60 font-bold">
-                Estudando agora
+                Membros na Sala
               </span>
             </div>
             <span 
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{
-                background: `rgba(${subject.glow},0.15)`,
-                color: subject.color,
-                border: `1px solid rgba(${subject.glow},0.3)`,
-              }}
+              className="text-xs font-bold px-3 py-1 rounded-full bg-white/5 border border-white/10"
+              style={{ color: subject.color }}
             >
-              {subject.participants}
+              Realtime
             </span>
           </div>
           
-          <div 
-            className="rounded-3xl p-4 relative overflow-hidden"
+          <GlassCard 
+            className="p-5"
             style={{
-              background: `linear-gradient(180deg, rgba(${subject.glow},0.08), rgba(${subject.glow},0.02))`,
-              border: `1px solid rgba(${subject.glow},0.2)`,
-              backdropFilter: 'blur(20px)',
+              borderColor: `rgba(${subject.glow},0.2)`,
+              background: `linear-gradient(180deg, rgba(${subject.glow},0.03), transparent)`,
             }}
           >
-            <div 
-              className="absolute inset-x-4 top-0 h-px"
-              style={{
-                background: `linear-gradient(90deg, transparent, rgba(${subject.glow},0.6), transparent)`,
-              }}
-            />
-            
-            <div className="grid grid-cols-6 gap-2">
-              {MOCK_PEOPLE.map((name, i) => {
-                const personColor = PERSON_COLORS[i % PERSON_COLORS.length];
-                return (
-                  <motion.div
-                    key={i}
+            <div className="flex flex-col items-center justify-center py-4">
+              <div className="flex -space-x-3 mb-4">
+                {/* Mostra apenas o usuário atual por enquanto, simulando outros com placeholders se necessário ou apenas vazio */}
+                {user && (
+                   <motion.div
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 + i * 0.03 }}
-                    className="flex flex-col items-center gap-1"
+                    className="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center text-sm font-bold z-10"
+                    style={{
+                      background: `linear-gradient(135deg, ${subject.color}, rgba(0,0,0,0.3))`,
+                      color: '#fff',
+                      boxShadow: `0 0 15px ${subject.color}40`,
+                    }}
                   >
-                    <div 
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{
-                        background: `linear-gradient(135deg, ${personColor}, rgba(0,0,0,0.3))`,
-                        color: '#fff',
-                        boxShadow: `0 0 8px ${personColor}40`,
-                        border: `1px solid ${personColor}50`,
-                      }}
-                    >
-                      {name.charAt(0)}
-                    </div>
-                    <span className="text-[8px] text-white/50 truncate max-w-[40px]">
-                      {name}
-                    </span>
+                    {user.user_metadata?.name?.[0] || 'U'}
                   </motion.div>
-                );
-              })}
+                )}
+                
+                <div className="w-12 h-12 rounded-full border-2 border-black bg-white/5 flex items-center justify-center text-[10px] text-white/30 backdrop-blur-sm">
+                  +?
+                </div>
+              </div>
+              <p className="text-[10px] font-premium-mono tracking-[0.2em] text-white/40 uppercase">Aguardando outros fifeiros...</p>
             </div>
-            
-            {subject.participants > MOCK_PEOPLE.length && (
-              <p className="text-[10px] text-white/40 text-center mt-3">
-                +{subject.participants - MOCK_PEOPLE.length} pessoas estudando
-              </p>
-            )}
-          </div>
+          </GlassCard>
         </motion.div>
         
         {/* CHAT */}
@@ -171,11 +146,12 @@ export function SalaPage({ roomId, onLeave }: { roomId: string, onLeave: () => v
           <div className="flex items-center gap-2 mb-3">
             <MessageCircle size={12} style={{ color: subject.color }} />
             <span className="text-[10px] uppercase tracking-widest text-white/60 font-bold">
-              Chat
+              Chat em Tempo Real
             </span>
           </div>
           
           <RoomChat 
+            roomId={subject.id}
             color={subject.color} 
             glow={subject.glow} 
           />

@@ -88,7 +88,7 @@ import { useAppNavigation } from '../../app/router/useAppNavigation';
 
 const DashboardView = () => {
   const { questionMap: QUESTION_MAP, loading: qLoading, error: qError } = useQuestionMap();
-  const { name, profilePic, streak, xp, level, sessions, history, exams, league, dailyXP, routine, dailyGoalMinutes, smartRecommendation, setSmartRecommendation, neuralSync } = useStore();
+  const { name, profilePic, streak, xp, level, sessions, history, exams, league, dailyXP, routine, dailyGoalMinutes, smartRecommendation, setSmartRecommendation, neuralSync, plan } = useStore();
   const { goTo } = useAppNavigation();
 
 
@@ -193,6 +193,34 @@ const DashboardView = () => {
           </AnimatedButton>
         </div>
       </header>
+
+      {/* Premium Banner */}
+      {plan === 'free' && (
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <GlassCard 
+            glow 
+            className="p-5 border-primary/30 bg-primary/5 flex items-center justify-between cursor-pointer group"
+            onClick={() => goTo('/premium')}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
+                <Crown size={24} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold group-hover:text-primary transition-colors">StudyFlow Premium</h4>
+                <p className="text-xs text-text-secondary">Desbloqueie IA ilimitada e simulados exclusivos.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
+              ASSINAR
+              <ArrowUpRight size={16} />
+            </div>
+          </GlassCard>
+        </motion.section>
+      )}
 
       {/* Daily Progress & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -416,11 +444,11 @@ const DashboardView = () => {
         </div>
         <div className="grid grid-cols-4 gap-4">
           {[
-            { id: 'document-analyzer', path: '/document-analyzer', icon: BookOpenCheck, label: 'Docs', color: 'cyan' },
-            { id: 'video-summarizer', path: '/video-summarizer', icon: Play, label: 'Vídeos', color: 'rose' },
-            { id: 'memory-palace', path: '/memory-palace', icon: BrainCircuit, label: 'Palácio', color: 'purple' },
-            { id: 'socratic-duel', path: '/socratic-duel', icon: Swords, label: 'Duelo', color: 'amber' },
-            { id: 'brain-upload', path: '/brain-upload', icon: UploadCloud, label: 'Upload', color: 'blue' },
+            { id: 'document-analyzer', path: '/analisador-documentos', icon: BookOpenCheck, label: 'Docs', color: 'cyan' },
+            { id: 'video-summarizer', path: '/metodos/video', icon: Play, label: 'Vídeos', color: 'rose' },
+            { id: 'memory-palace', path: '/palacio-memoria', icon: BrainCircuit, label: 'Palácio', color: 'purple' },
+            { id: 'socratic-duel', path: '/duelo-socratico', icon: Swords, label: 'Duelo', color: 'amber' },
+            { id: 'brain-upload', path: '/upload-cerebral', icon: UploadCloud, label: 'Upload', color: 'blue' },
             { id: 'god-mode', path: '/god-mode', icon: Crown, label: 'God Mode', color: 'primary' },
           ].map((item) => (
             <button
@@ -501,78 +529,25 @@ const DashboardView = () => {
         </GlassCard>
       </section>
 
-      {/* Study Buddies Online */}
+      {/* collective focus highlight */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Estudando Agora</h3>
+          <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Ambiente de Foco</h3>
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[9px] font-bold text-primary uppercase tracking-widest">1.2k Online</span>
+            <span className="text-[9px] font-bold text-primary uppercase tracking-widest">Protocolo Ativo</span>
           </div>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-          {[
-            { name: 'Alex', status: 'Foco', img: 'https://picsum.photos/seed/alex/64/64' },
-            { name: 'Bia', status: 'Anki', img: 'https://picsum.photos/seed/bia/64/64' },
-            { name: 'Caio', status: 'Redação', img: 'https://picsum.photos/seed/caio/64/64' },
-            { name: 'Dani', status: 'Questões', img: 'https://picsum.photos/seed/dani/64/64' },
-            { name: 'Enzo', status: 'Foco', img: 'https://picsum.photos/seed/enzo/64/64' },
-          ].map((buddy, i) => (
-            <motion.div 
-              key={i}
-              whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center gap-2 min-w-[70px]"
-            >
-              <div className="relative">
-                <div className="w-14 h-14 rounded-2xl border-2 border-primary/20 overflow-hidden">
-                  <img src={buddy.img} alt={buddy.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-background border-2 border-black flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] font-bold">{buddy.name}</p>
-                <p className="text-[8px] text-primary uppercase font-bold tracking-tighter">{buddy.status}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Live Activity Feed */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Atividade Recente</h3>
-          <div className="h-px flex-1 bg-white/5 ml-4" />
-        </div>
-        <div className="space-y-3">
-          {[
-            { user: 'Alex', action: 'completou um deck de', target: 'Biologia', time: '2m', icon: Layers, color: 'text-primary' },
-            { user: 'Bia', action: 'subiu para a liga', target: 'Diamante', time: '5m', icon: Trophy, color: 'text-yellow-500' },
-            { user: 'Caio', action: 'iniciou uma sessão em', target: 'Biblioteca', time: '10m', icon: Users, color: 'text-blue-400' },
-          ].map((activity, i) => (
-            <motion.div 
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-3 p-3 glass rounded-2xl border-white/5"
-            >
-              <div className={cn("p-2 rounded-xl bg-white/5", activity.color)}>
-                <activity.icon size={14} />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs">
-                  <span className="font-bold text-white">{activity.user}</span>{' '}
-                  <span className="text-text-secondary">{activity.action}</span>{' '}
-                  <span className="font-bold text-primary">{activity.target}</span>
-                </p>
-              </div>
-              <span className="text-[10px] text-text-secondary font-mono">{activity.time}</span>
-            </motion.div>
-          ))}
-        </div>
+        <GlassCard className="p-4 border-primary/20 bg-primary/5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+            <Users size={24} />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-bold">Salas de Estudo Coletivo</h4>
+            <p className="text-xs text-text-secondary">Entre em uma sala, ouça lofi e estude com outros fifeiros em tempo real.</p>
+          </div>
+          <AnimatedButton onClick={() => goTo('/comunidade')} className="text-[10px] px-4 py-2">Explorar</AnimatedButton>
+        </GlassCard>
       </section>
 
       {/* Heatmap Mini */}
