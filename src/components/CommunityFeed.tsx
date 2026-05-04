@@ -61,12 +61,16 @@ export const CommunityFeed = () => {
 
       if (error) throw error;
 
-      const formattedPosts = data.map((post: any) => ({
-        ...post,
-        likes_count: post.likes?.length || 0,
-        comments_count: post.comments?.length || 0,
-        user_has_liked: post.likes?.some((l: any) => l.user_id === user?.id) || false
-      }));
+      const formattedPosts = data.map((post: any) => {
+        const userData = Array.isArray(post.user) ? post.user[0] : post.user;
+        return {
+          ...post,
+          user: userData,
+          likes_count: post.likes?.length || 0,
+          comments_count: post.comments?.length || 0,
+          user_has_liked: post.likes?.some((l: any) => l.user_id === user?.id) || false
+        };
+      });
 
       setPosts(formattedPosts);
     } catch (error) {
@@ -185,7 +189,7 @@ export const CommunityFeed = () => {
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center">
                   {post.user?.profile_pic ? (
-                    <img src={post.user.profile_pic} alt={post.user.name} className="w-full h-full object-cover" />
+                    <img src={post.user?.profile_pic} alt={post.user?.name || 'Estudante'} className="w-full h-full object-cover" />
                   ) : (
                     <User size={20} className="text-white/20" />
                   )}

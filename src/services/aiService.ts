@@ -12,7 +12,7 @@ export const aiService = {
         ...history.map(h => ({ role: h.role || 'user', content: h.content || h.text })),
         { role: 'user', content: message }
       ],
-      model: model || 'google/llama-3.3-70b-instruct'
+      model: model || 'google/gemini-2.0-flash-exp:free'
     });
   },
 
@@ -22,7 +22,7 @@ export const aiService = {
         { role: 'system', content: 'Você é um professor especializado em provas de alto nível. Explique a questão didaticamente.' },
         { role: 'user', content: `Explique por que a alternativa "${correct}" é a correta:\n\nQuestão: ${question}\n\nAlternativas: ${alternatives.join(' | ')}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: 'google/gemini-2.0-flash-exp:free'
     });
   },
 
@@ -78,7 +78,7 @@ export const aiService = {
         { role: 'system', content: 'Analista de Desempenho. Retorne JSON.' },
         { role: 'user', content: `Gere recomendação baseada em: ${JSON.stringify(history.slice(0, 5))} e nível ${level}. JSON: {title, description, icon, priority, actionTab}` }
       ],
-      model: 'google/gemma-2-27b-it:free'
+      model: 'google/gemini-2.0-flash-exp:free'
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -112,7 +112,7 @@ export const aiService = {
   generateStudyPlan: async (prompt: string) => {
     return athenaClient.chat({
       messages: [{ role: 'user', content: prompt }],
-      model: 'google/llama-3.1-405b'
+      model: 'google/gemini-2.0-pro-exp-02-05:free'
     });
   },
 
@@ -159,7 +159,7 @@ export const aiService = {
         ...history.map(h => ({ role: h.sender === persona ? 'assistant' : 'user', content: h.text })),
         { role: 'user', content: `Dê sua contribuição sobre ${topic}.` }
       ],
-      model: 'google/llama-3.1-405b'
+      model: 'google/gemini-2.0-pro-exp-02-05:free'
     });
   },
 
@@ -209,7 +209,7 @@ export const aiService = {
   generateOracleProphecy: async (name: string, level: number, prestige: number, subjects: any[]) => {
     const response = await athenaClient.chat({
       messages: [{ role: 'user', content: `Gere uma profecia para ${name} (Lvl ${level}, Prestige ${prestige}) focado em ${JSON.stringify(subjects)}. Retorne JSON: {prophecy, convergenceProbability, finalQuote}` }],
-      model: 'google/llama-3.1-405b'
+      model: 'google/gemini-2.0-pro-exp-02-05:free'
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -356,7 +356,7 @@ export const aiService = {
         ...history.map(h => ({ role: h.role || (h.sender === 'user' ? 'user' : 'assistant'), content: h.content || h.text })),
         { role: 'user', content: message }
       ],
-      model: 'google/llama-3.1-405b'
+      model: 'google/gemini-2.0-pro-exp-02-05:free'
     });
   }
 };

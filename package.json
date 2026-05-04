@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "start": "tsx server.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",

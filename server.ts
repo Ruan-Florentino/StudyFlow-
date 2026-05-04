@@ -3,6 +3,8 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,9 +38,10 @@ async function startServer() {
           "X-Title": "StudyFlow AI Proxy",
         },
         body: JSON.stringify({
-          model: model || "deepseek/deepseek-r1:free",
+          model: model || "google/gemini-2.5-flash",
           messages,
           temperature: temperature || 0.7,
+          max_tokens: 1024,
           stream: req.body.stream || false
         }),
       });

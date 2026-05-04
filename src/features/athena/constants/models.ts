@@ -2,50 +2,68 @@ import { AIModel } from '../types/model.types';
 
 export const ATHENA_MODELS: AIModel[] = [
   {
-    id: 'gemma-2-27b',
-    modelId: 'google/gemma-2-27b-it:free',
-    name: 'Gemma 2 27B',
+    id: 'gemini-flash',
+    modelId: 'google/gemini-2.5-flash',
+    name: 'Gemini 2.5 Flash',
     provider: 'Google',
-    description: 'Excelente para explicações didáticas e raciocínio lógico.',
+    description: 'Rápido, versátil e excelente para a maioria das tarefas.',
+    isFree: true,
+    contextWindow: 1000000
+  },
+  {
+    id: 'gemini-pro',
+    modelId: 'google/gemini-3.1-pro-preview',
+    name: 'Gemini 3.1 Pro',
+    provider: 'Google',
+    description: 'Maior capacidade de raciocínio, ótimo para matemática e programação.',
+    isFree: true,
+    contextWindow: 1000000
+  },
+  {
+    id: 'deepseek-r1',
+    modelId: 'deepseek/deepseek-r1',
+    name: 'DeepSeek R1',
+    provider: 'DeepSeek',
+    description: 'Forte em raciocínio, lógica e matemática.',
+    isFree: true,
+    contextWindow: 32000
+  },
+  {
+    id: 'deepseek-chat',
+    modelId: 'deepseek/deepseek-chat',
+    name: 'DeepSeek V3',
+    provider: 'DeepSeek',
+    description: 'Excelente para diálogo e redação.',
+    isFree: true,
+    contextWindow: 32000
+  },
+  {
+    id: 'llama-3',
+    modelId: 'meta-llama/llama-3.3-70b-instruct:free',
+    name: 'Llama 3.3 70B',
+    provider: 'Meta',
+    description: 'Modelo open-source versátil e eficiente.',
     isFree: true,
     contextWindow: 8192
   },
   {
-    id: 'llama-3-3-70b',
-    modelId: 'meta-llama/llama-3.3-70b-instruct:free',
-    name: 'Llama 3.3 70B',
-    provider: 'Meta',
-    description: 'Modelo robusto com alto desempenho em diversas tarefas.',
+    id: 'mistral-nemo',
+    modelId: 'mistralai/mistral-nemo',
+    name: 'Mistral Nemo',
+    provider: 'Mistral',
+    description: 'Muito rápido e direto.',
     isFree: true,
     contextWindow: 128000
   },
   {
-    id: 'deepseek-v3',
-    modelId: 'deepseek/deepseek-chat:free',
-    name: 'DeepSeek V3',
-    provider: 'DeepSeek',
-    description: 'Rápido e eficiente para chat geral e programação.',
-    isFree: true,
-    contextWindow: 64000
-  },
-  {
-    id: 'phi-4',
-    modelId: 'microsoft/phi-4:free',
-    name: 'Phi-4',
-    provider: 'Microsoft',
-    description: 'Modelo compacto mas extremamente inteligente e preciso.',
-    isFree: true,
-    contextWindow: 16384
-  },
-  {
-    id: 'qwen-2-5-72b',
-    modelId: 'qwen/qwen-2.5-72b-instruct:free',
-    name: 'Qwen 2.5 72B',
+    id: 'qwen-2.5',
+    modelId: 'qwen/qwen3-next-80b-a3b-instruct:free',
+    name: 'Qwen 3.0 Next',
     provider: 'Alibaba',
-    description: 'Habilidades excepcionais de raciocínio e codificação.',
+    description: 'Ótimo em traduções e raciocínio geral.',
     isFree: true,
-    contextWindow: 128000
+    contextWindow: 32000
   }
 ];
 
-export const DEFAULT_MODEL = ATHENA_MODELS[1]; // Llama 3.3 70B
+export const DEFAULT_MODEL = ATHENA_MODELS[0];

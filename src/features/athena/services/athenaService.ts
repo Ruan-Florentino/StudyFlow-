@@ -26,7 +26,7 @@ export const athenaService = {
           { role: 'system', content: 'Você é um assistente de recomendação de estudos. Retorne apenas JSON.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemma-2-27b-it:free'
+        model: 'google/gemini-2.0-flash-exp:free'
       });
 
       const cleanJson = response.replace(/```json|```/g, '').trim();

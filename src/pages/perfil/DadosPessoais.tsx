@@ -2,18 +2,38 @@ import React, { useState } from 'react';
 import { GlassCard, AnimatedButton } from '../../components/UI';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useUserStore } from '../../store';
+import { useStore } from '../../store';
 import { toast } from '../../store/useToastStore';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const DadosPessoais = () => {
     const navigate = useNavigate();
-    const { name, bio, setName, setBio } = useUserStore();
+    const { name, bio, setName, setBio } = useStore();
     const [formData, setFormData] = useState({ name, bio });
 
+    const { user } = useAuth();
+
     const handleSave = async () => {
+        if (!formData.name.trim()) {
+            toast.error("Erro", "Nome não pode ser vazio.");
+            return;
+        }
+
         setName(formData.name);
         setBio(formData.bio);
-        toast.success("Sucesso", "Dados atualizados com sucesso!");
+        if (user?.id) {
+          try {
+            const { error } = await supabase.from('users').update({ name: formData.name, bio: formData.bio }).eq('id', user.id);
+            if (error) throw error;
+            toast.success("Sucesso", "Dados atualizados com sucesso!");
+          } catch(err) {
+            console.error('Failed to save to Supabase:', err);
+            toast.error("Erro", "Não foi possível salvar as alterações. Tente novamente.");
+          }
+        } else {
+            toast.success("Sucesso", "Dados atualizados localmente!");
+        }
     };
 
     return (

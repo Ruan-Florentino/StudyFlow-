@@ -58,6 +58,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
           last_study_date: null,
           daily_goal_minutes: 120,
           profile_pic: user.user_metadata?.avatar_url || '',
+          cover_pic: '',
           bio: 'Focado na aprovação! 🚀'
         };
         await supabase.from('users').insert(initialData);
@@ -166,7 +167,8 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
         dailyXP: data.daily_xp,
         lastStudyDate: data.last_study_date,
         dailyGoalMinutes: data.daily_goal_minutes,
-        profilePic: data.profile_pic
+        profilePic: data.profile_pic,
+        coverPic: data.cover_pic
       });
     };
 

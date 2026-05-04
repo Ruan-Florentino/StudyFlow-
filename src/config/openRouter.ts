@@ -3,38 +3,11 @@
  * Todos compartilham a mesma API Key
  */
 export const AI_MODELS = {
-  // 🥇 TIER S - Os melhores
-  DEEPSEEK_R1: {
-    id: 'deepseek/deepseek-r1:free',
-    name: 'DeepSeek R1',
-    context: 128000,
-    strengths: ['raciocínio', 'matemática', 'lógica'],
-    speed: 'lento',
-    quality: 10,
-  },
-  NEMOTRON_SUPER: {
-    id: 'nvidia/nemotron-3-super:free',
-    name: 'NVIDIA Nemotron 3 Super',
-    context: 1000000,
-    strengths: ['agents', 'contexto longo', 'multi-step'],
-    speed: 'médio',
-    quality: 9,
-  },
-
-  // 🥈 TIER A - Excelentes
-  LLAMA_70B: {
-    id: 'meta-llama/llama-3.3-70b-instruct:free',
-    name: 'Llama 3.3 70B',
-    context: 128000,
-    strengths: ['geral', 'chat', 'equilibrado'],
-    speed: 'rápido',
-    quality: 8,
-  },
   GEMINI_FLASH: {
     id: 'google/gemini-2.0-flash-exp:free',
     name: 'Gemini 2.0 Flash',
     context: 1000000,
-    strengths: ['rápido', 'multimodal', 'contexto grande'],
+    strengths: ['rápido', 'multimodal', 'contexto grande', 'geral', 'chat'],
     speed: 'muito rápido',
     quality: 8,
     multimodal: true,
@@ -43,46 +16,56 @@ export const AI_MODELS = {
     id: 'google/gemini-2.0-pro-exp-02-05:free',
     name: 'Gemini 2.0 Pro',
     context: 1000000,
-    strengths: ['qualidade', 'análise profunda'],
+    strengths: ['qualidade', 'análise profunda', 'redação', 'matemática', 'raciocínio'],
     speed: 'médio',
     quality: 9,
     multimodal: true,
   },
-  NEMOTRON_70B: {
-    id: 'nvidia/llama-3.1-nemotron-70b-instruct:free',
-    name: 'Nemotron 70B',
-    context: 128000,
-    strengths: ['instruções', 'precisão'],
+  DEEPSEEK_R1: {
+    id: 'deepseek/deepseek-r1',
+    name: 'DeepSeek R1',
+    context: 32000,
+    strengths: ['matemática', 'código', 'raciocínio lógico', 'exatas'],
+    speed: 'médio',
+    quality: 9,
+    multimodal: false,
+  },
+  LLAMA_3: {
+    id: 'meta-llama/llama-3.3-70b-instruct:free',
+    name: 'Llama 3.3 70B',
+    context: 8192,
+    strengths: ['redação', 'humanas', 'interpretação', 'equilibrado'],
     speed: 'rápido',
     quality: 8,
+    multimodal: false,
   },
-
-  // 🥉 TIER B - Especialistas
-  QWEN_VL: {
-    id: 'qwen/qwen-2.5-vl-72b-instruct:free',
-    name: 'Qwen 2.5 VL 72B',
+  DEEPSEEK_V3: {
+    id: 'deepseek/deepseek-chat',
+    name: 'DeepSeek V3',
     context: 32000,
-    strengths: ['visão', 'OCR', 'análise de imagem'],
+    strengths: ['chat geral', 'resumos', 'explicação', 'rápido'],
+    speed: 'rápido',
+    quality: 8,
+    multimodal: false,
+  },
+  QWEN_72B: {
+    id: 'qwen/qwen3-next-80b-a3b-instruct:free',
+    name: 'Qwen 3 Next',
+    context: 32000,
+    strengths: ['versátil', 'tradução', 'conhecimento geral', 'humanas'],
     speed: 'médio',
     quality: 8,
-    multimodal: true,
+    multimodal: false,
   },
-  DEEPSEEK_DISTILL: {
-    id: 'deepseek/deepseek-r1-distill-llama-70b:free',
-    name: 'DeepSeek R1 Distill',
+  MISTRAL_NEMO: {
+    id: 'mistralai/mistral-nemo',
+    name: 'Mistral Nemo',
     context: 128000,
-    strengths: ['raciocínio rápido'],
-    speed: 'rápido',
-    quality: 8,
-  },
-  MISTRAL_SMALL: {
-    id: 'mistralai/mistral-small-24b-instruct-2501:free',
-    name: 'Mistral Small 24B',
-    context: 32000,
-    strengths: ['eficiente', 'rápido'],
+    strengths: ['rápido', 'direto', 'resumos curtos', 'foco'],
     speed: 'muito rápido',
     quality: 7,
-  },
+    multimodal: false,
+  }
 } as const;
 
 export type ModelKey = keyof typeof AI_MODELS;
@@ -93,28 +76,28 @@ export type ModelKey = keyof typeof AI_MODELS;
  */
 export const TASK_STRATEGIES = {
   // Chat geral - prioriza velocidade e equilíbrio
-  chat: ['LLAMA_70B', 'GEMINI_FLASH', 'MISTRAL_SMALL', 'NEMOTRON_70B'],
+  chat: ['GEMINI_FLASH', 'GEMINI_PRO'],
   
   // Redação - prioriza qualidade e raciocínio
-  redacao: ['DEEPSEEK_R1', 'GEMINI_PRO', 'LLAMA_70B', 'NEMOTRON_SUPER'],
+  redacao: ['GEMINI_PRO', 'GEMINI_FLASH'],
   
   // Matemática - prioriza raciocínio
-  matematica: ['DEEPSEEK_R1', 'NEMOTRON_SUPER', 'DEEPSEEK_DISTILL', 'LLAMA_70B'],
+  matematica: ['GEMINI_PRO', 'GEMINI_FLASH'],
   
   // Trilha de estudos - equilíbrio
-  trilha: ['GEMINI_FLASH', 'LLAMA_70B', 'NEMOTRON_70B', 'MISTRAL_SMALL'],
+  trilha: ['GEMINI_FLASH', 'GEMINI_PRO'],
   
   // Resumos - rápido e bom
-  resumo: ['GEMINI_FLASH', 'MISTRAL_SMALL', 'LLAMA_70B'],
+  resumo: ['GEMINI_FLASH', 'GEMINI_PRO'],
   
   // Análise de imagem - apenas multimodais
-  imagem: ['QWEN_VL', 'GEMINI_FLASH', 'GEMINI_PRO'],
+  imagem: ['GEMINI_FLASH', 'GEMINI_PRO'],
   
   // Código/programação
-  codigo: ['DEEPSEEK_R1', 'LLAMA_70B', 'NEMOTRON_SUPER'],
+  codigo: ['GEMINI_PRO', 'GEMINI_FLASH'],
   
   // Exercícios - boa explicação
-  exercicio: ['LLAMA_70B', 'DEEPSEEK_R1', 'GEMINI_FLASH'],
+  exercicio: ['GEMINI_PRO', 'GEMINI_FLASH'],
 } as const;
 
 export type TaskType = keyof typeof TASK_STRATEGIES;

@@ -25,6 +25,7 @@ import { useStore } from '../../store';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { toast } from '../../store/useToastStore';
 import { 
   AnimatedButton, 
   GlassCard, 
@@ -148,18 +149,34 @@ const ProfileView = () => {
         // Sync to users table
         await supabase.from('users').update({ cover_pic: url }).eq('id', user.id);
       }
+      toast.success("Sucesso", type === 'profile' ? "Foto de perfil atualizada!" : "Foto de capa atualizada!");
 
     } catch (err) {
       console.error('Upload failed:', err);
+      toast.error("Erro", "Não foi possível fazer o upload da imagem.");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!editName.trim()) {
+      toast.error("Erro", "O nome não pode ser vazio.");
+      return;
+    }
     setName(editName);
     setBio(editBio);
     setIsEditing(false);
+    if (user?.id) {
+      try {
+        const { error } = await supabase.from('users').update({ name: editName, bio: editBio }).eq('id', user.id);
+        if (error) throw error;
+        toast.success("Sucesso", "Perfil atualizado!");
+      } catch(err) {
+        console.error('Failed to update profile to Supabase', err);
+        toast.error("Erro", "Não foi possível atualizar o perfil.");
+      }
+    }
   };
 
   const shareProfile = async () => {

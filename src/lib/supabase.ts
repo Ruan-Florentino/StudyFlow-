@@ -54,7 +54,15 @@ export const supabase = new Proxy({} as any, {
       if (!isSupabaseConfigured) {
         _supabase = createMockClient();
       } else {
-        _supabase = createClient(supabaseUrl, supabaseAnonKey);
+        _supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storage: window.localStorage,
+            storageKey: 'studioflow-auth'
+          }
+        });
       }
     }
     return _supabase[prop];

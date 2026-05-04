@@ -11,7 +11,7 @@ interface AIModelState {
 export const useAIModel = create<AIModelState>()(
   persist(
     (set, get) => ({
-      selectedModelId: 'core-pro',
+      selectedModelId: 'gemini-flash',
       setModel: (id: string) => set({ selectedModelId: id }),
       getSelectedModel: () => {
         const id = get().selectedModelId;
