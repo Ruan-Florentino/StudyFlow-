@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   BarChart3, 
@@ -51,18 +51,19 @@ const Reports = () => {
     trackFeature('reports');
   }, [trackFeature]);
   
-  const total = history.length;
-  const correct = history.filter(h => h.isCorrect).length;
+  const total = (history || []).length;
+  const correct = (history || []).filter(h => h.isCorrect).length;
   const incorrect = total - correct;
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
   const [selectedMateria, setSelectedMateria] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
 
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date();
     const daysBack = 6 - i;
     d.setDate(d.getDate() - daysBack);
     const dateStr = d.toISOString().split('T')[0];
-    const dayHistory = history.filter(h => h.timestamp.startsWith(dateStr));
+    const dayHistory = (history || []).filter(h => h.timestamp && typeof h.timestamp === 'string' && h.timestamp.startsWith(dateStr));
     return {
       name: d.toLocaleDateString('pt-BR', { weekday: 'short' }),
       q: dayHistory.length,
@@ -70,92 +71,99 @@ const Reports = () => {
     };
   });
 
-  const validTimes = history.filter(h => h.timeSpent && h.timeSpent > 0).map(h => h.timeSpent!);
+  const validTimes = (history || []).filter(h => h.timeSpent && h.timeSpent > 0).map(h => h.timeSpent!);
   const avgTimeSeconds = validTimes.length > 0 ? Math.round(validTimes.reduce((a, b) => a + b, 0) / validTimes.length) : 0;
   const avgTime = avgTimeSeconds > 0 ? `${avgTimeSeconds}s` : "--";
+
+  const { subjectData, topicData, bestSubject, worstSubject, difficultyData, evolutionData, heatmapData } = useMemo(() => {
+    if (!QUESTION_MAP) {
+      return { subjectData: [], topicData: [], bestSubject: null, worstSubject: null, difficultyData: [], evolutionData: [], heatmapData: [] };
+    }
+    try {
+      const subjectData = Object.keys(TOPICS).map(subject => {
+        const subHistory = (history || []).filter(h => {
+          const q = QUESTION_MAP?.get(h.questionId);
+          return q?.materia === subject;
+        });
+        const subTotal = subHistory.length;
+        const subCorrect = subHistory.filter(h => h.isCorrect).length;
+        return {
+          name: subject,
+          acertos: subCorrect,
+          erros: subTotal - subCorrect,
+          total: subTotal,
+          percent: subTotal > 0 ? Math.round((subCorrect / subTotal) * 100) : 0
+        };
+      }).filter(d => d.total > 0).sort((a, b) => b.total - a.total);
+
+      const topicData = Object.values(TOPICS).flat().map(topic => {
+        const topHistory = (history || []).filter(h => {
+          const q = QUESTION_MAP?.get(h.questionId);
+          return q?.assunto === topic;
+        });
+        const topTotal = topHistory.length;
+        const topCorrect = topHistory.filter(h => h.isCorrect).length;
+        return {
+          name: topic,
+          acertos: topCorrect,
+          erros: topTotal - topCorrect,
+          total: topTotal,
+          percent: topTotal > 0 ? Math.round((topCorrect / topTotal) * 100) : 0
+        };
+      }).filter(d => d.total > 0).sort((a, b) => b.total - a.total).slice(0, 5); // Top 5 topics
+      
+      const bestSubject = subjectData.length > 0 ? [...subjectData].sort((a, b) => b.percent - a.percent)[0] : null;
+      const worstSubject = subjectData.length > 0 ? [...subjectData].sort((a, b) => a.percent - b.percent)[0] : null;
+
+      const difficultyData = [
+        { name: 'Fácil', value: (history || []).filter(h => QUESTION_MAP?.get(h.questionId)?.difficulty === 'Easy').length, color: themeColor },
+        { name: 'Médio', value: (history || []).filter(h => QUESTION_MAP?.get(h.questionId)?.difficulty === 'Medium').length, color: '#FFB800' },
+        { name: 'Difícil', value: (history || []).filter(h => QUESTION_MAP?.get(h.questionId)?.difficulty === 'Hard').length, color: '#FF4444' }
+      ].filter(d => d.value > 0);
+
+      const evolutionData = Array.from({ length: timeRange === '7d' ? 7 : (timeRange === '30d' ? 30 : 90) }, (_, i) => {
+        const d = new Date();
+        const daysBack = (timeRange === '7d' ? 6 : (timeRange === '30d' ? 29 : 89)) - i;
+        d.setDate(d.getDate() - daysBack);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayHistory = (history || []).filter(h => h.timestamp && typeof h.timestamp === 'string' && h.timestamp.startsWith(dateStr));
+        const count = dayHistory.length;
+        const correctCount = dayHistory.filter(h => h.isCorrect).length;
+        const accuracy = count > 0 ? Math.round((correctCount / count) * 100) : 0;
+        return { 
+          name: timeRange === '7d' ? d.toLocaleDateString('pt-BR', { weekday: 'short' }) : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), 
+          q: count, 
+          accuracy 
+        };
+      });
+
+      const heatmapData = (history || []).reduce((acc: any[], h) => {
+        if (!h.timestamp) return acc;
+        const date = h.timestamp.split('T')[0];
+        const existing = acc.find(d => d.date === date);
+        if (existing) {
+          existing.count++;
+        } else {
+          acc.push({ date, count: 1 });
+        }
+        return acc;
+      }, []);
+
+      return { subjectData, topicData, bestSubject, worstSubject, difficultyData, evolutionData, heatmapData };
+    } catch (e) {
+      console.error("Error calculating stats data:", e);
+      return { subjectData: [], topicData: [], bestSubject: null, worstSubject: null, difficultyData: [], evolutionData: [], heatmapData: [] };
+    }
+  }, [history, QUESTION_MAP, timeRange, themeColor]);
 
   if (qLoading) return <QuestionsLoadingSkeleton />;
   if (qError) return <QuestionsLoadError error={qError} />;
 
-  const subjectData = Object.keys(TOPICS).map(subject => {
-    const subHistory = history.filter(h => {
-      const q = QUESTION_MAP?.get(h.questionId);
-      return q?.materia === subject;
-    });
-    const subTotal = subHistory.length;
-    const subCorrect = subHistory.filter(h => h.isCorrect).length;
-    return {
-      name: subject,
-      acertos: subCorrect,
-      erros: subTotal - subCorrect,
-      total: subTotal,
-      percent: subTotal > 0 ? Math.round((subCorrect / subTotal) * 100) : 0
-    };
-  }).filter(d => d.total > 0).sort((a, b) => b.total - a.total);
-
-  const topicData = Object.values(TOPICS).flat().map(topic => {
-    const topHistory = history.filter(h => {
-      const q = QUESTION_MAP?.get(h.questionId);
-      return q?.assunto === topic;
-    });
-    const topTotal = topHistory.length;
-    const topCorrect = topHistory.filter(h => h.isCorrect).length;
-    return {
-      name: topic,
-      acertos: topCorrect,
-      erros: topTotal - topCorrect,
-      total: topTotal,
-      percent: topTotal > 0 ? Math.round((topCorrect / topTotal) * 100) : 0
-    };
-  }).filter(d => d.total > 0).sort((a, b) => b.total - a.total).slice(0, 5); // Top 5 topics
-
-  const bestSubject = subjectData.length > 0 ? subjectData.sort((a, b) => b.percent - a.percent)[0] : null;
-  const worstSubject = subjectData.length > 0 ? subjectData.sort((a, b) => a.percent - b.percent)[0] : null;
 
   const pieData = [
-    { name: 'Acertos', value: correct, color: streak > 0 ? themeColor : '#00E88F' }, // Fallback color if themeColor is issues
+    { name: 'Acertos', value: correct, color: themeColor },
     { name: 'Erros', value: incorrect, color: '#FF4444' }
   ];
-  
-  // Adjusted pieData to use themeColor from store
-  pieData[0].color = themeColor;
-
-  const difficultyData = [
-    { name: 'Fácil', value: history.filter(h => QUESTION_MAP?.get(h.questionId)?.difficulty === 'Easy').length, color: themeColor },
-    { name: 'Médio', value: history.filter(h => QUESTION_MAP?.get(h.questionId)?.difficulty === 'Medium').length, color: '#FFB800' },
-    { name: 'Difícil', value: history.filter(h => QUESTION_MAP?.get(h.questionId)?.difficulty === 'Hard').length, color: '#FF4444' }
-  ].filter(d => d.value > 0);
-
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
-
-  // Evolution data
-  const evolutionData = Array.from({ length: timeRange === '7d' ? 7 : (timeRange === '30d' ? 30 : 90) }, (_, i) => {
-    const d = new Date();
-    const daysBack = (timeRange === '7d' ? 6 : (timeRange === '30d' ? 29 : 89)) - i;
-    d.setDate(d.getDate() - daysBack);
-    const dateStr = d.toISOString().split('T')[0];
-    const dayHistory = history.filter(h => h.timestamp.startsWith(dateStr));
-    const count = dayHistory.length;
-    const correctCount = dayHistory.filter(h => h.isCorrect).length;
-    const accuracy = count > 0 ? Math.round((correctCount / count) * 100) : 0;
-    return { 
-      name: timeRange === '7d' ? d.toLocaleDateString('pt-BR', { weekday: 'short' }) : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), 
-      q: count, 
-      accuracy 
-    };
-  });
-
-  // Heatmap data (last 90 days)
-  const heatmapData = history.reduce((acc: any[], h) => {
-    const date = h.timestamp.split('T')[0];
-    const existing = acc.find(d => d.date === date);
-    if (existing) {
-      existing.count++;
-    } else {
-      acc.push({ date, count: 1 });
-    }
-    return acc;
-  }, []);
 
   return (
     <div className="p-6 space-y-8 pb-32">

@@ -44,7 +44,7 @@ import InlineQuestionCard from '../../components/InlineQuestionCard';
 import XPGain from './XPGainView';
 
 import { useStore, Question } from '../../store';
-import { aiService } from '../../services/aiService';
+import { athenaClient } from '../../features/athena/services/athenaClient';
 import TrainingSession from '../../components/TrainingSession';
 import ExamSession from '../../components/ExamSession';
 import ExamReview from '../../components/ExamReview';
@@ -353,7 +353,17 @@ const QuestionsView = () => {
     const q = examQuestions[currentIdx];
     setLoadingAI(true);
     try {
-      const explanation = await aiService.explainQuestion(q.pergunta, q.alternativas, q.alternativas[q.resposta]);
+      const prompt = `Explique detalhadamente por que a alternativa "${q.alternativas[q.resposta]}" é a correta para a seguinte questão:
+"${q.pergunta}"
+Alternativas: ${JSON.stringify(q.alternativas)}`;
+
+      const explanation = await athenaClient.chat({
+        messages: [
+          { role: 'system', content: 'Você é Athena, uma tutora educacional especializada no ENEM. Explique de forma clara e didática.' },
+          { role: 'user', content: prompt }
+        ],
+        model: 'google/gemini-2.0-flash-001'
+      });
       setAiExplanation(explanation);
     } catch (e) {
       console.error(e);
@@ -368,7 +378,18 @@ const QuestionsView = () => {
     if (selectedOption === null) return;
     setLoadingAI(true);
     try {
-      const explanation = await aiService.explainError(q.pergunta, q.alternativas, q.alternativas[q.resposta], q.alternativas[selectedOption]);
+      const prompt = `O aluno marcou a alternativa "${q.alternativas[selectedOption]}", mas a correta é "${q.alternativas[q.resposta]}". 
+Explique por que a escolha do aluno está incorreta e por que a outra é a correta.
+Questão: "${q.pergunta}"
+Alternativas: ${JSON.stringify(q.alternativas)}`;
+
+      const explanation = await athenaClient.chat({
+        messages: [
+          { role: 'system', content: 'Você é Athena, uma tutora educacional especializada no ENEM. Seja empática e didática ao explicar o erro.' },
+          { role: 'user', content: prompt }
+        ],
+        model: 'google/gemini-2.0-flash-001'
+      });
       setAiExplanation(explanation);
     } catch (e) {
       console.error(e);
@@ -646,7 +667,19 @@ const QuestionsView = () => {
     if (!aiTopic.trim()) return;
     setGeneratingAI(true);
     try {
-      const qs = await aiService.generateQuestions(aiTopic, aiCount);
+      const prompt = `Gere ${aiCount} questões inéditas no estilo ENEM sobre o tema: ${aiTopic}.
+Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...", "...", "...", "...", "..."], "resposta": 0, "materia": "...", "assunto": "...", "ano": 2025, "difficulty": "Medium", "prova": "Athena IA"}]`;
+
+      const response = await athenaClient.chat({
+        messages: [
+          { role: 'system', content: 'Você é um gerador de questões educacionais. Retorne apenas JSON.' },
+          { role: 'user', content: prompt }
+        ],
+        model: 'google/gemini-2.0-flash-001'
+      });
+      
+      const cleanJson = response.replace(/```json|```/g, '').trim();
+      const qs = JSON.parse(cleanJson);
       setExamQuestions(qs);
       setCurrentIdx(0);
       setUserAnswers({});
@@ -673,11 +706,11 @@ const QuestionsView = () => {
           onBack={() => setView('bank')}
           rightContent={
             <button 
-              onClick={() => openChat('GERADOR_QUESTOES')}
+              onClick={() => openChat('Gerador de Questões')}
               className="p-2 rounded-xl bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,148,0.15)]"
             >
               <Bot size={16} />
-              <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Avatar Gerador</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Athena Tutor</span>
             </button>
           }
         />

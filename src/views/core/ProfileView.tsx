@@ -70,10 +70,10 @@ const ProfileView = () => {
   const [editBio, setEditBio] = useState(bio || '');
 
   const stats = useMemo(() => {
-    const totalHours = Math.round(sessions.reduce((acc, s) => acc + (s.duration || 0), 0) / 60);
-    const questionsSolved = history.length;
+    const totalHours = Math.round((sessions || []).reduce((acc, s) => acc + (s.duration || 0), 0) / 60);
+    const questionsSolved = (history || []).length;
     const accuracyRate = questionsSolved > 0 
-      ? Math.round(history.filter(h => h.isCorrect).length / questionsSolved * 100) 
+      ? Math.round((history || []).filter(h => h.isCorrect).length / questionsSolved * 100) 
       : 0;
 
     return { totalHours, questionsSolved, accuracyRate };
@@ -86,7 +86,7 @@ const ProfileView = () => {
       const d = new Date();
       d.setDate(today.getDate() - (6 - i));
       const dateStr = d.toISOString().split('T')[0];
-      const daySessions = sessions.filter(s => s.date === dateStr);
+      const daySessions = (sessions || []).filter(s => s && s.date === dateStr);
       const minutes = daySessions.reduce((acc, s) => acc + (s.duration || 0), 0);
       
       return {

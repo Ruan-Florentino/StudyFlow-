@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { GlobalCelebrations } from '../../components/GlobalCelebrations';
 import { BossBattle, CommandPalette } from '../../components/overlays';
-import { AIChatPanel } from '../../components/AI/AIChatPanel';
+import { AthenaSidebar } from '../../features/athena/components/AthenaSidebar';
 import { FloatingAIButton } from '../../components/AI/FloatingAIButton';
 import { BottomNav } from '../../components/BottomNav';
 import { useStore } from '../../store';
@@ -85,7 +85,7 @@ export function AppShell({
           {children}
         </main>
 
-        <AIChatPanel />
+        <AthenaSidebar />
         <FloatingAIButton />
         <BottomNav />
       </div>

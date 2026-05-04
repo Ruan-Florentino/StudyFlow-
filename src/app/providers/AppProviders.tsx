@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { AuthProvider } from '../../contexts/AuthContext';
+import { ErrorBoundary } from '../../components/shared/ErrorBoundary';
 
 /**
  * AppProviders
@@ -13,8 +14,10 @@ interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

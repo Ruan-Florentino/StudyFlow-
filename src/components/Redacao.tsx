@@ -3,10 +3,11 @@ import { motion } from 'motion/react';
 import { PenTool, FileText, Bookmark, ChevronLeft, Sparkles, CheckCircle2, AlertCircle, Bot } from 'lucide-react';
 import { GlassCard, Header, IconTile } from './UI';
 import { useStore } from '../store';
-import { aiService } from '../services/aiService';
+import { athenaClient } from '../features/athena/services/athenaClient';
+import { ATHENA_CONFIG } from '../features/athena/constants/config';
 import { exportToPDF } from '../lib/studyUtils';
 import clsx from 'clsx';
-import { useAIUI } from '../hooks/useAIUI';
+// import { useAIUI } from '../hooks/useAIUI'; // Deleted
 
 const PROPOSTAS = [
   { tema: "Desafios para a formação educacional de surdos no Brasil", ano: "ENEM 2017" },
@@ -43,7 +44,7 @@ const PROPOSTAS = [
 
 export const Redacao = ({ onBack }: { onBack: () => void }) => {
   const { essays, savedTopics, addEssay, toggleSavedTopic, essayCoPilot, toggleEssayCoPilot, addEssaySuggestion, clearEssaySuggestions } = useStore();
-  const { openChat } = useAIUI();
+  // const { openChat } = useAIUI(); // Removed
   const [view, setView] = useState<'home' | 'write' | 'history' | 'saved'>('home');
   const [selectedProposta, setSelectedProposta] = useState<string | null>(null);
   const [essayText, setEssayText] = useState('');
@@ -55,7 +56,21 @@ export const Redacao = ({ onBack }: { onBack: () => void }) => {
     if (!essayText.trim() || !selectedProposta || isSuggesting) return;
     setIsSuggesting(true);
     try {
-      const res = await aiService.generateEssaySuggestions(essayText, selectedProposta);
+      const prompt = `Como um Co-Pilot de redação, analise o texto atual e sugira 3 melhorias pontuais (conectivos, vocabulário ou clareza).
+Tema: ${selectedProposta}
+Texto: ${essayText}
+Retorne APENAS um JSON: [{"id": "1", "type": "vocabulário", "text": "melhoria..."}]`;
+
+      const response = await athenaClient.chat({
+        messages: [
+          { role: 'system', content: 'Você é um assistente de escrita de redação. Retorne apenas JSON.' },
+          { role: 'user', content: prompt }
+        ],
+        model: 'google/gemini-2.0-flash-001'
+      });
+
+      const cleanJson = response.replace(/```json|```/g, '').trim();
+      const res = JSON.parse(cleanJson);
       clearEssaySuggestions();
       res.forEach((s: any) => addEssaySuggestion(s));
     } catch (error) {
@@ -99,7 +114,16 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
   "feedbackGeral": "string"
 }`;
 
-      const result = await aiService.evaluateEssay(selectedProposta, essayText);
+      const response = await athenaClient.chat({
+        messages: [
+          { role: 'system', content: 'Você é um corretor especializado em redação ENEM. Retorne apenas JSON.' },
+          { role: 'user', content: prompt }
+        ],
+        model: 'google/gemini-2.0-flash-001' // Fast and smart for evaluation
+      });
+
+      const cleanJson = response.replace(/```json|```/g, '').trim();
+      const result = JSON.parse(cleanJson);
       setEvaluation(result);
       
       addEssay({
@@ -123,8 +147,7 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         }
       });
     } catch (error) {
-      console.error("Erro ao avaliar redação:", error);
-      alert("Ocorreu um erro ao avaliar a redação. Tente novamente.");
+      console.error("❌ Erro ao avaliar redação:", error);
     } finally {
       setIsEvaluating(false);
     }
@@ -289,13 +312,14 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
         color="rose"
         onBack={onBack}
         rightContent={
-          <button 
-            onClick={() => openChat('CORRETOR_REDACAO')}
-            className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
-          >
-            <Bot size={16} />
-            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">IA Corretora</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest mr-2">Powered by Athena</div>
+            <button 
+              className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[10px] uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+            >
+              Protocolo V2
+            </button>
+          </div>
         }
       />
 

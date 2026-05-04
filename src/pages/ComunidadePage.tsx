@@ -3,6 +3,7 @@ import { Users, Music, BookOpen, Sparkles } from 'lucide-react';
 import { useStore } from '../store';
 import { SalaPage } from './SalaPage';
 import { useState } from 'react';
+import { useAppNavigation } from '../app/router/useAppNavigation';
 
 export const SUBJECTS = [
   { id: 'matematica',  name: 'Matemática', icon: '📐', color: '#fbbf24', glow: '251,191,36' },
@@ -19,7 +20,8 @@ export const SUBJECTS = [
   { id: 'artes',       name: 'Artes',      icon: '🎨', color: '#e879f9', glow: '232,121,249' },
 ];
 
-export function ComunidadePage({ onBack }: { onBack: () => void }) {
+export function ComunidadePage() {
+  const { goBack } = useAppNavigation();
   const joinRoom = useStore(state => state.joinRoom);
   const activeRoom = useStore(state => state.studyRooms?.activeRoom);
   
@@ -47,7 +49,7 @@ export function ComunidadePage({ onBack }: { onBack: () => void }) {
            <div className="flex items-center gap-3">
               <div 
                 className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer bg-white/5 border border-white/10"
-                onClick={onBack}
+                onClick={goBack}
               >
                 <Users size={20} className="text-pink-400" />
               </div>

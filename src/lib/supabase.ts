@@ -7,16 +7,55 @@ export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 
 let _supabase: any = null;
 
+const createMockClient = () => {
+  const unimplemented = () => {
+    console.warn("Supabase is not configured. Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to use this feature.");
+  };
+  
+  const mockReturn = { data: null, error: new Error("Supabase não configurado.") };
+  const mockPromise = async () => mockReturn;
+
+  return {
+    auth: {
+      signInWithOAuth: mockPromise,
+      signOut: mockPromise,
+      getSession: mockPromise,
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          order: () => ({
+            limit: mockPromise
+          })
+        })
+      }),
+      insert: mockPromise,
+      update: () => ({ eq: mockPromise })
+    }),
+    channel: () => ({
+      on: () => ({ subscribe: () => {} }),
+      unsubscribe: () => {}
+    }),
+    removeChannel: unimplemented,
+    storage: {
+      from: () => ({
+        upload: mockPromise,
+        getPublicUrl: () => ({ data: { publicUrl: '' } })
+      })
+    }
+  } as any;
+};
+
 export const supabase = new Proxy({} as any, {
   get(target, prop) {
     if (prop === 'then') return undefined;
     if (!_supabase) {
       if (!isSupabaseConfigured) {
-        throw new Error(
-          'Supabase configuration error: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be provided in environment variables.'
-        );
+        _supabase = createMockClient();
+      } else {
+        _supabase = createClient(supabaseUrl, supabaseAnonKey);
       }
-      _supabase = createClient(supabaseUrl, supabaseAnonKey);
     }
     return _supabase[prop];
   }

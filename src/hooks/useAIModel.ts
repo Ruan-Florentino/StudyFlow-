@@ -16,7 +16,7 @@ export const useAIModel = create<AIModelState>()(
       getSelectedModel: () => {
         const id = get().selectedModelId;
         const model = AI_MODELS.find(m => m.id === id);
-        return model || AI_MODELS.find(m => m.isDefault) || AI_MODELS[0];
+        return model || AI_MODELS[0];
       }
     }),
     {

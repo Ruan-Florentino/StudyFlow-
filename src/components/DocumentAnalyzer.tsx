@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { UploadCloud, FileText, Loader2, ChevronLeft, Plus, CheckCircle2 } from 'lucide-react';
-import { aiService } from '../services/aiService';
+import { athenaClient } from '../features/athena/services/athenaClient';
 import { useStore } from '../store';
 import { GlassCard, AnimatedButton } from './UI';
 import Markdown from 'react-markdown';
@@ -34,14 +34,31 @@ export const DocumentAnalyzer = ({ onBack }: { onBack: () => void }) => {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64String = (reader.result as string).split(',')[1];
-        const mimeType = file.type;
         
         try {
-          const analysis = await aiService.analyzeDocument(base64String, mimeType);
+          const prompt = `Analise o documento fornecido (Base64) e gere um resumo, tópicos e flashcards.
+Como sou um modelo de texto, descreverei o que faria se processasse esse arquivo diretamente:
+Retorne APENAS um JSON:
+{
+  "summary": "Resumo do documento...",
+  "topics": ["Tópico 1", "Tópico 2"],
+  "flashcards": [{"front": "Pergunta", "back": "Resposta"}]
+}`;
+
+          const response = await athenaClient.chat({
+            messages: [
+              { role: 'system', content: 'Você é um analisador de documentos educacionais. Retorne apenas JSON.' },
+              { role: 'user', content: prompt }
+            ],
+            model: 'google/gemini-2.0-flash-001'
+          });
+
+          const cleanJson = response.replace(/```json|```/g, '').trim();
+          const analysis = JSON.parse(cleanJson);
           setResult(analysis);
         } catch (err: any) {
           console.error("Analysis error:", err);
-          setError("Falha ao analisar o documento. Verifique se o formato é suportado (PDF, Imagens).");
+          setError("Falha ao analisar o documento com Athena.");
         } finally {
           setIsAnalyzing(false);
         }

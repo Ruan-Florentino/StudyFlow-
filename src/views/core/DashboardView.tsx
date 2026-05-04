@@ -60,7 +60,7 @@ import {
 import { useStore } from '../../store';
 
 // Services
-import { aiService } from '../../services/aiService';
+import { athenaService } from '../../features/athena/services/athenaService';
 
 // Data
 import { useQuestionMap } from '../../hooks/useQuestions';
@@ -96,10 +96,10 @@ const DashboardView = () => {
     const fetchRecommendation = async () => {
       if (!smartRecommendation && history.length > 0) {
         try {
-          const rec = await aiService.generateSmartRecommendation(history, level);
+          const rec = await athenaService.generateSmartRecommendation(history, level);
           setSmartRecommendation(rec);
         } catch (error) {
-          console.error("Erro ao gerar recomendação:", error);
+          console.error("Erro ao gerar recomendação Athena:", error);
         }
       }
     };

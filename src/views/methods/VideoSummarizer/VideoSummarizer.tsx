@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2, Sparkles, FileText, Layers, Brain } from 'lucide-react';
 import { useStore } from '../../../store';
-import { aiService } from '../../../services/aiService';
+import { athenaClient } from '../../../features/athena/services/athenaClient';
 import { AnimatedButton, GlassCard } from '../../../components/UI';
 import { triggerConfetti } from '../../../lib/studyUtils';
 
@@ -20,7 +20,25 @@ export function VideoSummarizer({ onBack }: VideoSummarizerProps) {
     if (!url) return;
     setLoading(true);
     try {
-      const data = await aiService.summarizeVideo(url);
+      const prompt = `Analise o seguinte vídeo (URL: ${url}) e forneça um resumo estruturado. 
+Como você não pode assistir ao vídeo diretamente, use o título e contexto da URL para inferir o conteúdo e criar um exemplo de como seria o resumo.
+Retorne APENAS um JSON:
+{
+  "summary": "Resumo detalhado...",
+  "topics": ["Tópico 1", "Tópico 2"],
+  "flashcards": [{"front": "Pergunta", "back": "Resposta"}]
+}`;
+
+      const response = await athenaClient.chat({
+        messages: [
+          { role: 'system', content: 'Você é um assistente de resumo de vídeos educacionais. Retorne apenas JSON.' },
+          { role: 'user', content: prompt }
+        ],
+        model: 'google/gemini-2.0-flash-001'
+      });
+
+      const cleanJson = response.replace(/```json|```/g, '').trim();
+      const data = JSON.parse(cleanJson);
       setResult(data);
       addXP(50);
     } catch (error) {

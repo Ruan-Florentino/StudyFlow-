@@ -34,7 +34,7 @@ export const BrainUpload = ({ onBack }: { onBack: () => void }) => {
     } catch (error) {
       clearInterval(interval);
       setIsProcessing(false);
-      alert("Erro ao processar o upload cerebral.");
+      console.error("❌ Erro ao processar o upload cerebral:", error);
     }
   };
 

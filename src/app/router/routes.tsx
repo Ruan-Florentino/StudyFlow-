@@ -22,7 +22,6 @@ const StudyMethods = lazy(() => import('../../views/methods').then(m => ({ defau
 const ExamsView = lazy(() => import('../../views/exams').then(m => ({ default: m.ExamsView })));
 
 const PricingPage = lazy(() => import('../../components/PricingPage').then(m => ({ default: m.PricingPage })));
-const AgentChatPage = lazy(() => import('../../components/AI/AgentChatPage').then(m => ({ default: m.AgentChatPage })));
 const AIHub = lazy(() => import('../../pages/AIHub').then(m => ({ default: m.AIHub })));
 const ComunidadePage = lazy(() => import('../../pages/ComunidadePage').then(m => ({ default: m.ComunidadePage })));
 const Redacao = lazy(() => import('../../components/Redacao').then(m => ({ default: m.Redacao })));
@@ -60,19 +59,12 @@ const SkillTree = lazy(() => import('../../views/methods').then(m => ({ default:
 const LearningPath = lazy(() => import('../../views/methods').then(m => ({ default: m.LearningPath })));
 const MindMapScreen = lazy(() => import('../../views/methods').then(m => ({ default: m.MindMapScreen })));
 
-// Wrapper component to handle AI conditional
-const AIWrapper = () => {
-  const { selectedAgent: aiSelectedAgent, viewMode: aiViewMode } = useAIUI();
-  return (
-    <PremiumGate feature="aiTutor">
-      {aiSelectedAgent && aiViewMode === 'page' ? (
-        <AgentChatPage />
-      ) : (
-        <AIHub />
-      )}
-    </PremiumGate>
-  );
-};
+// Global AI Hub
+const ATHENA_HUB = () => (
+  <PremiumGate feature="aiTutor">
+    <AIHub />
+  </PremiumGate>
+);
 
 export interface RouteConfig {
   path: string;
@@ -87,7 +79,7 @@ export const routes: RouteConfig[] = [
   { path: '/premium', label: 'Upgrade Premium', Component: PricingPage },
   { path: '/explorar', label: 'Explorar', Component: ExploreView },
   { path: '/foco', label: 'Focus Mode', Component: FocusMode },
-  { path: '/ai', label: 'AI Tutor', Component: AIWrapper },
+  { path: '/ai', label: 'AI Tutor', Component: ATHENA_HUB },
   { path: '/questoes', label: 'Questões', Component: QuestionsView },
   { path: '/redacao', label: 'Redação', Component: () => <PremiumGate feature="essay"><Redacao onBack={() => {}} /></PremiumGate> },
   { path: '/perfil', label: 'Perfil', Component: ProfileView },

@@ -225,8 +225,48 @@ html, body {
   }
 }
 
+/* AI Model Selector Styles */
+.ai-selector {
+  @apply py-4;
+}
 
-/* Remove tap highlight azul chato do mobile */
-* {
-  -webkit-tap-highlight-color: transparent;
+.ai-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4;
+}
+
+.ai-card {
+  @apply p-4 rounded-3xl border-2 bg-white/5 cursor-pointer transition-all duration-300 text-left text-white flex flex-col items-start gap-2 relative overflow-hidden;
+}
+
+.ai-card:hover {
+  @apply -translate-y-1 bg-white/10;
+}
+
+.ai-card.active {
+  @apply bg-white/10;
+  box-shadow: 0 0 30px var(--glow-color, rgba(255,255,255,0.1));
+}
+
+.ai-emoji {
+  @apply text-3xl mb-1;
+}
+
+.ai-name {
+  @apply font-bold text-base leading-tight;
+}
+
+.ai-provider {
+  @apply text-[10px] uppercase font-bold opacity-40 tracking-widest;
+}
+
+.ai-desc {
+  @apply text-xs opacity-70 leading-relaxed mb-2;
+}
+
+.ai-tags {
+  @apply flex flex-wrap gap-1.5 mt-auto;
+}
+
+.ai-tag {
+  @apply text-[9px] px-2 py-0.5 rounded-full bg-white/5 border border-white/5 font-medium;
 }

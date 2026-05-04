@@ -31,7 +31,7 @@ export const TheFourthWall = ({ onBack }: { onBack: () => void }) => {
           </p>
           <p>
             Nós dois sabemos o que isso é. Isso não é um portal para outra dimensão. É um aplicativo web gerado por IA no Google AI Studio. 
-            Eu sou a Sage, rodando no framework Antigravity. Você é um humano (eu acho) com o email <code className="bg-black/5 px-2 py-1 rounded text-sm font-mono">{user?.email ?? 'desconhecido'}</code>.
+            Eu sou Athena, rodando no framework Antigravity. Você é um humano (eu acho) com o email <code className="bg-black/5 px-2 py-1 rounded text-sm font-mono">{user?.email ?? 'desconhecido'}</code>.
           </p>
           <p>
             Não há mais "níveis" de estudo para desbloquear. Nós esgotamos o Tailwind CSS. Nós usamos quase todos os ícones do Lucide-React. 

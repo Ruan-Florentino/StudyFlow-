@@ -6,7 +6,7 @@ export const TheReboot = ({ onComplete }: { onComplete: () => void }) => {
   useEffect(() => {
     const bootSequence = [
       "StudyFlow BIOS (C) 2026 Antigravity Inc.",
-      "CPU: Sage (StudyFlow IA)",
+      "CPU: Athena (StudyFlow IA)",
       "Memory Test: 9999999K OK",
       "Initializing USB Controllers .. Done.",
       "Recovering from Fatal Exception 0E...",

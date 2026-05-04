@@ -1,30 +1,28 @@
 import { create } from 'zustand';
-import { AgentKey, STUDY_AGENTS } from '../config/aiAgents';
-
 interface AIUIState {
   isOpen: boolean;
-  selectedAgent: AgentKey | null;
+  selectedTopic: string | null;
   currentSessionId: string | null;
   viewMode: 'sidebar' | 'page';
-  openChat: (agent?: AgentKey, sessionId?: string | null) => void;
+  openChat: (topic?: string, sessionId?: string | null) => void;
   closeChat: () => void;
-  setAgent: (agent: AgentKey) => void;
+  setTopic: (topic: string) => void;
   setSession: (sessionId: string | null) => void;
   setViewMode: (mode: 'sidebar' | 'page') => void;
 }
 
 export const useAIUI = create<AIUIState>((set) => ({
   isOpen: false,
-  selectedAgent: 'TUTOR',
+  selectedTopic: 'Geral',
   currentSessionId: null,
   viewMode: 'sidebar',
-  openChat: (agent, sessionId = null) => set((state) => ({ 
+  openChat: (topic, sessionId = null) => set((state) => ({ 
     isOpen: true, 
-    selectedAgent: agent || state.selectedAgent,
+    selectedTopic: topic || state.selectedTopic,
     currentSessionId: sessionId
   })),
   closeChat: () => set({ isOpen: false }),
-  setAgent: (agent) => set({ selectedAgent: agent, currentSessionId: null }),
+  setTopic: (topic) => set({ selectedTopic: topic, currentSessionId: null }),
   setSession: (sessionId) => set({ currentSessionId: sessionId }),
   setViewMode: (mode) => set({ viewMode: mode }),
 }));

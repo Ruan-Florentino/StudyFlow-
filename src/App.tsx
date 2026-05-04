@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { AppProviders } from './app/providers';
 import { router } from './app/router/RouterConfig';
 import { PWAUpdatePrompt } from './components/shared/PWAUpdatePrompt';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+import { testOpenRouterConnection } from './lib/testAPI';
 
 /**
  * App
@@ -11,6 +13,10 @@ import { PWAInstallPrompt } from './components/PWAInstallPrompt';
  */
 
 export default function App() {
+  useEffect(() => {
+    testOpenRouterConnection();
+  }, []);
+
   return (
     <AppProviders>
       <RouterProvider router={router} />
