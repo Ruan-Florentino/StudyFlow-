@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2, Sparkles, FileText, Layers, Brain } from 'lucide-react';
 import { useStore } from '../../../store';
 import { athenaClient } from '../../../features/athena/services/athenaClient';
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../../../config/openRouter';
 import { AnimatedButton, GlassCard } from '../../../components/UI';
 import { triggerConfetti } from '../../../lib/studyUtils';
 
@@ -34,7 +35,7 @@ Retorne APENAS um JSON:
           { role: 'system', content: 'Você é um assistente de resumo de vídeos educacionais. Retorne apenas JSON.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemini-2.0-flash-001'
+        model: DEFAULT_OPENROUTER_CHAT_MODEL
       });
 
       const cleanJson = response.replace(/```json|```/g, '').trim();
@@ -67,7 +68,7 @@ Retorne APENAS um JSON:
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 animate-in slide-in-from-right duration-500">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 animate-in slide-in-from-right duration-500">
       <header className="flex items-center gap-4">
         <AnimatedButton onClick={onBack} variant="secondary" className="p-2 rounded-full">
           <ArrowLeft size={20} />

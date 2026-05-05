@@ -54,7 +54,7 @@ export const ExamsHub = ({ onSelectExam }: ExamsHubProps) => {
     });
 
   return (
-    <div className="p-6 space-y-6 pb-28">
+    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
       <div className="space-y-4">
         <Header 
           title="Provas 2026"

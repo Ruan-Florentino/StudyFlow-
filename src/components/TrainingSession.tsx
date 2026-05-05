@@ -181,7 +181,7 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
   if (!currentQuestion) return null;
 
   return (
-    <div className="p-6 space-y-6 pb-28">
+    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
       <Header 
         title={`Questão ${currentIndex + 1}`}
         subtitle={`${questions.length} restantes`}
@@ -191,7 +191,7 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
         rightContent={
           <div className="flex items-center gap-4">
              <div className="text-right hidden sm:block">
-               <p className="text-[10px] font-premium-mono font-bold text-primary uppercase tracking-widest leading-none">Acertos</p>
+               <p className="text-xs font-premium-mono font-bold text-primary uppercase tracking-widest leading-none">Acertos</p>
                <p className="text-sm font-bold text-white">{correctCount}</p>
              </div>
              <div className="w-12 h-12 flex items-center justify-center relative">

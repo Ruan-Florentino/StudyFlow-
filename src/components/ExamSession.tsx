@@ -70,7 +70,7 @@ const ExamSession = ({ questions, durationMinutes, onComplete, onCancel }: ExamS
   const progress = (answeredCount / questions.length) * 100;
 
   return (
-    <div className="p-6 space-y-6 pb-28 relative">
+    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28 relative">
       <Header 
         title="Simulado Real"
         subtitle={`${questions.length} Questões`}

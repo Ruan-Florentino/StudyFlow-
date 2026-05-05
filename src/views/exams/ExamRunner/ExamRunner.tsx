@@ -27,7 +27,7 @@ export const ExamRunner = ({
   const answeredCount = Object.keys(answers).length;
 
   return (
-    <div className="p-6 space-y-6 pb-32">
+    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-32 md:pb-36">
       <header className="flex justify-between items-center sticky top-0 z-50 bg-background/80 backdrop-blur-md py-4 -mx-6 px-6 border-b border-white/5">
         <button onClick={onBack} className="text-text-secondary"><ChevronLeft size={24} /></button>
         <div className="text-center">

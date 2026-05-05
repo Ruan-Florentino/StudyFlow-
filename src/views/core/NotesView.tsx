@@ -116,7 +116,7 @@ const NotesView = () => {
 
   if (selectedNote) {
     return (
-      <div className="p-6 space-y-8 pb-32 animate-in slide-in-from-right duration-300">
+      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 animate-in slide-in-from-right duration-300">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={() => setSelectedNote(null)} className="p-2 bg-white/5 rounded-xl border border-white/10">
@@ -181,7 +181,7 @@ const NotesView = () => {
   }
 
   return (
-    <div className="p-6 space-y-8 pb-32 animate-in fade-in duration-500">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 animate-in fade-in duration-500">
       <header className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">

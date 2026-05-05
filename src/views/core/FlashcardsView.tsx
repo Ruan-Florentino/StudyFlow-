@@ -59,7 +59,7 @@ const FlashcardsView = () => {
     const progress = ((currentCardIdx) / cardsToReview.length) * 100;
 
     if (!card) return (
-      <div className="p-6 h-screen flex flex-col items-center justify-center space-y-6">
+      <div className="app-shell-premium pt-6 md:pt-8 h-screen flex flex-col items-center justify-center space-y-6">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-[0_0_30px_rgba(0,255,148,0.2)]">
           <Check size={40} />
         </div>
@@ -72,7 +72,7 @@ const FlashcardsView = () => {
     );
 
     return (
-      <div className="p-6 space-y-8 h-screen flex flex-col bg-background/50">
+      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium h-screen flex flex-col bg-background/50">
         <header className="flex justify-between items-center">
           <button onClick={() => setView('list')} className="p-2 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
             <ChevronLeft size={20} />
@@ -111,7 +111,7 @@ const FlashcardsView = () => {
   }
 
   return (
-    <div className="p-6 space-y-6 pb-28">
+    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
       <div className="flex justify-between items-center relative z-10">
         <Header 
           title={view === 'list' ? 'Meus Decks' : view === 'add-deck' ? 'Novo Deck' : view === 'add-card' ? 'Novo Card' : 'Estudo'}

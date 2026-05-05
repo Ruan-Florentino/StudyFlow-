@@ -59,7 +59,7 @@ const ExamReview = ({ questions, userAnswers, timeSpent, onBack }: ExamReviewPro
   };
 
   return (
-    <div className="p-6 space-y-6 pb-28">
+    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
       <Header 
         title="Revisão Pós-Simulado"
         subtitle="Análise detalhada do seu desempenho"
@@ -69,7 +69,7 @@ const ExamReview = ({ questions, userAnswers, timeSpent, onBack }: ExamReviewPro
         rightContent={
           <div className="flex items-center gap-3">
              <div className="hidden sm:block text-right">
-                <p className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase">Tempo Total</p>
+                <p className="text-xs font-premium-mono font-bold text-text-secondary uppercase">Tempo Total</p>
                 <p className="text-xs font-bold text-white tracking-widest">{formatTime(timeSpent)}</p>
              </div>
              <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-2">

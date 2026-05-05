@@ -28,7 +28,7 @@ export function SalaPage({ roomId, onLeave }: { roomId: string, onLeave: () => v
         }}
       />
       
-      <div className="relative max-w-md mx-auto px-4 pt-6 pb-[120px]">
+      <div className="relative max-w-md mx-auto w-full px-4 md:px-8 pt-6 pb-[120px]">
         
         {/* HEADER */}
         <motion.div

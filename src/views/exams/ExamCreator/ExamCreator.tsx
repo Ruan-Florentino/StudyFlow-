@@ -55,7 +55,7 @@ export const ExamCreator = ({ exam, onBack }: ExamCreatorProps) => {
 
   if (loading) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+      <div className="app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-primary font-bold animate-pulse text-center">IA Analisando Edital e Histórico da {exam.nome}...</p>
         <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">Calculando Probabilidades e Pesos...</p>
@@ -65,7 +65,7 @@ export const ExamCreator = ({ exam, onBack }: ExamCreatorProps) => {
 
   if (plan) {
     return (
-      <div className="p-6 space-y-6 pb-32 animate-in fade-in slide-in-from-bottom-4">
+      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-32 md:pb-36 animate-in fade-in slide-in-from-bottom-4">
         <header className="flex items-center gap-4">
           <button onClick={() => setPlan(null)} className="p-2 bg-white/5 rounded-xl border border-white/10">
             <ChevronLeft size={20} />
@@ -127,7 +127,7 @@ export const ExamCreator = ({ exam, onBack }: ExamCreatorProps) => {
   }
 
   return (
-    <div className="p-6 space-y-8 pb-32">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36">
       <header className="flex items-center gap-4">
         <button onClick={onBack} className="p-2 bg-white/5 rounded-xl border border-white/10">
           <ChevronLeft size={20} />

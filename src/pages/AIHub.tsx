@@ -6,7 +6,7 @@ import { Sparkles, Brain, Zap, Shield } from 'lucide-react';
 
 export function AIHub() {
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
+    <div className="mx-auto w-full max-w-7xl px-4 md:px-8 pt-6 md:pt-8 h-[calc(100vh-6rem)] flex flex-col">
       {/* Header Section */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
@@ -25,7 +25,7 @@ export function AIHub() {
 
         <div className="hidden md:flex items-center gap-6">
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Status da Rede</span>
+            <span className="text-xs font-bold text-white/20 uppercase tracking-widest">Status da Rede</span>
             <span className="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Sistemas Operacionais
@@ -54,7 +54,7 @@ export function AIHub() {
             <Zap size={16} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Velocidade</span>
+            <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Velocidade</span>
             <span className="text-xs text-white/70 font-bold">Resposta Instantânea</span>
           </div>
         </div>
@@ -64,7 +64,7 @@ export function AIHub() {
             <Brain size={16} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Modelos</span>
+            <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Modelos</span>
             <span className="text-xs text-white/70 font-bold">State-of-the-art LLMs</span>
           </div>
         </div>
@@ -74,7 +74,7 @@ export function AIHub() {
             <Shield size={16} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Arquitetura</span>
+            <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Arquitetura</span>
             <span className="text-xs text-white/70 font-bold">ATHENA Protocol v2</span>
           </div>
         </div>

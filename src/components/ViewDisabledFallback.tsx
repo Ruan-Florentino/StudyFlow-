@@ -9,7 +9,7 @@ interface ViewDisabledFallbackProps {
 
 export const ViewDisabledFallback = ({ feature, onBack }: ViewDisabledFallbackProps) => {
   return (
-    <div className="p-6 flex items-center justify-center min-h-[60vh]">
+    <div className="app-shell-premium pt-6 md:pt-8 flex items-center justify-center min-h-[60vh]">
       <GlassCard className="p-8 text-center max-w-sm space-y-6" glow>
         <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-center justify-center mx-auto">
           <AlertCircle size={32} className="text-rose-500" />

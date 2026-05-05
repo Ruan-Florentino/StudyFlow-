@@ -116,7 +116,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className={clsx(
-      "p-6 flex flex-col items-center justify-center min-h-screen space-y-12 pb-32 animate-in fade-in duration-1000 relative overflow-hidden",
+      "app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-screen space-y-12 pb-32 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden",
       zenMode && "bg-black"
     )}>
       {zenMode && (

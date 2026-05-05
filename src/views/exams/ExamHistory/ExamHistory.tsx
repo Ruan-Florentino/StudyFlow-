@@ -31,7 +31,7 @@ export const ExamHistory = ({ onBack }: ExamHistoryProps) => {
   if (qError) return <QuestionsLoadError error={qError} />;
 
   return (
-    <div className="p-6 space-y-6 pb-28">
+    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
       <Header 
         title="Histórico"
         subtitle="Simulados Recentes"

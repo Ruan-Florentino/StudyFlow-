@@ -97,7 +97,7 @@ export const ExamsView = () => {
   if (view === 'simulado' && selectedExam) {
     if (loading) {
       return (
-        <div className="p-6 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div className="app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-primary font-bold animate-pulse text-center">IA Montando Simulado Estratégico...</p>
         </div>
@@ -106,7 +106,7 @@ export const ExamsView = () => {
 
     if (simStep === 'setup') {
       return (
-        <div className="p-6 space-y-8 pb-32">
+        <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36">
           <header className="flex items-center gap-4">
             <button onClick={() => setView('list')} className="p-2 bg-white/5 rounded-xl border border-white/10">
               <ChevronLeft size={20} />

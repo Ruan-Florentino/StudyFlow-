@@ -106,7 +106,7 @@ Retorne APENAS um JSON:
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-4xl px-4 md:px-8 pt-6 md:pt-8 space-y-6 pb-32 md:pb-36">
       <div className="flex items-center gap-4 mb-8">
         <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition-colors">
           <ChevronLeft size={24} />

@@ -29,7 +29,7 @@ export const PricingPage = ({ onBack }: { onBack: () => void }) => {
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-8 space-y-12">
+      <div className="relative z-10 app-shell-premium max-w-4xl pt-8 md:pt-10 space-y-12">
         <header className="flex items-center justify-between">
           <AnimatedButton onClick={onBack} variant="secondary" className="p-2 rounded-full bg-white/5 border-white/10">
             <ArrowLeft size={18} />

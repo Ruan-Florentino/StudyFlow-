@@ -30,8 +30,7 @@ export function ComunidadePage() {
   }
   
   return (
-    <div className="min-h-screen bg-black text-white
-                    px-4 pt-8 pb-32 relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white app-shell-premium pt-8 md:pt-10 pb-32 md:pb-36 relative overflow-hidden">
       
       {/* Ambient */}
       <div 
