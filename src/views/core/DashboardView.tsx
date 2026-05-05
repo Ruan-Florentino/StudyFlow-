@@ -1,9 +1,5 @@
-// React
-import { useEffect } from 'react';
-
 // External libs
 import { motion } from 'motion/react';
-import Markdown from 'react-markdown';
 
 // Lucide icons
 import {
@@ -11,33 +7,15 @@ import {
   Target,
   Play,
   Users,
-  Award,
   BookOpen,
-  Zap,
   Clock,
-  Flame,
   Trophy,
-  Star,
   Brain,
-  Layout,
-  ChevronRight,
   Calendar,
   TrendingUp,
   CheckCircle2,
   ArrowUpRight,
-  Lock,
-  PlusCircle,
   MessageSquare,
-  Dna,
-  Sparkles,
-  Calculator,
-  Mic,
-  Music,
-  Globe,
-  Search,
-  Database,
-  AlertTriangle,
-  Heart,
   Timer,
   Headset,
   BrainCircuit,
@@ -59,9 +37,6 @@ import {
 // Stores
 import { useStore } from '../../store';
 
-// Services
-import { athenaService } from '../../features/athena/services/athenaService';
-
 // Data
 import { useQuestionMap } from '../../hooks/useQuestions';
 import { QuestionsLoadingSkeleton } from '../../components/shared/QuestionsLoadingSkeleton';
@@ -73,7 +48,7 @@ import {
   AnimatedButton, 
   ProgressRing, 
   NeonIcon, 
-  Badge, 
+  Badge,
   IconTile,
   cn
 } from '../../components/UI';
@@ -88,30 +63,10 @@ import { useAppNavigation } from '../../app/router/useAppNavigation';
 
 const DashboardView = () => {
   const { questionMap: QUESTION_MAP, loading: qLoading, error: qError } = useQuestionMap();
-  const { name, profilePic, streak, xp, level, sessions, history, exams, league, dailyXP, routine, dailyGoalMinutes, smartRecommendation, setSmartRecommendation, neuralSync, plan } = useStore();
+  const { name, profilePic, level, sessions, history, exams, league, routine, dailyGoalMinutes, plan } = useStore();
   const { goTo } = useAppNavigation();
 
-
-  useEffect(() => {
-    const fetchRecommendation = async () => {
-      if (!smartRecommendation && history.length > 0) {
-        try {
-          const rec = await athenaService.generateSmartRecommendation(history, level);
-          setSmartRecommendation(rec);
-        } catch (error) {
-          console.error("Erro ao gerar recomendação Athena:", error);
-        }
-      }
-    };
-    fetchRecommendation();
-  }, [history, smartRecommendation, level, setSmartRecommendation]);
-
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayHistory = history.filter(h => h.timestamp.startsWith(todayStr));
-  const todayQuestions = todayHistory.length;
-  const todayCorrect = todayHistory.filter(h => h.isCorrect).length;
-  const todayAccuracy = todayQuestions > 0 ? Math.round((todayCorrect / todayQuestions) * 100) : 0;
-
   const todaySessions = sessions.filter(s => s.date === todayStr);
   const todayStudyMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
   const goalProgress = Math.min(100, (todayStudyMinutes / dailyGoalMinutes) * 100);
@@ -163,7 +118,7 @@ const DashboardView = () => {
   if (qError) return <QuestionsLoadError error={qError} />;
 
   return (
-    <div className="p-6 space-y-8 pb-32 animate-in fade-in duration-700">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 animate-in fade-in duration-700">
       {/* Mission Control Header */}
       <header className="flex justify-between items-start">
         <div className="space-y-1">
@@ -176,9 +131,6 @@ const DashboardView = () => {
           </h1>
           <div className="flex items-center gap-3 pt-1">
             <p className="text-xs text-text-secondary font-premium-mono uppercase tracking-widest">Nível {level} • {league}</p>
-            <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: `${(xp % 1000) / 10}%` }} />
-            </div>
           </div>
         </div>
         <div className="flex gap-2">
@@ -186,7 +138,7 @@ const DashboardView = () => {
             onClick={() => goTo('/estatisticas')}
             className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/40 transition-colors flex items-center justify-center"
           >
-            <BarChart3 size={20} className="text-primary" style={{ filter: 'drop-shadow(0 0 6px #00E88F)' }} />
+            <BarChart3 size={20} className="text-primary" />
           </button>
           <AnimatedButton onClick={() => goTo('/perfil')} variant="secondary" className="p-0 rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all">
             <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} alt="Profile" className="w-12 h-12 object-cover" referrerPolicy="no-referrer" />
@@ -273,18 +225,14 @@ const DashboardView = () => {
           onClick={() => goTo('/estatisticas')}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
-          className="w-full relative overflow-hidden rounded-3xl p-4 border border-primary/20 text-left my-4"
-          style={{ 
-            background: 'linear-gradient(135deg, rgba(0,232,143,0.1), rgba(0,232,143,0.02))',
-            boxShadow: '0 0 30px rgba(0,232,143,0.1)'
-          }}
+          className="premium-stats-tile w-full relative overflow-hidden rounded-3xl p-4 border border-primary/20 text-left my-4 transition-transform duration-200"
         >
           <div className="absolute -top-4 -right-4 opacity-15">
             <BarChart3 size={80} className="text-primary" />
           </div>
           <div className="relative flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
-              <TrendingUp size={20} className="text-primary" style={{ filter: 'drop-shadow(0 0 6px #00E88F)' }} />
+              <TrendingUp size={20} className="text-primary" />
             </div>
             <div className="flex-1">
               <div className="text-sm font-bold text-white">Suas Estatísticas</div>
@@ -295,127 +243,12 @@ const DashboardView = () => {
         </motion.button>
       </div>
 
-      {/* Mission Status Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <GlassCard className="p-4 space-y-3 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Star size={40} className="text-primary" />
-          </div>
-          <div className="flex items-center gap-2 text-primary">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-            >
-              <Star size={14} fill="currentColor" />
-            </motion.div>
-            <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Energia</span>
-          </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-premium-mono font-bold">{xp.toLocaleString()}</div>
-            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-tighter">XP Acumulado</div>
-          </div>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${(xp % 1000) / 10}%` }}
-              className="h-full bg-primary shadow-[0_0_10px_rgba(0,255,148,0.5)]"
-            />
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-4 space-y-3 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Flame size={40} className="text-orange-500" />
-          </div>
-          <div className="flex items-center gap-2 text-orange-500">
-            <Flame size={14} fill="currentColor" />
-            <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Sequência</span>
-          </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-premium-mono font-bold">{streak} Dias</div>
-            <div className="text-[10px] text-text-secondary uppercase font-bold tracking-tighter">Fogo Ativo</div>
-          </div>
-          <div className="flex gap-1">
-            {[1,2,3,4,5].map(i => (
-              <div key={i} className={cn("h-1 flex-1 rounded-full", i <= (streak % 5 || 5) ? "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]" : "bg-white/5")} />
-            ))}
-          </div>
-        </GlassCard>
-      </div>
-
-      {/* Neural Sync Full Width Card */}
-      <GlassCard className="p-4 space-y-3 relative overflow-hidden group border-blue-500/20 bg-blue-500/5">
-        <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-          <BrainCircuit size={60} className="text-blue-500" />
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-blue-500">
-            <BrainCircuit size={14} />
-            <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Neural Sync</span>
-          </div>
-          <span className="text-xs text-blue-500/70 font-mono">{neuralSync}%</span>
-        </div>
-        <div className="space-y-1">
-          <div className="text-xl font-premium-mono font-bold text-blue-500">Estado de Fluxo</div>
-        </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${neuralSync}%` }}
-            className="h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)]"
-          />
-        </div>
-      </GlassCard>
-
-      {/* AI Intelligence Hub */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Intelligence Hub</h3>
-          <div className="h-px flex-1 bg-white/5 ml-4" />
-        </div>
-        
-        {smartRecommendation ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <GlassCard className="p-5 border-primary/20 bg-primary/5 relative overflow-hidden group cursor-pointer" onClick={() => goTo('/' + smartRecommendation.actionTab)}>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[50px] -mr-16 -mt-16 group-hover:bg-primary/20 transition-all" />
-              <div className="flex gap-4 relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-primary text-black flex items-center justify-center shadow-[0_0_20px_rgba(0,255,148,0.3)]">
-                  {smartRecommendation.icon === 'Zap' && <Zap size={24} fill="currentColor" />}
-                  {smartRecommendation.icon === 'BookOpen' && <BookOpen size={24} />}
-                  {smartRecommendation.icon === 'Target' && <Target size={24} />}
-                  {smartRecommendation.icon === 'Brain' && <Brain size={24} />}
-                </div>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-premium-mono font-bold text-primary uppercase tracking-widest">Recomendação IA</span>
-                    <Badge variant={smartRecommendation.priority === 'high' ? 'danger' : 'primary'} className="text-[8px] px-2 py-0">
-                      {smartRecommendation.priority === 'high' ? 'Urgente' : 'Sugerido'}
-                    </Badge>
-                  </div>
-                  <h4 className="font-bold text-sm group-hover:text-primary transition-colors">{smartRecommendation.title}</h4>
-                  <p className="text-xs text-text-secondary leading-relaxed">{smartRecommendation.description}</p>
-                </div>
-              </div>
-            </GlassCard>
-          </motion.div>
-        ) : (
-          <GlassCard className="p-8 flex flex-col items-center justify-center text-center space-y-4 border-dashed">
-            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white/20">
-              <Sparkles size={24} className="animate-pulse" />
-            </div>
-            <p className="text-xs text-text-secondary font-premium-mono uppercase tracking-widest">Sincronizando com a IA...</p>
-          </GlassCard>
-        )}
-      </section>
 
       {/* Quick Access Grid */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Quick Access</h3>
-          <div className="h-px flex-1 bg-white/5 ml-4" />
+          <div className="divider-premium-line ml-4" />
         </div>
         <div className="grid grid-cols-4 gap-4">
           {[
@@ -440,7 +273,7 @@ const DashboardView = () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Ferramentas IA</h3>
-          <div className="h-px flex-1 bg-white/5 ml-4" />
+          <div className="divider-premium-line ml-4" />
         </div>
         <div className="grid grid-cols-4 gap-4">
           {[
@@ -503,31 +336,6 @@ const DashboardView = () => {
         </div>
       </GlassCard>
 
-      {/* Daily Challenge */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Desafio Diário</h3>
-          <div className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded text-[8px] font-bold text-orange-500 uppercase tracking-widest">Bônus +500 XP</div>
-        </div>
-        <GlassCard className="p-4 border-orange-500/20 bg-orange-500/5 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Trophy size={40} className="text-orange-500" />
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-500 border border-orange-500/30">
-              <Zap size={24} fill="currentColor" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-sm">Mestre do Foco</h4>
-              <p className="text-xs text-text-secondary">Complete 2 sessões de Pomodoro de 25 min hoje.</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-bold text-orange-500">0/2</p>
-              <p className="text-[8px] text-text-secondary uppercase font-bold tracking-widest">Sessões</p>
-            </div>
-          </div>
-        </GlassCard>
-      </section>
 
       {/* collective focus highlight */}
       <section className="space-y-4">

@@ -198,7 +198,7 @@ const ProfileView = () => {
   };
 
   return (
-    <div className="pb-32">
+    <div className="pb-32 max-w-6xl mx-auto w-full">
       {/* Hidden share card for html2canvas */}
       <div className="fixed -left-[9999px] top-0">
         <div id="profile-share-card" className="w-[400px] p-8 bg-[#0a0a0a] border-2 border-[#00ff94]/20 rounded-[40px] space-y-6 relative overflow-hidden">
@@ -271,7 +271,7 @@ const ProfileView = () => {
         </div>
       </div>
 
-      <div className="px-6 relative">
+      <div className="app-shell-premium relative">
         {/* Action Buttons */}
         <div className="flex justify-end pt-4 gap-2">
           <button 

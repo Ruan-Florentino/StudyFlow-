@@ -42,7 +42,27 @@
   }
   
   .glass-card {
-    @apply bg-card border border-border backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-[20px] transition-all duration-300 hover:border-white/10;
+    @apply bg-card border border-border backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-2xl transition-all duration-300 hover:border-white/10;
+  }
+
+  /* T.6 — shell + surfaces (premium density, Figma-aligned tokens) */
+  .app-shell-premium {
+    @apply mx-auto w-full max-w-6xl px-4 md:px-8;
+  }
+
+  .app-stack-premium {
+    @apply space-y-8 md:space-y-10;
+  }
+
+  .divider-premium-line {
+    @apply h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent;
+  }
+
+  .premium-stats-tile {
+    background: linear-gradient(135deg, rgba(0, 232, 143, 0.09), rgba(0, 232, 143, 0.02));
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .neon-glow {

@@ -414,7 +414,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
 
   if (view === 'bank') {
     return (
-      <div className="p-6 space-y-8 pb-32">
+      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36">
         <header className="space-y-6">
           <Header 
             title="Banco de Questões"
@@ -697,7 +697,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
   // ⚠️ FATIA 3 EM PROGRESSO. Falta: training, exam, review
   if (view === 'ai-setup') {
     return (
-      <div className="p-6 space-y-6 pb-28">
+      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
         <Header 
           title="Gerar com IA"
           subtitle="Inteligência Artificial"
@@ -790,7 +790,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
 
   if (view === 'exam-setup') {
     return (
-      <div className="p-6 space-y-6 pb-28">
+      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
         <Header 
           title="Configurar Prova"
           subtitle="Modo Simulado"
@@ -867,7 +867,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
 
   if (view === 'external-banks') {
     return (
-      <div className="p-6 space-y-6 pb-28">
+      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
         <Header 
           title="Bancos Externos"
           subtitle="Recursos complementares"
@@ -959,7 +959,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
     const PerfIcon = perfIcon;
 
     return (
-      <div className="p-6 space-y-5 pb-28">
+      <div className="app-shell-premium pt-6 md:pt-8 space-y-5 pb-28">
         <Header 
           title="Resultado"
           subtitle="Desempenho na prova"

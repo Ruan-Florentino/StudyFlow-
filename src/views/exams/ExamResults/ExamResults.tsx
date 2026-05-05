@@ -70,7 +70,7 @@ export const ExamResults = ({
 
   if (loading) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center">
+      <div className="app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-primary font-bold animate-pulse">Gerando Plano de Revisão IA Personalizado...</p>
       </div>
@@ -79,7 +79,7 @@ export const ExamResults = ({
 
   if (showAiReview && aiReview) {
     return (
-      <div className="p-6 space-y-6 pb-32">
+      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-32 md:pb-36">
         <header className="flex items-center gap-4">
           <button onClick={() => setShowAiReview(false)} className="p-2 bg-white/5 rounded-xl border border-white/10">
             <ChevronLeft size={20} />
@@ -110,7 +110,7 @@ export const ExamResults = ({
   }
 
   return (
-    <div className="p-6 space-y-8 text-center pb-32">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium text-center pb-32 md:pb-36">
       <div className="space-y-2">
         <h2 className="text-3xl font-black italic">RESULTADO</h2>
         <p className="text-text-secondary uppercase text-xs font-bold tracking-widest">{exam.nome}</p>

@@ -166,7 +166,7 @@ const Reports = () => {
   ];
 
   return (
-    <div className="p-6 space-y-8 pb-32">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36">
       <Header 
         title="Estatísticas"
         subtitle="Performance"

@@ -273,7 +273,7 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
       {/* TABS STICKY */}
-      <div className="sticky top-0 z-20 px-4 py-3 bg-black/70 backdrop-blur-xl border-b border-white/5">
+      <div className="sticky top-0 z-20 app-shell-premium py-3 bg-black/70 backdrop-blur-xl border-b border-white/5">
         <div className="flex gap-2">
           {[
             { id: 'liga', label: 'Minha Liga', icon: Trophy },
@@ -303,7 +303,7 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
       {/* CONTENT */}
-      <div className="px-4 py-4">
+      <div className="app-shell-premium py-4">
         <AnimatePresence mode="wait">
           {activeTab === 'liga' && (
             <motion.div 
