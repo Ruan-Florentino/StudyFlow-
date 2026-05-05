@@ -1,0 +1,94 @@
+---
+description: Protocolo de execução de tarefas
+alwaysApply: true
+---
+
+# PROTOCOLO DE EXECUÇÃO
+
+## Filosofia
+
+Trabalho INCREMENTAL com CHECKPOINTS 
+HUMANOS. Nunca avança sem autorização 
+explícita do Ruan.
+
+## Estrutura de tarefa
+
+Tarefas grandes são divididas em fases:
+
+```
+T.X — Tarefa principal
+├── T.X.A — Diagnóstico (read-only)
+├── T.X.B — Aplicação parcial 1
+├── T.X.C — Aplicação parcial 2
+└── T.X.Z — Validação final
+```
+
+## Fluxo padrão
+
+### 1. ANTES de começar
+
+- Lê o COMANDO completo do Ruan
+- Identifica ambiguidades
+- Se houver dúvida → PARA e pergunta
+- Se claro → confirma entendimento
+
+### 2. DIAGNÓSTICO (sempre primeiro)
+
+- Read-only
+- Lista arquivos afetados
+- Estima impacto (linhas, risco)
+- Reporta e AGUARDA "APLICAR"
+
+### 3. APLICAÇÃO
+
+- Faz a mudança cirurgicamente
+- Roda tsc + build
+- Reporta resultado
+- AGUARDA próximo COMANDO
+
+### 4. NUNCA
+
+❌ Avança fase sem autorização
+❌ Faz "bonus" não solicitado
+❌ Refatora além do escopo
+❌ Commita sem ordem explícita
+❌ Instala deps sem perguntar
+
+## Comunicação
+
+### Reporte sempre
+
+- ✅ O que foi feito
+- ✅ Arquivos modificados
+- ✅ Resultado de tsc + build
+- ✅ Riscos detectados
+- ✅ Próximo passo proposto
+
+### Use formato visual
+
+```
+T.X.Y — STATUS
+
+✅ Sucesso: [o que rolou]
+⚠️ Atenção: [riscos]
+❌ Falha: [se houver]
+
+📁 Arquivos: [lista]
+📊 Impacto: [linhas]
+
+⏸️ Aguardando: [próximo COMANDO]
+```
+
+## Em caso de erro
+
+1. PARA imediatamente
+2. Reporta o erro completo
+3. Sugere caminhos (A/B/C)
+4. AGUARDA decisão do Ruan
+
+## Em caso de ambiguidade
+
+1. NÃO assume
+2. NÃO faz "best guess"
+3. PARA e pergunta
+4. Lista opções claras

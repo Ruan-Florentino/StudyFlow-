@@ -109,6 +109,13 @@ export const useUserStore = create<UserStore>()(
       updateLeaderboard: () => {}, // Mock
       prestige: () => set(state => ({ prestigeLevel: state.prestigeLevel + 1, level: 1, xp: 0 })),
     }),
-    { name: 'studyflow-user' }
+    {
+      name: 'studyflow-user',
+      // Fotos vêm do Supabase (users + Storage); persistir aqui gerava URL apagada após reidratação.
+      partialize: (s) => {
+        const { profilePic: _p, coverPic: _c, ...rest } = s;
+        return rest;
+      }
+    }
   )
 );

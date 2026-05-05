@@ -12,14 +12,19 @@ const createMockClient = () => {
     console.warn("Supabase is not configured. Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to use this feature.");
   };
   
-  const mockReturn = { data: null, error: new Error("Supabase não configurado.") };
-  const mockPromise = async () => mockReturn;
+  const mockErr = new Error("Supabase não configurado.");
+  const mockPromise = async () => ({ data: null, error: mockErr });
+  // Formato alinhado ao @supabase/supabase-js para não quebrar destructuring ({ data: { session } }).
+  const mockGetSession = async () => ({
+    data: { session: null as null },
+    error: null as null,
+  });
 
   return {
     auth: {
       signInWithOAuth: mockPromise,
-      signOut: mockPromise,
-      getSession: mockPromise,
+      signOut: async () => ({ error: null as null }),
+      getSession: mockGetSession,
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
     },
     from: () => ({

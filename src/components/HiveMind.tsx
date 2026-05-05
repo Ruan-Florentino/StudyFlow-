@@ -58,7 +58,7 @@ export const HiveMind = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-black relative overflow-hidden">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black relative overflow-hidden">
       {/* Hexagonal Grid Background */}
       <div className="absolute inset-0 opacity-10 pointer-events-none" 
            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'103.92304845413264\' viewBox=\'0 0 60 103.92304845413264\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M30 103.92304845413264l-30-17.32050807568877v-34.64101615137754l30-17.32050807568877 30 17.32050807568877v34.64101615137754zM15 77.94228634059948l15 8.660254037844386 15-8.660254037844386v-17.32050807568877l-15-8.660254037844386-15 8.660254037844386z\' fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")', backgroundSize: '60px 103.9px' }} />

@@ -67,7 +67,7 @@ const Universe = {
           <button 
             onClick={handleCompile}
             disabled={isCompiling}
-            className="flex items-center gap-2 px-4 py-1 border border-[#00ff41]/50 hover:bg-[#00ff41] hover:text-black transition-all text-[10px] uppercase font-bold disabled:opacity-30"
+            className="flex items-center gap-2 px-4 py-1 border border-[#00ff41]/50 hover:bg-[#00ff41] hover:text-black transition-all text-xs uppercase font-bold disabled:opacity-30"
           >
             {isCompiling ? <Cpu className="animate-spin" size={12} /> : <Save size={12} />}
             Compile Reality

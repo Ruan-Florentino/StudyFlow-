@@ -1,0 +1,84 @@
+---
+description: Padrões de qualidade de código
+alwaysApply: true
+---
+
+# QUALIDADE DE CÓDIGO
+
+## TypeScript
+
+✅ `strict: true` sempre
+✅ Tipos explícitos em props, retornos, 
+   estados
+✅ Use `type` para uniões, `interface` 
+   para objetos extensíveis
+✅ Use `as const` em arrays/objetos 
+   imutáveis
+
+❌ NUNCA `any` (use `unknown` se 
+   realmente desconhecido)
+❌ NUNCA `// @ts-ignore` (resolve o tipo)
+❌ NUNCA `!` (non-null assertion) sem 
+   garantia real
+
+## React
+
+✅ Functional components only
+✅ Hooks no topo, sempre
+✅ Custom hooks pra lógica reutilizável
+✅ Memo apenas quando provado necessário 
+   (não otimização prematura)
+
+❌ NUNCA classes
+❌ NUNCA useEffect com dependências 
+   ausentes
+❌ NUNCA inline functions em loops 
+   grandes (use useCallback)
+
+## Performance
+
+✅ Lazy loading de rotas pesadas
+✅ Imagens otimizadas (webp, sizes)
+✅ Suspense boundaries em fetches
+✅ Skeletons durante loading
+
+❌ NUNCA fetch em useEffect sem cleanup
+❌ NUNCA renderiza listas grandes sem 
+   virtualização (10k+)
+
+## Acessibilidade
+
+✅ Botões com `<button>`, links com `<a>`
+✅ Inputs com `<label>` associado
+✅ Modais com focus trap
+✅ Contraste mínimo WCAG AA
+
+❌ NUNCA `<div onClick>` (use button)
+❌ NUNCA placeholder como label
+❌ NUNCA cor como única forma de 
+   informar estado
+
+## Erros e edge cases
+
+✅ Trata loading, error, empty, success
+✅ Boundaries de erro em features 
+   críticas
+✅ Logs informativos (não console.log 
+   em produção)
+✅ Mensagens de erro em pt-BR pro 
+   usuário
+
+❌ NUNCA promessa sem catch
+❌ NUNCA assume que dados existem
+❌ NUNCA mostra erro técnico ao usuário 
+   final
+
+## Comentários
+
+✅ Comenta o "porquê", não o "o quê"
+✅ TODO com contexto e dono
+✅ JSDoc em funções públicas complexas
+
+❌ NUNCA comenta código óbvio
+❌ NUNCA deixa código comentado (apaga)
+❌ NUNCA TODO sem prazo ou plano

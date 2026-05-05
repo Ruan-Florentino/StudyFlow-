@@ -16,7 +16,7 @@ export const CyberneticImplants = ({ onBack }: { onBack: () => void }) => {
   const [activeImplant, setActiveImplant] = useState<string | null>(null);
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-black relative overflow-hidden">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-pink-900/20 via-black to-black pointer-events-none" />
       
       <header className="flex items-center gap-4 relative z-10">

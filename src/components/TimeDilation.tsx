@@ -48,7 +48,7 @@ export const TimeDilation = ({ onBack }: { onBack: () => void }) => {
   }));
 
   return (
-    <div className={cn("p-6 space-y-8 pb-32 min-h-screen transition-colors duration-1000", isActive ? "bg-black" : "bg-slate-950")}>
+    <div className={cn("app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen transition-colors duration-1000", isActive ? "bg-black" : "bg-slate-950")}>
       <header className="flex items-center gap-4 relative z-10">
         <AnimatedButton onClick={onBack} variant="secondary" className="p-2 rounded-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10">
           <ChevronLeft size={20} />

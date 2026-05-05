@@ -39,7 +39,7 @@ export const NeuralForge = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-black relative overflow-hidden">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black relative overflow-hidden">
       {/* Heat Glow Effect */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(239,68,68,0.05)_0%,_transparent_70%)] pointer-events-none" />
       

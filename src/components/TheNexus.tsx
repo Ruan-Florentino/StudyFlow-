@@ -62,7 +62,7 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
           </button>
           <div>
             <h1 className="text-xl font-serif italic tracking-tight">The Nexus</h1>
-            <p className="text-[10px] uppercase tracking-[0.3em] opacity-50">Architects Collective Hub</p>
+            <p className="text-xs uppercase tracking-[0.3em] opacity-50">Architects Collective Hub</p>
           </div>
         </div>
         <div className="flex items-center gap-6">
@@ -77,7 +77,7 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 grid grid-cols-1 md:grid-cols-3 gap-8 p-8 overflow-y-auto custom-scrollbar">
+      <div className="relative z-10 flex-1 grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-8 py-8 overflow-y-auto custom-scrollbar max-w-6xl mx-auto w-full">
         {/* Left: Active Architects */}
         <div className="md:col-span-2 space-y-6">
           <div className="flex items-center gap-2 mb-4">

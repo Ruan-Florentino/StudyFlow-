@@ -1,4 +1,5 @@
 import { athenaClient } from '../features/athena/services/athenaClient';
+import { AI_MODELS, DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
 
 /**
  * AI Service Wrapper
@@ -12,7 +13,7 @@ export const aiService = {
         ...history.map(h => ({ role: h.role || 'user', content: h.content || h.text })),
         { role: 'user', content: message }
       ],
-      model: model || 'google/gemini-2.0-flash-exp:free'
+      model: model || DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -22,7 +23,7 @@ export const aiService = {
         { role: 'system', content: 'Você é um professor especializado em provas de alto nível. Explique a questão didaticamente.' },
         { role: 'user', content: `Explique por que a alternativa "${correct}" é a correta:\n\nQuestão: ${question}\n\nAlternativas: ${alternatives.join(' | ')}` }
       ],
-      model: 'google/gemini-2.0-flash-exp:free'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -32,7 +33,7 @@ export const aiService = {
         { role: 'system', content: 'Você é um tutor atencioso. Explique o erro do aluno de forma construtiva.' },
         { role: 'user', content: `O aluno marcou "${userChoice}" mas o correto é "${correct}". Explique por que a escolha dele foi errada e a outra certa.\n\nQuestão: ${question}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -42,7 +43,7 @@ export const aiService = {
         { role: 'system', content: 'Você é um gerador de questões estilo ENEM. Retorne APENAS um JSON válido.' },
         { role: 'user', content: `Gere ${count} questões sobre: ${topic}. Formato JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["A", "B", "C", "D", "E"], "resposta": 0, "materia": "...", "assunto": "...", "difficulty": "Medium"}]` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -54,7 +55,7 @@ export const aiService = {
         { role: 'system', content: 'Você é um corretor oficial de redação ENEM. Retorne APENAS JSON.' },
         { role: 'user', content: `Corrija a redação sobre "${topic}":\n\n${text}\n\nRetorne JSON com notaTotal (1000), competencias (c1-c5), pontosFortes, pontosMelhoria, feedbackGeral.` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -66,7 +67,7 @@ export const aiService = {
          { role: 'system', content: 'Role: Co-Pilot de Redação. Retorne JSON.' },
          { role: 'user', content: `Sugira melhorias para: ${text}\n\nTema: ${topic}\n\nJSON format: [{"id": "1", "type": "...", "text": "..."}]` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -78,7 +79,7 @@ export const aiService = {
         { role: 'system', content: 'Analista de Desempenho. Retorne JSON.' },
         { role: 'user', content: `Gere recomendação baseada em: ${JSON.stringify(history.slice(0, 5))} e nível ${level}. JSON: {title, description, icon, priority, actionTab}` }
       ],
-      model: 'google/gemini-2.0-flash-exp:free'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -90,7 +91,7 @@ export const aiService = {
         { role: 'system', content: 'Resumidor de vídeos. Retorne JSON.' },
         { role: 'user', content: `Resuma o vídeo em ${url}. JSON: {summary, topics, flashcards}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -102,7 +103,7 @@ export const aiService = {
         { role: 'system', content: 'Analisador de documentos. Retorne JSON.' },
         { role: 'user', content: `Analise o documento PDF/Imagem base64 fornecido. JSON: {summary, topics, flashcards}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -112,7 +113,7 @@ export const aiService = {
   generateStudyPlan: async (prompt: string) => {
     return athenaClient.chat({
       messages: [{ role: 'user', content: prompt }],
-      model: 'google/gemini-2.0-pro-exp-02-05:free'
+      model: AI_MODELS.GEMINI_PRO.id
     });
   },
 
@@ -122,7 +123,7 @@ export const aiService = {
         { role: 'system', content: 'Navegador Semântico. Retorne apenas o ID do nó mais próximo.' },
         { role: 'user', content: `Busca: ${query}. Nós: ${JSON.stringify(nodes)}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     return response.trim();
   },
@@ -133,7 +134,7 @@ export const aiService = {
         { role: 'system', content: 'Analisador de Conhecimento. Retorne JSON: {summary, concepts: [], connections: []}' },
         { role: 'user', content: `Texto: ${text}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -142,7 +143,7 @@ export const aiService = {
   generateContent: async (topic: string, format?: string) => {
     return athenaClient.chat({
       messages: [{ role: 'user', content: `Gere conteúdo sobre ${topic}${format ? ` no formato ${format}` : ''}.` }],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -159,14 +160,14 @@ export const aiService = {
         ...history.map(h => ({ role: h.sender === persona ? 'assistant' : 'user', content: h.text })),
         { role: 'user', content: `Dê sua contribuição sobre ${topic}.` }
       ],
-      model: 'google/gemini-2.0-pro-exp-02-05:free'
+      model: AI_MODELS.GEMINI_PRO.id
     });
   },
 
   generateMemoryAssociation: async (concept: string, room: string) => {
     return athenaClient.chat({
       messages: [{ role: 'user', content: `Crie uma associação mnemônica para "${concept}" no ambiente "${room}".` }],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -176,7 +177,7 @@ export const aiService = {
         { role: 'system', content: 'Alquimista Mental. Retorne JSON: {transmutation, coreConcept, practicalApplication}' },
         { role: 'user', content: `Transmute: ${a} + ${b}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -188,7 +189,7 @@ export const aiService = {
         { role: 'system', content: 'Forja Neural. Retorne JSON: {forgedConcept, explanation, powerLevel}' },
         { role: 'user', content: `Forjar: ${a} + ${b}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -200,7 +201,7 @@ export const aiService = {
         { role: 'system', content: 'Arquiteto de Rotinas. Retorne JSON: {routine: []}' },
         { role: 'user', content: `Meta: ${target}, ${hours}h/dia, Dias: ${JSON.stringify(days)}, Nível: ${level}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -209,7 +210,7 @@ export const aiService = {
   generateOracleProphecy: async (name: string, level: number, prestige: number, subjects: any[]) => {
     const response = await athenaClient.chat({
       messages: [{ role: 'user', content: `Gere uma profecia para ${name} (Lvl ${level}, Prestige ${prestige}) focado em ${JSON.stringify(subjects)}. Retorne JSON: {prophecy, convergenceProbability, finalQuote}` }],
-      model: 'google/gemini-2.0-pro-exp-02-05:free'
+      model: AI_MODELS.GEMINI_PRO.id
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -221,7 +222,7 @@ export const aiService = {
         { role: 'system', content: 'Gerador de Flashcards. Retorne JSON: {flashcards: [{front, back}]}' },
         { role: 'user', content: `Tópico: ${topic}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -230,14 +231,14 @@ export const aiService = {
   generatePodcastScript: async (content: string, title: string) => {
     return athenaClient.chat({
       messages: [{ role: 'user', content: `Gere um roteiro de podcast para: ${title}\n\n${content}` }],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
   generateExamPlan: async (name: string, subjects: string[], date: string) => {
     return athenaClient.chat({
       messages: [{ role: 'user', content: `Gere um plano de prova para ${name} em ${date}. Matérias: ${subjects.join(',')}` }],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -247,7 +248,7 @@ export const aiService = {
         { role: 'system', content: 'Mentor de Revisão. Retorne JSON: {suggestions: []}' },
         { role: 'user', content: `Tópicos errados: ${topics.join(',')}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -259,7 +260,7 @@ export const aiService = {
         { role: 'system', content: 'Active Recall Master. Retorne JSON: {questions: []}' },
         { role: 'user', content: `Tema: ${topic}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -271,7 +272,7 @@ export const aiService = {
         { role: 'system', content: 'Blurting Comparison Tool. Retorne JSON: {foundPoints: [], missingPoints: [], overallScore}' },
         { role: 'user', content: `Tema: ${topic}. Conteúdo do aluno: ${content}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -283,7 +284,7 @@ export const aiService = {
         { role: 'system', content: 'Feynman Grader. Retorne JSON: {didacticScore, gaps: [], clearExplanation: string}' },
         { role: 'user', content: `Assunto: ${subject}. Explicação: ${explanation}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -295,7 +296,7 @@ export const aiService = {
         { role: 'system', content: 'Interleaver. Retorne JSON: {quiz: []}' },
         { role: 'user', content: `Assuntos: ${subjects.join(',')}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -307,7 +308,7 @@ export const aiService = {
         { role: 'system', content: 'Pathfinder. Retorne JSON: {steps: []}' },
         { role: 'user', content: `Assunto: ${subject}, Nível: ${level}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -319,7 +320,7 @@ export const aiService = {
         { role: 'system', content: 'Mind Map Architect. Retorne JSON: {nodes: [], edges: []}' },
         { role: 'user', content: `Tópico: ${topic}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -331,7 +332,7 @@ export const aiService = {
         { role: 'system', content: 'Final Boss Generator. Retorne JSON: {questions: []}' },
         { role: 'user', content: `Assunto: ${subject}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -343,7 +344,7 @@ export const aiService = {
         { role: 'system', content: 'Slide Master. Retorne JSON: {slides: []}' },
         { role: 'user', content: `Tópico: ${topic}` }
       ],
-      model: 'google/gemini-2.0-flash-001'
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -356,7 +357,7 @@ export const aiService = {
         ...history.map(h => ({ role: h.role || (h.sender === 'user' ? 'user' : 'assistant'), content: h.content || h.text })),
         { role: 'user', content: message }
       ],
-      model: 'google/gemini-2.0-pro-exp-02-05:free'
+      model: AI_MODELS.GEMINI_PRO.id
     });
   }
 };

@@ -16,10 +16,10 @@ export const TheArchive = ({ onBack }: { onBack: () => void }) => {
           </button>
           <span className="text-xs uppercase tracking-[0.3em]">Archive / Repository / v{prestigeLevel}.{Math.floor(xp/1000)}</span>
         </div>
-        <div className="text-[10px] opacity-50">READ_ONLY_ACCESS</div>
+        <div className="text-xs opacity-50">READ_ONLY_ACCESS</div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-12 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-8 space-y-12 custom-scrollbar max-w-6xl mx-auto w-full">
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-white border-b border-white/10 pb-2">
             <GitCommit size={16} />

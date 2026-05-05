@@ -79,7 +79,7 @@ export const MatrixDownload = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-black relative overflow-hidden">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 z-0 opacity-40" />
       
       <header className="flex items-center gap-4 relative z-10">

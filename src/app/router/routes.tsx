@@ -1,4 +1,5 @@
 import React, { lazy } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 // Core Views
 const DashboardView = lazy(() => import('../../views/core/DashboardView').then(m => ({ default: m.default })));
@@ -48,6 +49,12 @@ const NeuralSculptor = lazy(() => import('../../components/NeuralSculptor').then
 const ConceptGenesis = lazy(() => import('../../components/ConceptGenesis').then(m => ({ default: m.ConceptGenesis })));
 const Credits = lazy(() => import('../../components/Credits').then(m => ({ default: m.Credits })));
 const DocumentAnalyzer = lazy(() => import('../../components/DocumentAnalyzer').then(m => ({ default: m.DocumentAnalyzer })));
+const ArchiveView = lazy(() => import('../../components/TheArchive').then(m => ({ default: m.TheArchive })));
+const HiveMindView = lazy(() => import('../../components/HiveMind').then(m => ({ default: m.HiveMind })));
+const NeuralForgeView = lazy(() => import('../../components/NeuralForge').then(m => ({ default: m.NeuralForge })));
+const NeuralAlchemistView = lazy(() => import('../../components/NeuralAlchemist').then(m => ({ default: m.NeuralAlchemist })));
+const NeuralSyncView = lazy(() => import('../../components/NeuralSync').then(m => ({ default: m.NeuralSync })));
+const TheNexusView = lazy(() => import('../../components/TheNexus').then(m => ({ default: m.TheNexus })));
 
 const FeynmanMethod = lazy(() => import('../../views/methods').then(m => ({ default: m.FeynmanMethod })));
 const BlurtingMethod = lazy(() => import('../../views/methods').then(m => ({ default: m.BlurtingMethod })));
@@ -66,6 +73,65 @@ const ATHENA_HUB = () => (
   </PremiumGate>
 );
 
+function ArchiveRoute() {
+  const navigate = useNavigate();
+  return <ArchiveView onBack={() => navigate(-1)} />;
+}
+
+function HiveMindRoute() {
+  const navigate = useNavigate();
+  return <HiveMindView onBack={() => navigate(-1)} />;
+}
+
+function NeuralForgeRoute() {
+  const navigate = useNavigate();
+  return <NeuralForgeView onBack={() => navigate(-1)} />;
+}
+
+function NeuralAlchemistRoute() {
+  const navigate = useNavigate();
+  return <NeuralAlchemistView onBack={() => navigate(-1)} />;
+}
+
+function NeuralSyncRoute() {
+  const navigate = useNavigate();
+  return <NeuralSyncView onBack={() => navigate(-1)} />;
+}
+
+function TheNexusRoute() {
+  const navigate = useNavigate();
+  return <TheNexusView onBack={() => navigate(-1)} />;
+}
+
+function GodModeRoute() {
+  const navigate = useNavigate();
+  return <GodMode onBack={() => navigate(-1)} />;
+}
+
+function BrainUploadRoute() {
+  const navigate = useNavigate();
+  return <BrainUpload onBack={() => navigate(-1)} />;
+}
+
+function MemoryPalaceRoute() {
+  const navigate = useNavigate();
+  return <MemoryPalace onBack={() => navigate(-1)} />;
+}
+
+function DocumentAnalyzerRoute() {
+  const navigate = useNavigate();
+  return <DocumentAnalyzer onBack={() => navigate(-1)} />;
+}
+
+function DueloSocraticoRoute() {
+  const navigate = useNavigate();
+  return (
+    <PremiumGate feature="aiTutor">
+      <SocraticDuel onBack={() => navigate(-1)} />
+    </PremiumGate>
+  );
+}
+
 export interface RouteConfig {
   path: string;
   label?: string;
@@ -75,7 +141,7 @@ export interface RouteConfig {
 export const routes: RouteConfig[] = [
   { path: '/', label: 'Dashboard', Component: DashboardView },
   { path: '/notas', label: 'Notas', Component: NotesView },
-  { path: '/upgrade', label: 'Premium', Component: PricingPage },
+  { path: '/upgrade', label: 'Premium', Component: () => <Navigate to="/premium" replace /> },
   { path: '/premium', label: 'Upgrade Premium', Component: PricingPage },
   { path: '/explorar', label: 'Explorar', Component: ExploreView },
   { path: '/foco', label: 'Focus Mode', Component: FocusMode },
@@ -89,9 +155,9 @@ export const routes: RouteConfig[] = [
   { path: '/perfil/politica-de-privacidade', label: 'Política de Privacidade', Component: PoliticaPrivacidadePage },
   { path: '/perfil/sobre', label: 'Sobre', Component: SobrePage },
   { path: '/comunidade', label: 'Comunidade', Component: ComunidadePage },
-  { path: '/palacio-memoria', label: 'Palácio da Memória', Component: MemoryPalace },
-  { path: '/duelo-socratico', label: 'Duelo Socrático', Component: () => <PremiumGate feature="aiTutor"><SocraticDuel onBack={() => {}} /></PremiumGate> },
-  { path: '/upload-cerebral', Component: BrainUpload },
+  { path: '/palacio-memoria', label: 'Palácio da Memória', Component: MemoryPalaceRoute },
+  { path: '/duelo-socratico', label: 'Duelo Socrático', Component: DueloSocraticoRoute },
+  { path: '/upload-cerebral', Component: BrainUploadRoute },
   { path: '/leitura-quantica', Component: QuantumReading },
   { path: '/dilatacao-tempo', Component: TimeDilation },
   { path: '/registros-akasicos', Component: AkashicRecords },
@@ -105,11 +171,17 @@ export const routes: RouteConfig[] = [
   { path: '/escultor-neural', Component: NeuralSculptor },
   { path: '/genese-conceitos', Component: ConceptGenesis },
   { path: '/creditos', Component: Credits },
-  { path: '/analisador-documentos', Component: DocumentAnalyzer },
-  { path: '/god-mode', Component: GodMode },
+  { path: '/analisador-documentos', Component: DocumentAnalyzerRoute },
+  { path: '/god-mode', Component: GodModeRoute },
+  { path: '/o-arquivo', label: 'O Arquivo', Component: ArchiveRoute },
+  { path: '/mente-colmeia', label: 'Mente Colmeia', Component: HiveMindRoute },
+  { path: '/forja-neural', label: 'Forja Neural', Component: NeuralForgeRoute },
+  { path: '/alquimista-neural', label: 'Alquimista Neural', Component: NeuralAlchemistRoute },
+  { path: '/sincronia-neural', label: 'Sincronia Neural', Component: NeuralSyncRoute },
+  { path: '/nexus', label: 'Nexus', Component: TheNexusRoute },
   { path: '/ranking', label: 'Ranking', Component: Ranking },
   { path: '/estatisticas', label: 'Estatísticas', Component: StatsView },
-  { path: '/relatorios', label: 'Relatórios', Component: StatsView },
+  { path: '/relatorios', label: 'Relatórios', Component: () => <Navigate to="/estatisticas" replace /> },
   { path: '/exames', label: 'Exames', Component: () => <PremiumGate feature="exams"><ExamsView /></PremiumGate> },
   { path: '/cards', label: 'Flashcards', Component: FlashcardsView },
   { path: '/rotina', label: 'Smart Schedule', Component: SmartSchedule },

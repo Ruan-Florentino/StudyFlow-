@@ -27,7 +27,7 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
 
   if (!unlocked) {
     return (
-      <div className="p-6 space-y-8 pb-32 flex flex-col items-center justify-center min-h-[80vh]">
+      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 flex flex-col items-center justify-center min-h-[80vh]">
         <AnimatedButton onClick={onBack} variant="secondary" className="absolute top-6 left-6 p-2 rounded-full">
           <ChevronLeft size={20} />
         </AnimatedButton>
@@ -43,7 +43,7 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
   const totalMastery = Object.values(mastery).reduce((a, b) => a + b, 0) / (Object.keys(mastery).length || 1);
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-black relative overflow-hidden">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black relative overflow-hidden">
       {/* Matrix / God Mode Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-black to-black opacity-50" />
       <div className={cn("absolute inset-0 pointer-events-none transition-all duration-75", glitch ? "bg-white/10 mix-blend-overlay" : "bg-transparent")} />
@@ -52,7 +52,7 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
         <AnimatedButton onClick={onBack} variant="secondary" className="p-2 rounded-full border-primary/50 text-primary hover:bg-primary/20">
           <ChevronLeft size={20} />
         </AnimatedButton>
-        <h2 className="text-3xl font-premium-title italic text-primary drop-shadow-[0_0_15px_rgba(0,255,148,0.8)]">
+        <h2 className="text-3xl font-premium-title italic text-primary">
           MODO DEUS<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
@@ -72,7 +72,7 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
               className="absolute -inset-4 rounded-full border border-primary/20"
             />
             <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center backdrop-blur-md border border-primary/30">
-              <Eye size={48} className="text-primary drop-shadow-[0_0_10px_rgba(0,255,148,1)]" />
+              <Eye size={48} className="text-primary" />
             </div>
           </div>
           <div className="text-center space-y-2">

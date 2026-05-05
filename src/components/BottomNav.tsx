@@ -2,7 +2,7 @@
   import { motion } from 'framer-motion';
   import { 
     Home, Compass, Target, 
-    PenLine, Users, User 
+    PenLine, Users, User, Sparkles
   } from 'lucide-react';
   import { useStore } from '../store';
   import { useAppNavigation } from '../app/router/useAppNavigation';
@@ -11,6 +11,7 @@
   const NAV_ITEMS = [
     { id: 'home',       label: 'INÍCIO',     icon: Home,    color: '#34d399', glow: '52,211,153', path: '/' },
     { id: 'explore',    label: 'EXPLORAR',   icon: Compass, color: '#38bdf8', glow: '56,189,248', path: '/explorar' },
+    { id: 'ai',         label: 'IA',         icon: Sparkles, color: '#5eead4', glow: '94,234,212', path: '/ai' },
     { id: 'questions',  label: 'QUESTÕES',   icon: Target,  color: '#fbbf24', glow: '251,191,36',  badge: true, path: '/questoes' },
     { id: 'redacao',    label: 'REDAÇÃO',    icon: PenLine, color: '#a78bfa', glow: '167,139,250', path: '/redacao' },
     { id: 'comunidade', label: 'COMUNIDADE', icon: Users,   color: '#f472b6', glow: '244,114,182', path: '/comunidade' },

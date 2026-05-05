@@ -1,0 +1,58 @@
+---
+description: Stack técnica do projeto
+alwaysApply: true
+---
+
+# STACK TÉCNICA OBRIGATÓRIA
+
+## Frontend
+
+- **React 18+** (functional components only)
+- **TypeScript estrito** (strict: true)
+- **Vite** como bundler
+- **Tailwind CSS** (sem CSS-in-JS, sem 
+  styled-components)
+- **Lucide React** para ícones (NUNCA 
+  outros packs)
+- **Framer Motion** para animações 
+  complexas (usar com moderação)
+
+## Estado
+
+- **Zustand** (useStore) — store global
+- **React Context** — auth, theme, 
+  navegação
+- **useState/useReducer** — estado local
+
+## Backend / Data
+
+- **Supabase** (auth + database + storage)
+- **Edge Functions** quando necessário
+- **TanStack Query** se houver, ou hooks 
+  custom
+
+## IA
+
+- Serviço Athena (custom)
+- Cliente: athenaClient
+- Endpoint: athenaService
+
+## Regras de uso
+
+✅ SEMPRE usar componentes da pasta 
+  src/components quando existirem
+
+✅ SEMPRE usar tokens do design system 
+  (não hardcode cores)
+
+✅ SEMPRE usar tipos TypeScript estritos 
+  (sem any, sem unknown sem narrow)
+
+❌ NUNCA instalar dependência nova sem 
+  perguntar
+
+❌ NUNCA usar bibliotecas de UI prontas 
+  (MUI, Antd, Chakra) — design é custom
+
+❌ NUNCA misturar estilos inline + 
+  Tailwind no mesmo elemento

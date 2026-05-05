@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { playSuccessSound } from '../lib/studyUtils';
 
 export type PomodoroMode = 'foco' | 'curta' | 'longa';
 
@@ -46,7 +47,8 @@ export function usePomodoro() {
         setTimeLeft((t) => {
           if (t <= 1) {
             setIsActive(false);
-            // play sound logic here?
+            // Som ao zerar o ciclo (pode ser bloqueado pelo browser sem gesto recente — studyUtils avisa no console).
+            void playSuccessSound();
             return 0;
           }
           return t - 1;

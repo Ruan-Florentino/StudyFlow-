@@ -30,14 +30,14 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
       <div className="p-8 flex justify-between items-center border-b border-black/5 bg-white">
         <button onClick={onBack} className="flex items-center gap-2 group">
           <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[10px] uppercase tracking-[0.4em] font-bold">Retornar</span>
+          <span className="text-xs uppercase tracking-[0.4em] font-bold">Retornar</span>
         </button>
         <div className="text-center">
           <h1 className="text-sm uppercase tracking-[0.6em] font-bold opacity-40">Concept Genesis</h1>
         </div>
         <div className="flex items-center gap-2 text-orange-500">
           <Sparkles size={16} />
-          <span className="text-[10px] uppercase tracking-widest font-bold">AI Engine Active</span>
+          <span className="text-xs uppercase tracking-widest font-bold">AI Engine Active</span>
         </div>
       </div>
 
@@ -98,7 +98,7 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
                   <div className="md:col-span-4 space-y-6">
                     <div className="flex items-center gap-2 text-orange-500">
                       <Brain size={18} />
-                      <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold">Conceito Gerado</h3>
+                      <h3 className="text-xs uppercase tracking-[0.2em] font-bold">Conceito Gerado</h3>
                     </div>
                     <div className="p-8 bg-white border border-black/5 rounded-[40px] shadow-xl">
                       <div className="text-4xl font-serif italic mb-4">A Revelação</div>
@@ -118,9 +118,9 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
                         <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white">
                           <Wand2 size={20} />
                         </div>
-                        <span className="text-[10px] uppercase tracking-widest font-bold">Integrado ao Multiverso</span>
+                        <span className="text-xs uppercase tracking-widest font-bold">Integrado ao Multiverso</span>
                       </div>
-                      <button className="px-8 py-3 bg-black text-white text-[10px] uppercase tracking-[0.2em] font-bold rounded-full hover:bg-orange-500 transition-colors">
+                      <button className="px-8 py-3 bg-black text-white text-xs uppercase tracking-[0.2em] font-bold rounded-full hover:bg-orange-500 transition-colors">
                         Salvar no Arquivo
                       </button>
                     </div>

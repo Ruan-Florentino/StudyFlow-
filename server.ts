@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import * as dotenv from 'dotenv';
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from "./src/config/openRouter";
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +30,12 @@ async function startServer() {
     try {
       console.log(`📡 Servidor: Encaminhando requisição para OpenRouter (${model})`);
       
+      // Aborta chamadas presas ao OpenRouter (evita socket pendente no servidor).
+      const upstreamSignal =
+        typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+          ? AbortSignal.timeout(120_000)
+          : undefined;
+
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -38,16 +45,29 @@ async function startServer() {
           "X-Title": "StudyFlow AI Proxy",
         },
         body: JSON.stringify({
-          model: model || "google/gemini-2.5-flash",
+          model: model || DEFAULT_OPENROUTER_CHAT_MODEL,
           messages,
           temperature: temperature || 0.7,
-          max_tokens: 1024,
+          max_tokens: 4096,
           stream: req.body.stream || false
         }),
+        signal: upstreamSignal,
       });
 
       if (req.body.stream) {
-        // Handle streaming response
+        if (!response.ok) {
+          const raw = await response.text();
+          let data: unknown;
+          try {
+            data = JSON.parse(raw);
+          } catch {
+            data = { error: { message: raw || `HTTP ${response.status}` } };
+          }
+          console.error("❌ Erro OpenRouter (stream):", data);
+          return res.status(response.status).json(
+            typeof data === "object" && data !== null ? data : { error: String(data) }
+          );
+        }
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');

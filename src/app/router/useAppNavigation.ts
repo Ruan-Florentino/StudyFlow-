@@ -11,6 +11,7 @@ import { NavigationTab } from '../../types/navigation';
 const pathToTabMap: Record<string, NavigationTab> = {
   '/': 'home',
   '/explorar': 'explore',
+  '/ai': 'ai',
   '/questoes': 'questions',
   '/redacao': 'redacao',
   '/comunidade': 'comunidade',

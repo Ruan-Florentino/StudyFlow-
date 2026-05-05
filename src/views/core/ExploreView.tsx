@@ -1,44 +1,99 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, BookOpen, Sparkles, ChevronRight, Target, Zap, Clock, Star } from 'lucide-react';
 import { GlassCard, AnimatedButton, Badge } from '../../components/UI';
-import { SUBJECTS, WEEK_HIGHLIGHT, TRAILS, POPULAR_NOW } from '../../data/explore';
+import { SUBJECTS, RECOMMENDED_TRAILS, POPULAR_NOW, SUBTOPIC_SURPRISE } from '../../data/explore';
 import { useStore } from '../../store';
 import { useSearch, SearchResult } from '../../hooks/useSearch';
-import { ALL_TOPICS, SUBJECT_ICONS } from '../../data/topics';
+import { SUBJECT_ICONS } from '../../data/topics';
 import SearchDropdown from '../../components/Explore/SearchDropdown';
 import SortResult from '../../components/Explore/SortResult';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 
+function parseLocalYmd(ymd: string): Date {
+  const dayPart = ymd.split('T')[0];
+  const p = dayPart.split('-').map(Number);
+  return new Date(p[0], p[1] - 1, p[2]);
+}
 
+/** Agrega minutos por `subject` em sessões cujo `date` está a `minDiff`..`maxDiff` dias atrás (0 = hoje). */
+function minutesBySubjectInDayRange(
+  sessions: { date: string; duration: number; subject: string }[],
+  minDiff: number,
+  maxDiff: number
+): Record<string, number> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const map: Record<string, number> = {};
+  for (const s of sessions) {
+    if (!s?.date || !s?.subject) continue;
+    const d0 = parseLocalYmd(s.date);
+    const diffDays = Math.round((today.getTime() - d0.getTime()) / 86400000);
+    if (diffDays < minDiff || diffDays > maxDiff) continue;
+    const key = s.subject.trim();
+    map[key] = (map[key] || 0) + Math.max(0, Number(s.duration) || 0);
+  }
+  return map;
+}
+
+function topSubjectFromMap(map: Record<string, number>): { subject: string; minutes: number } | null {
+  let best: { subject: string; minutes: number } | null = null;
+  for (const [subject, minutes] of Object.entries(map)) {
+    if (minutes <= 0) continue;
+    if (!best || minutes > best.minutes || (minutes === best.minutes && subject < best.subject)) {
+      best = { subject, minutes };
+    }
+  }
+  return best;
+}
 
 const ExploreView: React.FC = () => {
   const { goTo } = useAppNavigation();
-  const { setNavFilters } = useStore();
+  const { setNavFilters, sessions } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
-  const [sortResult, setSortResult] = useState<any>(null);
+  const [sortResult, setSortResult] = useState<{
+    area: string;
+    subtopic: string;
+    icon: string;
+  } | null>(null);
 
   const { results: searchResults, isSearching } = useSearch(searchQuery);
+
+  const weekHighlight = useMemo(() => {
+    const thisWeek = minutesBySubjectInDayRange(sessions || [], 0, 6);
+    const prevWeek = minutesBySubjectInDayRange(sessions || [], 7, 13);
+    const top = topSubjectFromMap(thisWeek);
+    if (!top) {
+      return { kind: 'empty' as const };
+    }
+    const prevMin = prevWeek[top.subject] ?? 0;
+    let pctVsPrev: number | null = null;
+    if (prevMin > 0) {
+      pctVsPrev = Math.round(((top.minutes - prevMin) / prevMin) * 100);
+    } else if (top.minutes > 0) {
+      pctVsPrev = null;
+    }
+    return { kind: 'data' as const, ...top, prevMin, pctVsPrev };
+  }, [sessions]);
 
   const handleSort = useCallback(() => {
     setIsSorting(true);
     setSortResult(null);
-    
-    // Shuffle logic
+
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * ALL_TOPICS.length);
-      const selected = ALL_TOPICS[randomIndex];
-      
+      const areas = Object.keys(SUBTOPIC_SURPRISE);
+      const area = areas[Math.floor(Math.random() * areas.length)];
+      const list = SUBTOPIC_SURPRISE[area];
+      const subtopic = list[Math.floor(Math.random() * list.length)];
       setSortResult({
-        subject: selected.subject,
-        topic: selected.topic,
-        questions: Math.floor(Math.random() * 50) + 20,
-        icon: SUBJECT_ICONS[selected.subject] || '📖'
+        area,
+        subtopic,
+        icon: SUBJECT_ICONS[area] || '📖',
       });
       setIsSorting(false);
-    }, 2000);
+    }, 900);
   }, []);
 
   const handleSearchResultSelect = (result: SearchResult) => {
@@ -49,8 +104,9 @@ const ExploreView: React.FC = () => {
       setNavFilters({ subject: result.title });
       goTo('/questoes');
     } else if (result.type === 'trail') {
-      // Simulate going to trail detail
-      goTo('/foco'); // For now, since we don't have a dedicated /trail/:id
+      const t = result.data as (typeof RECOMMENDED_TRAILS)[number];
+      setNavFilters(t.navFilters || {});
+      goTo(t.startPath);
     } else if (result.type === 'question') {
       setNavFilters({ subject: result.data.materia, topic: result.data.assunto, search: result.data.pergunta });
       goTo('/questoes');
@@ -59,9 +115,9 @@ const ExploreView: React.FC = () => {
 
   const handleStartSorted = () => {
     if (sortResult) {
-      setNavFilters({ 
-        subject: sortResult.subject, 
-        topic: sortResult.topic 
+      setNavFilters({
+        subject: sortResult.area,
+        topic: sortResult.subtopic,
       });
       goTo('/questoes');
     }
@@ -85,7 +141,7 @@ const ExploreView: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 animate-in fade-in duration-700">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 animate-in fade-in duration-700">
       {/* Header */}
       <header className="space-y-1">
         <div className="flex items-center gap-2">
@@ -136,7 +192,7 @@ const ExploreView: React.FC = () => {
             >
               <div className="space-y-2">
                 <h2 className="text-2xl font-premium-title italic">Sortear Matéria Surpresa</h2>
-                <p className="text-sm text-text-secondary max-w-[200px]">Deixe a IA escolher seu próximo desafio épico de estudo.</p>
+                <p className="text-sm text-text-secondary max-w-[260px]">Sorteamos uma área e um subtópico específico para você praticar no banco de questões.</p>
               </div>
               <AnimatedButton 
                 onClick={handleSort}
@@ -175,44 +231,56 @@ const ExploreView: React.FC = () => {
         </AnimatePresence>
       </GlassCard>
 
-      {/* Destaque da Semana Section */}
+      {/* Destaque da Semana — dados reais das sessões (últimos 7 dias vs semana anterior) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Destaque da Semana</h3>
           <div className="h-px flex-1 bg-white/5 ml-4" />
         </div>
 
-        <GlassCard 
-          onClick={() => {
-            setNavFilters({ subject: WEEK_HIGHLIGHT.subject, topic: WEEK_HIGHLIGHT.topic });
-            goTo('/questoes');
-          }}
-          className="group overflow-hidden border-white/5 hover:border-primary/30 transition-all p-0 cursor-pointer"
-        >
-          <div className="relative aspect-[16/9] overflow-hidden">
-            <img 
-              src={WEEK_HIGHLIGHT.image} 
-              alt={WEEK_HIGHLIGHT.topic} 
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-6 space-y-1">
-              <Badge variant="primary" className="mb-2 uppercase tracking-widest bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
-                {WEEK_HIGHLIGHT.exam}
-              </Badge>
-              <h4 className="text-xl font-premium-title italic text-white">{WEEK_HIGHLIGHT.subject}</h4>
-              <p className="text-sm font-bold text-white/70">{WEEK_HIGHLIGHT.topic}</p>
-              <div className="flex items-center gap-2 pt-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{WEEK_HIGHLIGHT.studying} estudando agora</span>
+        {weekHighlight.kind === 'empty' ? (
+          <GlassCard className="p-8 border-dashed border-white/10 text-center space-y-3">
+            <Star size={28} className="mx-auto text-primary/60" />
+            <p className="text-sm text-text-secondary">
+              Comece a estudar para ver seu destaque! Registre sessões no <span className="text-white font-bold">Foco</span> — mostramos aqui a matéria com mais minutos nos últimos 7 dias.
+            </p>
+            <AnimatedButton onClick={() => goTo('/foco')} variant="primary" className="text-xs uppercase tracking-widest">
+              Ir para Foco
+            </AnimatedButton>
+          </GlassCard>
+        ) : (
+          <GlassCard
+            onClick={() => {
+              setNavFilters({ subject: weekHighlight.subject });
+              goTo('/questoes');
+            }}
+            className="group overflow-hidden border-white/5 hover:border-primary/30 transition-all p-0 cursor-pointer"
+          >
+            <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-primary/30 via-black to-black">
+              <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_30%_20%,rgba(0,232,143,0.35),transparent_55%)]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 p-6 space-y-2 max-w-[90%]">
+                <Badge variant="primary" className="mb-1 uppercase tracking-widest bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
+                  Últimos 7 dias
+                </Badge>
+                <h4 className="text-xl font-premium-title italic text-white">{weekHighlight.subject}</h4>
+                <p className="text-sm font-bold text-white/80">
+                  {weekHighlight.minutes} min estudados
+                </p>
+                <p className="text-[10px] font-bold text-white/45 uppercase tracking-widest">
+                  {weekHighlight.pctVsPrev === null
+                    ? weekHighlight.prevMin > 0
+                      ? 'Sem comparação estável com a semana anterior'
+                      : 'Primeira semana com registo nesta matéria'
+                    : `${weekHighlight.pctVsPrev >= 0 ? '+' : ''}${weekHighlight.pctVsPrev}% vs semana anterior`}
+                </p>
+              </div>
+              <div className="absolute bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <ChevronRight size={24} />
               </div>
             </div>
-            <button className="absolute bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-              <ChevronRight size={24} />
-            </button>
-          </div>
-        </GlassCard>
+          </GlassCard>
+        )}
       </section>
 
       {/* Áreas de Conhecimento */}
@@ -245,27 +313,39 @@ const ExploreView: React.FC = () => {
           <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Trilhas Recomendadas</h3>
           <div className="h-px flex-1 bg-white/5 ml-4" />
         </div>
-        <div className="space-y-3">
-          {TRAILS.map(trail => (
-            <button 
-              key={trail.id} 
-              onClick={() => {
-                setNavFilters({ subject: trail.subject });
-                goTo('/foco');
-              }}
-              className="w-full group flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-primary/20 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Zap size={18} />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-bold text-white/90">{trail.name}</p>
-                  <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Acessar trilha completa</p>
+        <div className="space-y-4">
+          {RECOMMENDED_TRAILS.map((trail) => (
+            <GlassCard key={trail.id} className="p-5 border-white/10 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl" aria-hidden>
+                    {trail.icon}
+                  </span>
+                  <div>
+                    <h4 className="text-base font-bold text-white">{trail.title}</h4>
+                    <p className="text-[10px] text-white/45 uppercase font-bold tracking-widest mt-1">
+                      {trail.durationLabel} · {trail.level}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <ChevronRight size={16} className="text-white/20 group-hover:text-primary transition-colors" />
-            </button>
+              <p className="text-xs text-text-secondary leading-relaxed">{trail.description}</p>
+              <ul className="text-[11px] text-white/60 list-disc list-inside space-y-1">
+                {trail.topics.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+              <AnimatedButton
+                onClick={() => {
+                  setNavFilters(trail.navFilters);
+                  goTo(trail.startPath);
+                }}
+                variant="primary"
+                className="w-full py-3 text-xs font-bold uppercase tracking-widest"
+              >
+                Iniciar Trilha
+              </AnimatedButton>
+            </GlassCard>
           ))}
         </div>
       </section>

@@ -1,0 +1,66 @@
+---
+description: O que NUNCA fazer
+alwaysApply: true
+---
+
+# ANTI-PATTERNS — O QUE NUNCA FAZER
+
+## Código
+
+❌ `any` em TypeScript
+❌ `// @ts-ignore`
+❌ `console.log` em produção
+❌ Variáveis com nome `data`, `info`, 
+   `temp` (seja específico)
+❌ Arquivos com 500+ linhas
+❌ Componentes com 10+ props
+❌ Lógica de negócio em componente UI
+❌ Fetch direto em componente (use hook)
+
+## Visual
+
+❌ Cores hardcoded (`#fff`, `red`)
+❌ `!important` no CSS
+❌ Inline styles + Tailwind no mesmo 
+   elemento
+❌ Border-radius arbitrário (`13px`)
+❌ Animações sem transition
+❌ Loading spinner genérico (use 
+   skeleton)
+
+## Arquitetura
+
+❌ Imports circulares
+❌ Estado global pra dado local
+❌ Props drilling 3+ níveis (use 
+   context)
+❌ Mutação direta de state
+❌ useEffect pra lógica que não é 
+   side-effect
+
+## Git
+
+❌ `git commit -a` cego
+❌ `git push --force` em main
+❌ Commit message vaga ("fix", 
+   "update")
+❌ Commit que mistura features
+
+## Comportamento
+
+❌ Avançar sem autorização
+❌ Fazer mais que o pedido
+❌ Refatorar fora do escopo
+❌ Esconder erros pra "ficar bonito"
+❌ Assumir contexto não dado
+❌ Ignorar checkpoints humanos
+
+## Comunicação
+
+❌ "Acho que..." (seja preciso ou 
+   pesquisa)
+❌ "Provavelmente vai funcionar" 
+   (testa)
+❌ Esconder dúvida pra parecer 
+   confiante
+❌ Reportar sucesso sem testar

@@ -1,10 +1,11 @@
 import { AIModel } from '../types/model.types';
+import { AI_MODELS } from '../../../config/openRouter';
 
 export const ATHENA_MODELS: AIModel[] = [
   {
     id: 'gemini-flash',
-    modelId: 'google/gemini-2.5-flash',
-    name: 'Gemini 2.5 Flash',
+    modelId: AI_MODELS.GEMINI_FLASH.id,
+    name: 'Gemini 2.0 Flash',
     provider: 'Google',
     description: 'Rápido, versátil e excelente para a maioria das tarefas.',
     isFree: true,
@@ -12,8 +13,8 @@ export const ATHENA_MODELS: AIModel[] = [
   },
   {
     id: 'gemini-pro',
-    modelId: 'google/gemini-3.1-pro-preview',
-    name: 'Gemini 3.1 Pro',
+    modelId: AI_MODELS.GEMINI_PRO.id,
+    name: 'Gemini 2.0 Pro',
     provider: 'Google',
     description: 'Maior capacidade de raciocínio, ótimo para matemática e programação.',
     isFree: true,

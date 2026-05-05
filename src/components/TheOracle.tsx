@@ -39,11 +39,11 @@ export const TheOracle = ({ onBack }: { onBack: () => void }) => {
       <div className="p-8 flex justify-between items-center border-b border-black/10">
         <button onClick={onBack} className="flex items-center gap-2 group">
           <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[10px] uppercase tracking-[0.4em] font-bold">Retornar</span>
+          <span className="text-xs uppercase tracking-[0.4em] font-bold">Retornar</span>
         </button>
         <div className="text-center">
           <h1 className="font-serif text-3xl italic">A Oráculo</h1>
-          <p className="text-[10px] uppercase tracking-[0.5em] opacity-40">Destiny Analysis Engine</p>
+          <p className="text-xs uppercase tracking-[0.5em] opacity-40">Destiny Analysis Engine</p>
         </div>
         <div className="w-20" /> {/* Spacer */}
       </div>

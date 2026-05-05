@@ -4,6 +4,7 @@ import { PenTool, FileText, Bookmark, ChevronLeft, Sparkles, CheckCircle2, Alert
 import { GlassCard, Header, IconTile } from './UI';
 import { useStore } from '../store';
 import { athenaClient } from '../features/athena/services/athenaClient';
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
 import { ATHENA_CONFIG } from '../features/athena/constants/config';
 import { exportToPDF } from '../lib/studyUtils';
 import clsx from 'clsx';
@@ -66,7 +67,7 @@ Retorne APENAS um JSON: [{"id": "1", "type": "vocabulário", "text": "melhoria..
           { role: 'system', content: 'Você é um assistente de escrita de redação. Retorne apenas JSON.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemini-2.0-flash-001'
+        model: DEFAULT_OPENROUTER_CHAT_MODEL
       });
 
       const cleanJson = response.replace(/```json|```/g, '').trim();
@@ -119,7 +120,7 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
           { role: 'system', content: 'Você é um corretor especializado em redação ENEM. Retorne apenas JSON.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemini-2.0-flash-001' // Fast and smart for evaluation
+        model: DEFAULT_OPENROUTER_CHAT_MODEL // Fast and smart for evaluation
       });
 
       const cleanJson = response.replace(/```json|```/g, '').trim();

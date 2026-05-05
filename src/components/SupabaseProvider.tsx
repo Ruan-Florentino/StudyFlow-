@@ -1,6 +1,6 @@
 import React, { useEffect, ReactNode } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { useStore } from '../store';
+import { useStore, useUserStore } from '../store';
 import { SupabaseSetupRequired } from './SupabaseSetupRequired';
 
 interface SupabaseProviderProps {
@@ -16,14 +16,26 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
       return;
     }
 
-    // 1. Handle Initial Session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        handleUserSession(session.user);
-      } else {
+    // 1. Handle Initial Session (tratamento defensivo: evita rejeição silenciosa no refresh)
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[SupabaseProvider] getSession:', error);
+          setAuthReady(true);
+          return;
+        }
+        const session = data?.session ?? null;
+        if (session) {
+          void handleUserSession(session.user);
+        } else {
+          setAuthReady(true);
+        }
+      })
+      .catch((e) => {
+        console.error('[SupabaseProvider] getSession falhou:', e);
         setAuthReady(true);
-      }
-    });
+      });
 
     // 2. Listen for Auth Changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -57,11 +69,15 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
           daily_xp: 0,
           last_study_date: null,
           daily_goal_minutes: 120,
-          profile_pic: user.user_metadata?.avatar_url || '',
+          profile_pic:
+            user.user_metadata?.avatar_url ||
+            user.user_metadata?.picture ||
+            '',
           cover_pic: '',
           bio: 'Focado na aprovação! 🚀'
         };
         await supabase.from('users').insert(initialData);
+        syncUserToStore(initialData);
       } else if (profile) {
         // Sync to store
         syncUserToStore(profile);
@@ -157,7 +173,9 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     };
 
     const syncUserToStore = (data: any) => {
-      useStore.setState({
+      // Mesma fatia na store persistida e na agregada — senão o subscribe de useUserStore
+      // ressincroniza e apaga profilePic/coverPic vindos só do useStore (bug da foto).
+      const slice = {
         name: data.name,
         bio: data.bio,
         xp: data.xp,
@@ -167,9 +185,11 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
         dailyXP: data.daily_xp,
         lastStudyDate: data.last_study_date,
         dailyGoalMinutes: data.daily_goal_minutes,
-        profilePic: data.profile_pic,
-        coverPic: data.cover_pic
-      });
+        profilePic: data.profile_pic ?? '',
+        coverPic: data.cover_pic ?? ''
+      };
+      useUserStore.setState(slice);
+      useStore.setState(slice);
     };
 
     return () => {

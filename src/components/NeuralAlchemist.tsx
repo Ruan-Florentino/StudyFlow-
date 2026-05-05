@@ -57,7 +57,7 @@ export const NeuralAlchemist = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-[#0a0510] relative overflow-hidden">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-[#0a0510] relative overflow-hidden">
       {/* Mystical Background */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 blur-[120px] rounded-full animate-pulse" />

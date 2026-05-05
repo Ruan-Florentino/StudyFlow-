@@ -6,12 +6,15 @@ let audioCtx: AudioContext | null = null;
 
 let audioUnlocked = false;
 
+/** Bipe curto de sucesso (Web Audio). Tenta `resume()` no mesmo tick — útil quando vem de clique do usuário. */
 export const playSuccessSound = async () => {
-  if (!audioUnlocked) return;
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-    
+    if (!AudioContextClass) {
+      console.warn('[audio] Web Audio API indisponível neste ambiente.');
+      return;
+    }
+
     if (!audioCtx) {
       audioCtx = new AudioContextClass();
     }
@@ -20,11 +23,15 @@ export const playSuccessSound = async () => {
       try {
         await audioCtx.resume();
       } catch (e) {
+        console.warn('[audio] Não foi possível resumir AudioContext (política do navegador).', e);
         return;
       }
     }
 
-    if (audioCtx.state !== 'running') return;
+    if (audioCtx.state !== 'running') {
+      console.warn('[audio] AudioContext não está em estado "running"; som ignorado.');
+      return;
+    }
 
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -40,29 +47,52 @@ export const playSuccessSound = async () => {
     osc.start(now);
     osc.stop(now + 0.1);
   } catch (e) {
-    // Silent fail
+    console.warn('[audio] playSuccessSound falhou:', e);
+  }
+};
+
+/**
+ * Tenta tocar um ficheiro em `public/sounds/{soundName}.mp3`.
+ * Falhas não propagam (PWA / autoplay / ficheiro em falta).
+ */
+export const playSoundFile = async (soundName: string, volume = 0.5) => {
+  try {
+    if (!audioUnlocked) {
+      console.warn(
+        `[audio] Som "${soundName}" não tocado: aguarde um toque/clique na página para desbloquear áudio.`
+      );
+      return;
+    }
+    const audio = new Audio(`/sounds/${soundName}.mp3`);
+    audio.volume = volume;
+    await audio.play();
+  } catch (e) {
+    console.warn(`[audio] Não foi possível tocar /sounds/${soundName}.mp3`, e);
   }
 };
 
 export const safePlayAudio = async (url: string | HTMLAudioElement) => {
-  if (!audioUnlocked) return null;
-  
+  if (!audioUnlocked) {
+    console.warn('[audio] safePlayAudio: áudio ainda bloqueado (sem interação do utilizador).');
+    return null;
+  }
+
   try {
     const audio = typeof url === 'string' ? new Audio(url) : url;
-    
-    // Some browsers require interaction. We catch the promise to avoid console errors.
+
     const playPromise = audio.play();
-    
+
     if (playPromise !== undefined) {
       try {
         await playPromise;
       } catch (error) {
-        // This handles the "play() failed because the user didn't interact" error silently
+        console.warn('[audio] play() bloqueado ou falhou (ex.: autoplay sem gesto).', error);
         return null;
       }
     }
     return audio;
   } catch (error) {
+    console.warn('[audio] safePlayAudio falhou:', error);
     return null;
   }
 };

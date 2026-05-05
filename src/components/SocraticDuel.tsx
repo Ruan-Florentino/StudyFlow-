@@ -49,7 +49,7 @@ export const SocraticDuel = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="p-6 h-full flex flex-col font-sans max-w-4xl mx-auto w-full">
+    <div className="app-shell-premium pt-6 md:pt-8 max-w-4xl h-full flex flex-col font-sans mx-auto w-full">
       <header className="flex items-center justify-between mb-8 shrink-0">
         <button 
           onClick={onBack} 

@@ -47,7 +47,7 @@ export const OmniscienceProtocol = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-black relative overflow-hidden">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black relative overflow-hidden">
       {/* Radar Background */}
       <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
         <div className="w-[800px] h-[800px] rounded-full border border-amber-500/30 flex items-center justify-center">

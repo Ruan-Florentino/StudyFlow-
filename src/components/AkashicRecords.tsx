@@ -49,7 +49,7 @@ export const AkashicRecords = ({ onBack }: { onBack: () => void }) => {
   };
 
   return (
-    <div className="p-6 space-y-8 pb-32 min-h-screen bg-black overflow-hidden relative">
+    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black overflow-hidden relative">
       {/* Starfield Background */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         {Array.from({ length: 100 }).map((_, i) => (

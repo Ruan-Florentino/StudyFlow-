@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Home, Timer, BookOpen, PenTool, FileText, Users, Brain, ShieldAlert, Library, 
   UploadCloud, Zap, Clock, Network, Headphones, Cpu, Download, Terminal, Eye, 
-  Activity, Beaker, Hammer, Database, Star, Layers, Wand2, Settings, Trophy, Search 
+  Activity, Beaker, Hammer, Database, Star, Layers, Wand2, Settings, Trophy, Search, Sparkles 
 } from 'lucide-react';
 import { useAppNavigation } from '../../../app/router/useAppNavigation';
 
@@ -51,10 +51,11 @@ export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProp
     { path: '/redacao', name: 'Redação', icon: PenTool, shortcut: 'R' },
     { path: '/exames', name: 'Simulados', icon: FileText, shortcut: 'S' },
     { path: '/comunidade', name: 'Comunidade', icon: Users, shortcut: 'C' },
+    { path: '/ai', name: 'Athena (IA)', icon: Sparkles, shortcut: 'A' },
     { path: '/palacio-memoria', name: 'Palácio da Memória', icon: Brain, shortcut: 'M' },
     { path: '/duelo-socratico', name: 'Arena Socrática', icon: ShieldAlert, shortcut: 'D' },
     { path: '/analisador-documentos', name: 'Análise de Documentos', icon: FileText, shortcut: 'D' },
-    { path: '/brain-upload', name: 'Upload Cerebral', icon: UploadCloud, shortcut: 'U' },
+    { path: '/upload-cerebral', name: 'Upload Cerebral', icon: UploadCloud, shortcut: 'U' },
     { path: '/leitura-quantica', name: 'Leitura Quântica', icon: Zap, shortcut: 'Q' },
     { path: '/dilatacao-tempo', name: 'Dilatação Temporal', icon: Clock, shortcut: 'T' },
     { path: '/registros-akasicos', name: 'Registros Akáshicos', icon: Network, shortcut: 'K' },

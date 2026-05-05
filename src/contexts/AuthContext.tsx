@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface UserProfile {
@@ -28,54 +28,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = useCallback(async (uid: string, emailFromSession?: string | null) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', uid)
+      .single();
+
+    if (data && !error) {
+      setProfile({
+        uid: data.id,
+        email: emailFromSession ?? '',
+        displayName: data.name,
+        plan: data.plan || 'free',
+        createdAt: new Date(data.created_at).getTime()
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setLoading(false);
       return;
     }
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    });
+    let cancelled = false;
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    const applySession = async (session: Session | null) => {
+      if (cancelled) return;
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      if (nextUser) {
+        await fetchProfile(nextUser.id, nextUser.email);
       } else {
         setProfile(null);
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
+    };
+
+    // Hidrata sessão persistida antes de liberar a UI (evita flash de "deslogado" no F5).
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[AuthContext] getSession:', error);
+        }
+        const session = data?.session ?? null;
+        return applySession(session);
+      })
+      .catch((e) => {
+        console.error('[AuthContext] getSession falhou:', e);
+        if (!cancelled) {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+        }
+      });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      void applySession(session);
     });
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
     };
-  }, []);
-
-  const fetchProfile = async (uid: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', uid)
-      .single();
-    
-    if (data && !error) {
-      setProfile({
-        uid: data.id,
-        email: user?.email || '',
-        displayName: data.name,
-        plan: data.plan || 'free',
-        createdAt: new Date(data.created_at).getTime()
-      });
-    }
-  };
+  }, [fetchProfile]);
   
   const signIn = async (email: string, pass: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });

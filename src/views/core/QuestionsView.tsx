@@ -45,6 +45,7 @@ import XPGain from './XPGainView';
 
 import { useStore, Question } from '../../store';
 import { athenaClient } from '../../features/athena/services/athenaClient';
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../../config/openRouter';
 import TrainingSession from '../../components/TrainingSession';
 import ExamSession from '../../components/ExamSession';
 import ExamReview from '../../components/ExamReview';
@@ -362,7 +363,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
           { role: 'system', content: 'Você é Athena, uma tutora educacional especializada no ENEM. Explique de forma clara e didática.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemini-2.0-flash-001'
+        model: DEFAULT_OPENROUTER_CHAT_MODEL
       });
       setAiExplanation(explanation);
     } catch (e) {
@@ -388,7 +389,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
           { role: 'system', content: 'Você é Athena, uma tutora educacional especializada no ENEM. Seja empática e didática ao explicar o erro.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemini-2.0-flash-001'
+        model: DEFAULT_OPENROUTER_CHAT_MODEL
       });
       setAiExplanation(explanation);
     } catch (e) {
@@ -675,7 +676,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
           { role: 'system', content: 'Você é um gerador de questões educacionais. Retorne apenas JSON.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemini-2.0-flash-001'
+        model: DEFAULT_OPENROUTER_CHAT_MODEL
       });
       
       const cleanJson = response.replace(/```json|```/g, '').trim();

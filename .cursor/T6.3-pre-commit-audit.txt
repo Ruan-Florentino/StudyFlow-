@@ -1,0 +1,139 @@
+T.6.3 — Auditoria pré-commit (gerado pelo executor)
+Data: inspeção pós-plano. Nenhum git write executado.
+
+================================================================================
+TODO 1 — DashboardView (validação técnica + bloqueio de produto)
+================================================================================
+Estado no working tree:
+- grep por streak | smartRecommendation | neuralSync | generateSmartRecommendation |
+  Desafio Diário | XP Acumulado → sem ocorrências no arquivo atual.
+- Diff vs index (amostra T.6.3): remoção de useEffect/athenaService, grids XP/streak,
+  Neural Sync, Intelligence Hub, Desafio Diário; inclusão de app-shell-premium e tokens.
+
+Conclusão técnica: o arquivo reflete o dashboard “enxuto” descrito no diagnóstico.
+Bloqueio de produto: confirmar com o planejador se a remoção dessas features é
+intencional (ex. alinhada a T.5.x) antes de incluir em commit. Não há como inferir
+intenção só pelo diff.
+
+Git: DashboardView = " M" → alterações só na working tree, nada staged.
+
+================================================================================
+TODO 2 — git add -p (arquivos ambíguos) — guia de hunks
+================================================================================
+Ordem sugerida ao rodar: git add -p -- <arquivo>
+
+ProfileView.tsx (unstaged: +5 -3 típico)
+  Hunk A — imports: adição de Shield (LGPD / nova rota) → task possivelmente separada.
+  Hunk B — wrapper max-w-6xl + app-shell-premium → redesign shell (T.6).
+  Hunk C — item de menu "Dados pessoais (LGPD)" → LGPD / rota (não só visual).
+  Ação: stage B primeiro para commit só shell; A+C para commit LGPD ou segurar.
+
+QuestionsView.tsx
+  Hunks com DEFAULT_OPENROUTER_CHAT_MODEL → config IA (agrupar com openRouter ou commit “model default”).
+  Hunks com app-shell-premium / app-stack-premium → redesign.
+  Ação: separar em dois commits ou dois add -p passes.
+
+DocumentAnalyzer.tsx
+  Hunk import + model: DEFAULT_OPENROUTER_CHAT_MODEL → config.
+  Hunk className root: shell/padding → redesign.
+  Ação: add -p em duas rodadas.
+
+Redacao.tsx
+  Mesmo padrão: hunks de model (várias chamadas) vs className app-shell-premium (views).
+  Ação: idem QuestionsView/DocumentAnalyzer.
+
+SmartSchedule.tsx (unstaged): apenas classes shell — pode ir junto T.6 sem -p se o stage
+já estiver alinhado; há MM (ver seção 4): conferir staged vs unstaged antes.
+
+================================================================================
+TODO 3 — Grupo C — isolamento (pathspec para commit futuro ou hold)
+================================================================================
+Arquivos com alto acoplamento infra/IA/auth (não misturar com commit só visual sem revisão):
+
+  .env.example
+  server.ts
+  src/app/router/routes.tsx
+  src/components/SupabaseProvider.tsx
+  src/contexts/AuthContext.tsx
+  src/features/athena/services/athenaService.ts
+  src/hooks/usePomodoro.ts
+  src/lib/supabase.ts
+  src/lib/testAPI.ts
+  src/services/aiService.ts
+  src/store/useUserStore.ts
+
+Estratégia A — commit dedicado (após COMANDO T.X e tsc + build):
+  git commit <pathspec subset> -m "T.X: ..."
+
+Estratégia B — segurar fora do próximo commit visual:
+  git restore --staged -- <paths>   # SOMENTE se o Ruan autorizar (altera índice)
+
+Nenhum destes comandos foi executado nesta auditoria.
+
+================================================================================
+TODO 4 — Arquivos MM: staged (index vs HEAD) vs unstaged (WT vs index)
+================================================================================
+Linhas = inserções+remoções aproximadas via --numstat (add  tab  del).
+
+server.ts
+  staged:   +7 -0
+  unstaged: +16 -3
+
+SortResult.tsx
+  staged:   +25 -32
+  unstaged: (vazio — git diff WT vs index não mostra alteração; status porém MM)
+  Nota: anomalia comum com CRLF/autocrlf; validar com: git diff --ignore-cr-at-eol
+         ou re-add do ficheiro se o índice estiver inconsistente.
+
+SmartSchedule.tsx
+  staged:   +50 -44
+  unstaged: +2 -2
+
+SupabaseProvider.tsx
+  staged:   +19 -7
+  unstaged: +14 -6
+
+AuthContext.tsx
+  staged:   +53 -35
+  unstaged: (vazio)
+
+explore.ts
+  staged:   +147 -20
+  unstaged: (vazio)   — status mostra MM; se anómalo, verificar CRLF/smudge
+
+athenaClient.ts
+  staged:   +160 -63
+  unstaged: +22 -6
+
+usePomodoro.ts
+  staged:   +3 -1
+  unstaged: (vazio)
+
+useSearch.ts
+  staged:   +8 -7
+  unstaged: (vazio)
+
+studyUtils.ts
+  staged:   +41 -11
+  unstaged: (vazio)
+
+supabase.ts
+  staged:   +9 -4
+  unstaged: (vazio)
+
+ExploreView.tsx
+  staged:   +150 -70
+  unstaged: +1 -1
+
+ProfileView.tsx
+  staged:   +18 -4
+  unstaged: +5 -3
+
+Recomendação: antes de qualquer commit, para cada MM com duas camadas não vazias,
+rodar:
+  git diff --cached -- <file>
+  git diff -- <file>
+
+================================================================================
+Fim do relatório
+================================================================================

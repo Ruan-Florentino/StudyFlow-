@@ -17,7 +17,7 @@ export const Transcendence = ({ onBack }: { onBack: () => void }) => {
 
   if (stage === 0) {
     return (
-      <div className="p-6 min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="app-shell-premium pt-6 md:pt-8 min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
         <AnimatedButton onClick={onBack} variant="ghost" className="absolute top-6 left-6 text-white/50 hover:text-white">
           <ChevronLeft size={24} /> Voltar à Realidade
         </AnimatedButton>

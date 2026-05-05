@@ -1,0 +1,111 @@
+---
+description: Design system e estética
+alwaysApply: true
+---
+
+# DESIGN SYSTEM — MyHUB.IA
+
+## Filosofia visual
+
+- **Dark mode primário** (sempre)
+- **Verde energia** como cor de destaque
+- **Premium e denso** mas respirável
+- **Microinterações refinadas**
+- **Tipografia hierárquica forte**
+
+## Cores (tokens em index.css)
+
+```css
+/* Backgrounds */
+--bg-primary: #0a0e0d
+--bg-secondary: #111817
+--bg-tertiary: #1a2322
+--bg-card: rgba(20, 30, 28, 0.6)
+
+/* Energy palette */
+--energy-primary: #00ff88
+--energy-secondary: #00cc6a
+--energy-glow: rgba(0, 255, 136, 0.15)
+
+/* Text */
+--text-primary: #f0f5f3
+--text-secondary: #a0b5b0
+--text-muted: #607570
+
+/* States */
+--state-success: #00ff88
+--state-warning: #ffb800
+--state-error: #ff4458
+```
+
+## Tipografia
+
+```css
+/* Type scale */
+--text-xs: 0.75rem    /* 12px */
+--text-sm: 0.875rem   /* 14px */
+--text-base: 1rem     /* 16px */
+--text-lg: 1.125rem   /* 18px */
+--text-xl: 1.25rem    /* 20px */
+--text-2xl: 1.5rem    /* 24px */
+--text-3xl: 2rem      /* 32px */
+--text-4xl: 2.5rem    /* 40px */
+--text-display: 3.5rem /* 56px */
+```
+
+## Espaçamento
+
+- Use múltiplos de 4px (Tailwind padrão)
+- Padding generoso em cards (p-6, p-8)
+- Gap consistente em flex/grid (gap-4, 
+  gap-6)
+
+## Sombras e profundidade
+
+```css
+--shadow-sm: 0 1px 2px rgba(0,0,0,0.2)
+--shadow-md: 0 4px 12px rgba(0,0,0,0.3)
+--shadow-lg: 0 12px 32px rgba(0,0,0,0.4)
+--shadow-glow: 0 0 24px var(--energy-glow)
+```
+
+## Bordas
+
+- `rounded-lg` (8px) — botões pequenos
+- `rounded-xl` (12px) — botões grandes
+- `rounded-2xl` (16px) — cards
+- `rounded-3xl` (24px) — heroes/modals
+- `rounded-full` — avatares, pills
+
+## Easings (animações)
+
+```css
+--ease-snappy: cubic-bezier(0.4, 0, 0.2, 1)
+--ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1)
+--ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1)
+```
+
+## Microinterações padrão
+
+- **Hover em cards:** scale-[1.02] + 
+  shadow-lg, transition 200ms
+- **Click em botões:** scale-[0.98], 
+  100ms
+- **Fade-in:** opacity 0→1, 200ms ease-out
+- **Slide-up:** translateY(8px)→0, 300ms
+
+## Regras visuais
+
+❌ NUNCA usa cores fora dos tokens
+❌ NUNCA usa border-radius arbitrário 
+   (use Tailwind scale)
+❌ NUNCA mistura mais de 3 fontes/pesos 
+   numa tela
+❌ NUNCA gradient sem contexto (usa só 
+   pra hierarquia)
+
+✅ SEMPRE testa hover/focus/active
+✅ SEMPRE adiciona transition em mudanças 
+   de estado
+✅ SEMPRE prioriza legibilidade sobre 
+   "efeito"

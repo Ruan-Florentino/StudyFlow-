@@ -41,7 +41,7 @@ export const CosmicPrestige = ({ onBack }: { onBack: () => void }) => {
   }
 
   return (
-    <div className="p-6 min-h-screen bg-black relative overflow-hidden flex flex-col items-center justify-center">
+    <div className="app-shell-premium pt-6 md:pt-8 min-h-screen bg-black relative overflow-hidden flex flex-col items-center justify-center">
       {/* Nebula Background */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] mix-blend-screen" />

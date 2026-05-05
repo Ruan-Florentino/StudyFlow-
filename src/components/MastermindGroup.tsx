@@ -91,7 +91,7 @@ export const MastermindGroup = ({ onBack }: { onBack: () => void }) => {
 
   if (!isStarted) {
     return (
-      <div className="p-6 space-y-8 pb-32 min-h-screen bg-black flex flex-col items-center justify-center">
+      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black flex flex-col items-center justify-center">
         <AnimatedButton onClick={onBack} variant="ghost" className="absolute top-6 left-6 text-white/50 hover:text-white">
           <ChevronLeft size={24} />
         </AnimatedButton>
@@ -130,7 +130,7 @@ export const MastermindGroup = ({ onBack }: { onBack: () => void }) => {
   }
 
   return (
-    <div className="p-6 pb-32 min-h-screen bg-black flex flex-col h-screen">
+    <div className="app-shell-premium pt-6 md:pt-8 pb-32 md:pb-36 min-h-screen bg-black flex flex-col h-screen">
       <header className="flex items-center justify-between shrink-0 mb-6">
         <div className="flex items-center gap-4">
           <AnimatedButton onClick={onBack} variant="secondary" className="p-2 rounded-full border-indigo-500/30 text-indigo-400">

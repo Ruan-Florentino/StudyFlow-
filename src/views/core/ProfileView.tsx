@@ -18,7 +18,8 @@ import {
   Mail,
   FileText,
   Lock,
-  Info
+  Info,
+  Shield
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useStore } from '../../store';
@@ -119,6 +120,19 @@ const ProfileView = () => {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
 
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      toast.error('Erro', 'Imagem muito grande (máx. 5 MB).');
+      e.target.value = '';
+      return;
+    }
+    const okTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!okTypes.includes(file.type)) {
+      toast.error('Erro', 'Use JPG, PNG, WebP ou GIF.');
+      e.target.value = '';
+      return;
+    }
+
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
@@ -141,13 +155,13 @@ const ProfileView = () => {
       const url = data.publicUrl;
 
       if (type === 'profile') {
+        const { error: dbError } = await supabase.from('users').update({ profile_pic: url }).eq('id', user.id);
+        if (dbError) throw dbError;
         setProfilePic(url);
-        // Sync to users table
-        await supabase.from('users').update({ profile_pic: url }).eq('id', user.id);
       } else {
+        const { error: dbError } = await supabase.from('users').update({ cover_pic: url }).eq('id', user.id);
+        if (dbError) throw dbError;
         setCoverPic(url);
-        // Sync to users table
-        await supabase.from('users').update({ cover_pic: url }).eq('id', user.id);
       }
       toast.success("Sucesso", type === 'profile' ? "Foto de perfil atualizada!" : "Foto de capa atualizada!");
 
@@ -156,6 +170,7 @@ const ProfileView = () => {
       toast.error("Erro", "Não foi possível fazer o upload da imagem.");
     } finally {
       setUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -507,6 +522,7 @@ const ProfileView = () => {
                 { label: 'Suporte Oficial', icon: Mail, path: '/perfil/suporte' },
                 { label: 'Termos de Uso', icon: FileText, path: '/perfil/termos-de-uso' },
                 { label: 'Política de Privacidade', icon: Lock, path: '/perfil/politica-de-privacidade' },
+                { label: 'Dados pessoais (LGPD)', icon: Shield, path: '/perfil/dados-pessoais' },
                 { label: 'Sobre o StudyFlow', icon: Info, path: '/perfil/sobre' },
               ].map((item, i) => (
                 <GlassCard 

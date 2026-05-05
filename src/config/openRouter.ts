@@ -70,6 +70,9 @@ export const AI_MODELS = {
 
 export type ModelKey = keyof typeof AI_MODELS;
 
+/** Slug padrão para chat/JSON no app (evita IDs obsoletos no OpenRouter). */
+export const DEFAULT_OPENROUTER_CHAT_MODEL = AI_MODELS.GEMINI_FLASH.id;
+
 /**
  * 🎯 ESTRATÉGIAS POR TAREFA
  * Define ordem de fallback automático

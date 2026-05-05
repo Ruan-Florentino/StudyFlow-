@@ -1,0 +1,79 @@
+---
+description: Estrutura de pastas e padrões
+alwaysApply: true
+---
+
+# ARQUITETURA DO PROJETO
+
+## Estrutura de pastas
+
+```
+src/
+├── components/        → componentes 
+│                        reutilizáveis
+│   ├── ui/            → primitivos 
+│   │                    (Button, Card)
+│   ├── Rooms/         → feature-specific
+│   └── ...
+├── views/             → páginas/telas
+│   └── core/          → telas principais
+│       ├── home/      → DashboardView
+│       ├── ExploreView
+│       ├── ProfileView
+│       └── QuestionsView
+├── pages/             → rotas top-level
+├── features/          → features isoladas
+│   └── athena/        → IA Athena
+├── hooks/             → hooks reutilizáveis
+├── contexts/          → React contexts
+├── lib/               → utils, supabase 
+│                        client
+├── data/              → dados estáticos
+├── services/          → serviços externos
+├── store/             → Zustand store
+├── types/             → tipos globais
+└── index.css          → tokens + globals
+```
+
+## Padrões de arquivo
+
+### Componentes
+
+```tsx
+// ComponentName.tsx
+import { type FC } from 'react'
+
+interface ComponentNameProps {
+  // tipos sempre explícitos
+}
+
+export const ComponentName: FC<ComponentNameProps> = ({ 
+  prop1, 
+  prop2 
+}) => {
+  // hooks no topo
+  // handlers no meio
+  // return no fim
+  
+  return <div>...</div>
+}
+```
+
+### Hooks custom
+
+```tsx
+// useFeatureName.ts
+export const useFeatureName = () => {
+  // lógica
+  return { data, loading, error }
+}
+```
+
+## Regras de organização
+
+✅ 1 componente = 1 arquivo
+✅ Nome do arquivo = nome do export
+✅ Arquivos de teste: ComponentName.test.tsx
+✅ Index.ts apenas em pastas com 5+ exports
+❌ NUNCA arquivos com 500+ linhas (refatora)
+❌ NUNCA componentes sem tipo de Props

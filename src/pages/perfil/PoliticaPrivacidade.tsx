@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 export const PoliticaPrivacidade = () => {
   const navigate = useNavigate();
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="app-shell-premium max-w-3xl pt-6 md:pt-8 pb-32 md:pb-36">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 mb-6 text-white/60 hover:text-white">
         <ChevronLeft size={20} /> Voltar
       </button>

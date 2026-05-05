@@ -1,5 +1,6 @@
 import { athenaClient } from './athenaClient';
 import { BASE_SYSTEM_PROMPT } from '../prompts/systemPrompts';
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../../../config/openRouter';
 
 export const athenaService = {
   generateSmartRecommendation: async (history: any[], level: number) => {
@@ -26,7 +27,7 @@ export const athenaService = {
           { role: 'system', content: 'Você é um assistente de recomendação de estudos. Retorne apenas JSON.' },
           { role: 'user', content: prompt }
         ],
-        model: 'google/gemini-2.0-flash-exp:free'
+        model: DEFAULT_OPENROUTER_CHAT_MODEL
       });
 
       const cleanJson = response.replace(/```json|```/g, '').trim();

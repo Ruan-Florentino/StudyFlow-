@@ -1,3 +1,5 @@
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
+
 export async function testOpenRouterConnection() {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   
@@ -19,7 +21,7 @@ export async function testOpenRouterConnection() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.0-flash-001',
+          model: DEFAULT_OPENROUTER_CHAT_MODEL,
           messages: [{ role: 'user', content: 'oi' }],
         }),
       }

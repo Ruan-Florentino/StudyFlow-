@@ -27,7 +27,7 @@ export const RealityTuner = ({ onBack }: { onBack: () => void }) => {
           </button>
           <span className="italic font-serif text-xs opacity-50 uppercase tracking-widest">System / Reality / Tuner</span>
         </div>
-        <div className="text-[10px] uppercase font-bold tracking-tighter flex items-center gap-4">
+        <div className="text-xs uppercase font-bold tracking-tighter flex items-center gap-4">
           <span className="flex items-center gap-1"><Zap size={12} className="text-orange-500" /> Kernel: v9.9.9</span>
           <span className="opacity-30">|</span>
           <span>Status: Unstable</span>

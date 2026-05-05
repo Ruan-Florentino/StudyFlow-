@@ -1,0 +1,80 @@
+---
+description: Protocolo de Git e commits
+alwaysApply: true
+---
+
+# PROTOCOLO GIT
+
+## Configuração
+
+- user.email: ruanflorzao8@gmail.com
+- user.name: Ruan-Florentino
+
+❌ NUNCA roda `git config` (já está 
+   configurado globalmente)
+
+## Commits
+
+### Formato obrigatório
+
+```
+T.X.Y: descrição curta no imperativo
+
+Detalhes opcionais explicando o porquê 
+da mudança e contexto técnico relevante.
+
+Co-authored-by: ... (se aplicável)
+```
+
+### Exemplos válidos
+
+```
+T.4.1: tokens base da home (typescale, 
+easings, shadows, energy palette)
+
+T.5.B: remove XP, streak, neuralSync, 
+Hub e Daily Challenge da DashboardView
+
+T.5.C: reconstrói DashboardView com 
+foco do dia + atalhos rápidos
+```
+
+### Regras
+
+✅ Commit cirúrgico — 1 propósito por 
+   commit
+✅ Use pathspec quando há múltiplos 
+   staged: `git commit <arquivo> -m "..."`
+✅ Mensagem em pt-BR, descritiva
+✅ Sempre roda `tsc --noEmit` antes
+✅ Sempre roda `npm run build` antes
+
+❌ NUNCA `git commit -a` (arrasta tudo)
+❌ NUNCA `git add .` cego (use pathspec)
+❌ NUNCA commit sem rodar tsc + build
+❌ NUNCA commit que mistura propósitos
+
+## Branches
+
+- `main` — produção (protegida)
+- `develop` — integração
+- `feature/T.X.Y-descricao` — features
+- `fix/descricao` — correções
+
+## Antes de qualquer commit
+
+1. `git status --short` (verifica staged)
+2. `git diff --cached` (revisa mudanças)
+3. `tsc --noEmit` (TypeScript ok)
+4. `npm run build` (build ok)
+5. `git commit <pathspec> -m "..."`
+6. `git log -1 --oneline` (confirma)
+
+## Discrepâncias
+
+Se detectar arquivos staged inesperados:
+
+❌ NÃO commita cego
+❌ NÃO mexe no índice de outros 
+   arquivos
+✅ PARA, reporta e pede COMANDO

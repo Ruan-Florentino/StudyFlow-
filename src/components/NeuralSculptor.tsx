@@ -17,10 +17,10 @@ export const NeuralSculptor = ({ onBack }: { onBack: () => void }) => {
           </button>
           <div className="flex items-center gap-2">
             <Cpu size={16} className="text-blue-400" />
-            <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Neural Sculptor v1.0</span>
+            <span className="text-xs uppercase tracking-[0.2em] font-bold">Neural Sculptor v1.0</span>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-[10px] opacity-50 uppercase tracking-widest">
+        <div className="flex items-center gap-4 text-xs opacity-50 uppercase tracking-widest">
           <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Link: Stable</div>
           <span>|</span>
           <span>BPM: 72</span>

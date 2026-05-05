@@ -29,10 +29,13 @@ export const PremiumGate = ({
       }}>
         {fallback || (
           <div className="opacity-50 pointer-events-none relative overflow-hidden">
-            <div className="absolute inset-0 z-10 flex items-center justify-center">
-              <div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl text-primary font-bold border border-primary/20 pointer-events-auto">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 pointer-events-none">
+              <div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl text-primary font-bold border border-primary/20 pointer-events-auto text-center text-sm">
                 Recurso Premium
               </div>
+              <p className="text-[10px] text-text-secondary uppercase tracking-widest pointer-events-auto">
+                Toque para ver planos
+              </p>
             </div>
             {children}
           </div>

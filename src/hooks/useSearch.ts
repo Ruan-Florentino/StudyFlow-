@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { loadAllQuestions } from '../data/questionsLoader';
-import { SUBJECTS, TRAILS, POPULAR_NOW } from '../data/explore';
+import { SUBJECTS, RECOMMENDED_TRAILS, POPULAR_NOW } from '../data/explore';
 
 export interface SearchResult {
   id: string;
@@ -44,15 +44,16 @@ export function useSearch(query: string) {
         }
       });
 
-      // Trails
-      TRAILS.forEach(t => {
-        if (t.name.toLowerCase().includes(q)) {
+      // Trilhas recomendadas
+      RECOMMENDED_TRAILS.forEach((t) => {
+        const hay = `${t.title} ${t.description} ${t.topics.join(' ')}`.toLowerCase();
+        if (hay.includes(q)) {
           searchResults.push({
             id: `trail-${t.id}`,
             type: 'trail',
-            title: t.name,
-            subtitle: 'Trilha Recomendada',
-            data: t
+            title: t.title,
+            subtitle: 'Trilha recomendada',
+            data: t,
           });
         }
       });

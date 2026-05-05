@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { UploadCloud, FileText, Loader2, ChevronLeft, Plus, CheckCircle2 } from 'lucide-react';
 import { athenaClient } from '../features/athena/services/athenaClient';
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
 import { useStore } from '../store';
 import { GlassCard, AnimatedButton } from './UI';
 import Markdown from 'react-markdown';
@@ -50,7 +51,7 @@ Retorne APENAS um JSON:
               { role: 'system', content: 'Você é um analisador de documentos educacionais. Retorne apenas JSON.' },
               { role: 'user', content: prompt }
             ],
-            model: 'google/gemini-2.0-flash-001'
+            model: DEFAULT_OPENROUTER_CHAT_MODEL
           });
 
           const cleanJson = response.replace(/```json|```/g, '').trim();

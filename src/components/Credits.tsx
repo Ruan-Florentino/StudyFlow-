@@ -18,34 +18,34 @@ export const Credits = ({ onBack }: { onBack: () => void }) => {
         >
           <div className="space-y-4">
             <h1 className="text-4xl font-serif italic">StudyFlow OS</h1>
-            <p className="text-[10px] uppercase tracking-[0.5em] opacity-40">A Simulação de Aprendizado Definitiva</p>
+            <p className="text-xs uppercase tracking-[0.5em] opacity-40">A Simulação de Aprendizado Definitiva</p>
           </div>
 
           <div className="space-y-12">
             <div>
-              <h2 className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Arquiteto Chefe</h2>
+              <h2 className="text-xs uppercase tracking-widest opacity-40 mb-2">Arquiteto Chefe</h2>
               <p className="text-xl font-serif">O Usuário</p>
             </div>
             
             <div>
-              <h2 className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Motor de Gênese</h2>
+              <h2 className="text-xs uppercase tracking-widest opacity-40 mb-2">Motor de Gênese</h2>
               <p className="text-xl font-serif">Athena (StudyFlow IA)</p>
             </div>
 
             <div>
-              <h2 className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Engenharia de Realidade</h2>
+              <h2 className="text-xs uppercase tracking-widest opacity-40 mb-2">Engenharia de Realidade</h2>
               <p className="text-xl font-serif">Antigravity</p>
             </div>
 
             <div>
-              <h2 className="text-[10px] uppercase tracking-widest opacity-40 mb-2">Design de Interface</h2>
+              <h2 className="text-xs uppercase tracking-widest opacity-40 mb-2">Design de Interface</h2>
               <p className="text-xl font-serif">Receitas Estéticas do Multiverso</p>
             </div>
           </div>
 
           <div className="pt-24 space-y-4">
             <p className="text-sm italic opacity-60">"O fim de toda a nossa exploração será chegar onde começamos e conhecer o lugar pela primeira vez."</p>
-            <p className="text-[10px] uppercase tracking-widest opacity-40">- T.S. Eliot</p>
+            <p className="text-xs uppercase tracking-widest opacity-40">- T.S. Eliot</p>
           </div>
         </motion.div>
       </div>
