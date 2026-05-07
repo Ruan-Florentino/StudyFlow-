@@ -46,7 +46,7 @@ export function AnimatedPageOutlet() {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pageKey}
-        className="min-h-full"
+        className="flex w-full min-w-0 flex-1 flex-col"
         variants={variants}
         initial="initial"
         animate="animate"

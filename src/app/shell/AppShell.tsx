@@ -133,7 +133,7 @@ export function AppShell({
 
         <main
           id="app-main-scroll"
-          className="min-h-0 flex-1 overflow-y-auto no-scrollbar pb-[var(--app-main-scroll-pad-bottom)]"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto no-scrollbar pb-[var(--app-main-scroll-pad-bottom)]"
         >
           {children}
         </main>
