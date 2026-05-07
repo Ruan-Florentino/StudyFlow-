@@ -11,14 +11,14 @@ import { aiPremiumCopy } from '../lib/productDisclosure';
 export function AIHub() {
   const { isPremium } = useUserAccess();
   return (
-    <div className="relative mx-auto flex w-full max-w-7xl min-h-0 flex-col px-3 sm:px-4 md:px-8 pt-4 md:pt-8 max-md:min-h-[calc(100svh-6.5rem-env(safe-area-inset-top,0px))] max-md:overflow-x-hidden md:h-[calc(100vh-6rem)] md:min-h-[calc(100vh-6rem)]">
+    <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col min-h-0 min-w-0 overflow-x-hidden overflow-y-hidden px-3 sm:px-4 md:overflow-y-visible md:px-8 md:pt-8 pt-4">
       <AuroraBackground intensity="subtle" />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
       {/* Header Section */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 flex items-center justify-between gap-3 md:mb-8"
+        className="mb-4 flex shrink-0 items-center justify-between gap-3 md:mb-8"
       >
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 shadow-lg shadow-emerald-500/5 neon-edge-subtle sm:h-12 sm:w-12">
@@ -47,7 +47,7 @@ export function AIHub() {
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 flex flex-col gap-2 rounded-2xl border border-primary/25 bg-primary/[0.08] px-4 py-3 md:flex-row md:items-center md:justify-between"
+          className="mb-4 flex shrink-0 flex-col gap-2 rounded-2xl border border-primary/25 bg-primary/[0.08] px-4 py-3 md:flex-row md:items-center md:justify-between"
           role="status"
         >
           <div className="flex gap-3 min-w-0">

@@ -83,7 +83,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
       className={
         compact
           ? 'flex h-full min-h-0 w-full bg-slate-950/40 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-xl relative'
-          : 'flex h-full min-h-0 w-full bg-slate-950/50 rounded-3xl overflow-hidden border border-white/5 backdrop-blur-3xl shadow-2xl relative'
+          : 'flex h-full min-h-0 w-full max-md:rounded-2xl bg-slate-950/50 rounded-3xl overflow-hidden border border-white/5 backdrop-blur-3xl shadow-2xl relative'
       }
     >
       <AnimatePresence>
@@ -230,17 +230,17 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                 className={
                   compact
                     ? 'h-full flex flex-col items-center justify-center p-4 text-center'
-                    : 'h-full flex flex-col items-center justify-center p-8 text-center'
+                    : 'h-full flex flex-col items-center justify-center px-4 py-8 text-center sm:p-8'
                 }
               >
                 <div
                   className={
                     compact
                       ? 'w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-3 relative'
-                      : 'w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 relative'
+                      : 'w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 relative'
                   }
                 >
-                  <span className={compact ? 'text-2xl' : 'text-4xl'}>{ATHENA_CONFIG.ICON}</span>
+                  <span className={compact ? 'text-2xl' : 'text-3xl sm:text-4xl'}>{ATHENA_CONFIG.ICON}</span>
                   <motion.div
                     animate={
                       reduceMotion
@@ -255,14 +255,14 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                     className="absolute inset-0 bg-primary rounded-full blur-2xl"
                   />
                 </div>
-                <h2 className={compact ? 'text-base font-bold text-white mb-1' : 'text-2xl font-bold text-white mb-2'}>
+                <h2 className={compact ? 'text-base font-bold text-white mb-1' : 'text-lg sm:text-2xl font-bold text-white mb-2'}>
                   {greeting || `Olá! Eu sou ${ATHENA_CONFIG.NAME}`}
                 </h2>
                 <p className={compact ? 'text-white/40 text-[11px] max-w-sm mx-auto leading-relaxed' : 'text-white/40 text-sm max-w-md mx-auto leading-relaxed'}>
                   Pergunte qualquer dúvida de estudo — ENEM, redação ou questões.
                 </p>
                 
-                <div className={compact ? 'grid grid-cols-2 gap-2 mt-4 w-full max-w-md' : 'grid grid-cols-2 gap-3 mt-12 max-w-lg w-full'}>
+                <div className={compact ? 'grid grid-cols-2 gap-2 mt-4 w-full max-w-md' : 'grid grid-cols-2 gap-2 mt-6 w-full max-w-lg px-1 sm:mt-12 sm:gap-3 sm:px-0'}>
                   {[
                     'Explicar Equação do 2º grau',
                     'Dicas para Redação Nota 1000',
@@ -275,7 +275,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                       className={
                         compact
                           ? 'p-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold text-white/60 hover:bg-white/10 hover:text-white transition-all text-left'
-                          : 'p-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold text-white/60 hover:bg-white/10 hover:text-white transition-all text-left'
+                          : 'p-3 sm:p-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] sm:text-xs font-bold text-white/60 hover:bg-white/10 hover:text-white transition-all text-left leading-snug'
                       }
                     >
                       {action}
