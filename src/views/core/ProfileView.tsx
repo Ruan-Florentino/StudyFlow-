@@ -224,8 +224,7 @@ const ProfileView = () => {
       toast.success("Sucesso", type === 'profile' ? "Foto de perfil atualizada!" : "Foto de capa atualizada!");
 
     } catch (err) {
-      console.error('Upload failed:', err);
-      toast.error("Erro", "Não foi possível fazer o upload da imagem.");
+      toast.error('Erro', 'Não foi possível fazer o upload da imagem. Tente outra foto ou formato.');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -272,7 +271,7 @@ const ProfileView = () => {
   };
 
   return (
-    <div className="pb-32 max-w-6xl mx-auto w-full">
+    <div className="mx-auto w-full max-w-6xl min-w-0 pb-32">
       {/* Hidden share card for html2canvas */}
       <div className="fixed -left-[9999px] top-0">
         <div id="profile-share-card" className="w-[400px] p-8 bg-[#0a0a0a] border-2 border-[#00ff94]/20 rounded-[40px] space-y-6 relative overflow-hidden">
@@ -309,12 +308,12 @@ const ProfileView = () => {
         </div>
       </div>
 
-      {/* Cover Photo */}
-      <div className="relative h-48 bg-white/5 border-b border-white/10 mb-12 z-10">
+      {/* Cover Photo — proporção estável no mobile (aspect ratio), capa largura total no md+ */}
+      <div className="relative z-10 mb-14 w-full border-b border-white/10 bg-white/5 aspect-[5/2] max-h-[13rem] sm:mb-12 sm:aspect-auto sm:h-48 sm:max-h-none">
         <Header 
           title=""
           onBack={goBack}
-          className="absolute top-6 left-6 z-20"
+          className="absolute left-4 top-4 z-20 sm:left-6 sm:top-6"
         />
         {coverPic ? (
           <img src={coverPic} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
@@ -332,10 +331,10 @@ const ProfileView = () => {
           </label>
         )}
 
-        {/* Profile Picture */}
-        <div className="absolute -bottom-10 left-6 z-20">
+        {/* Profile Picture — centralizado no mobile, alinhado à esquerda no sm+ */}
+        <div className="absolute -bottom-9 left-1/2 z-20 -translate-x-1/2 sm:-bottom-10 sm:left-6 sm:translate-x-0">
           <div className="relative group">
-            <div className="w-24 h-24 rounded-full border-4 border-background bg-card overflow-hidden">
+            <div className="h-20 w-20 rounded-full border-4 border-background bg-card overflow-hidden sm:h-24 sm:w-24">
               <img 
                 src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} 
                 alt="Profile" 
