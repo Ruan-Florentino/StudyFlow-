@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "./styles/tokens.css";
 @import "tailwindcss";
 
 @theme {
@@ -13,14 +14,47 @@
   --font-accent: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-tech: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-primary: var(--theme-primary, #00E88F);
-  --color-primary-glow: var(--theme-primary-glow, rgba(0, 232, 143, 0.05));
-  --color-background: #050505;
-  --color-card: #0A0A0A;
-  --color-card-secondary: #111111;
+  --color-primary: var(--theme-primary, var(--hub-primary));
+  --color-primary-glow: var(--theme-primary-glow, rgba(var(--hub-primary-rgb), 0.1));
+  --color-background: var(--hub-bg-base);
+  --color-card: #070b09;
+  --color-card-secondary: #0c1210;
   --color-border: #1F1F1F;
   --color-text-primary: #FAFAFA;
-  --color-text-secondary: #A1A1AA;
+  --color-text-secondary: #B7C3BE;
+
+  /* Fase 2 — superfícies, acentos, sombras e glows (ver src/styles/tokens.css) */
+  --color-surface-elevated: var(--hub-bg-elevated);
+  --color-surface-overlay: var(--hub-bg-overlay);
+  --color-surface-hover: var(--hub-bg-hover);
+  --color-primary-deep: var(--hub-primary-deep);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-pink: var(--neon-pink);
+  --color-neon-amber: var(--neon-amber);
+
+  --shadow-premium-sm: var(--tok-shadow-sm);
+  --shadow-premium-md: var(--tok-shadow-md);
+  --shadow-premium-lg: var(--tok-shadow-lg);
+  --shadow-premium-xl: var(--tok-shadow-xl);
+  --shadow-glow-primary: var(--tok-glow-primary);
+  --shadow-glow-success: var(--tok-glow-success);
+  --shadow-glow-danger: var(--tok-glow-danger);
+  --shadow-glow-cyan: var(--tok-glow-cyan);
+  --shadow-glow-purple: var(--tok-glow-purple);
+  --shadow-inner-premium: var(--tok-glow-inner-premium);
+
+  --animate-aurora-1: aurora-1 22s ease-in-out infinite;
+  --animate-aurora-2: aurora-2 28s ease-in-out infinite;
+  --animate-aurora-3: aurora-3 18s ease-in-out infinite;
+  --animate-breathe-glow: breathe-glow 2.5s ease-in-out infinite;
+
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 800ms;
+  --duration-cinematic: 1200ms;
   
   --radius-3xl: 24px;
   --animate-shimmer: shimmer 2s linear infinite;
@@ -28,21 +62,65 @@
 
 @layer base {
   body {
-    @apply bg-background text-text-primary font-sans antialiased selection:bg-primary selection:text-black overflow-x-hidden;
+    @apply bg-background text-text-primary font-sans antialiased overflow-x-hidden;
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-fg);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;
   }
+
+  /**
+   * Fase 6 — foco teclado (WCAG-friendly, sem anel browser padrão feio).
+   * Não usar em :focus (mouse) para não poluir cliques.
+   */
+  :where(
+    button,
+    [href],
+    input:not([type='hidden']),
+    select,
+    textarea,
+    summary,
+    [type='button'],
+    [type='submit'],
+    [type='reset'],
+    [role='button'],
+    [tabindex]:not([tabindex='-1'])
+  ):focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--hub-bg-base),
+      0 0 0 4px rgba(var(--hub-primary-rgb), 0.92),
+      0 0 22px rgba(var(--hub-primary-rgb), 0.22);
+  }
 }
 
 @layer components {
   .glass {
-    @apply bg-card border border-border backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.2)];
+    @apply border backdrop-blur-2xl;
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
   }
   
   .glass-card {
-    @apply bg-card border border-border backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] rounded-2xl transition-all duration-300 hover:border-white/10;
+    @apply rounded-2xl border backdrop-blur-2xl;
+    transition:
+      border-color var(--duration-normal) var(--ease-smooth-out),
+      box-shadow var(--duration-normal) var(--ease-smooth-out),
+      background-color var(--duration-slow) var(--ease-smooth-out),
+      transform var(--duration-fast) var(--ease-smooth-out);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.26);
   }
 
   /* T.6 — shell + surfaces (premium density, Figma-aligned tokens) */
@@ -59,10 +137,8 @@
   }
 
   .premium-stats-tile {
-    background: linear-gradient(135deg, rgba(0, 232, 143, 0.09), rgba(0, 232, 143, 0.02));
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: linear-gradient(135deg, rgba(var(--hub-primary-rgb), 0.14), rgba(255, 255, 255, 0.02));
+    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
 
   .neon-glow {
@@ -71,6 +147,69 @@
 
   .neon-border {
     @apply border-primary/20 shadow-[0_0_10px_rgba(0,232,143,0.05)];
+  }
+
+  /* Fase 3 — placeholders com shimmer (dark, alinhado aos tokens) */
+  @keyframes skeleton-shine {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .skeleton-shine {
+    @apply relative overflow-hidden bg-white/[0.06];
+  }
+
+  .skeleton-shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(var(--hub-primary-rgb), 0.12),
+      transparent
+    );
+    animation: skeleton-shine 1.35s var(--ease-smooth) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shine::after {
+      animation: none;
+      opacity: 0.35;
+    }
+  }
+
+  /* Fase 4 — glass / neon (uso pontual) */
+  .glass-premium {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight), var(--tok-glow-inner-premium);
+  }
+
+  .neon-text-soft {
+    color: var(--neon-cyan);
+    text-shadow:
+      0 0 10px rgba(6, 255, 165, 0.35),
+      0 0 22px rgba(0, 232, 143, 0.18);
+  }
+
+  .neon-edge-subtle {
+    box-shadow:
+      0 0 18px rgba(var(--hub-primary-rgb), 0.2),
+      inset 0 0 14px rgba(var(--hub-primary-rgb), 0.06);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-aurora-1,
+    .animate-aurora-2,
+    .animate-aurora-3,
+    .animate-breathe-glow {
+      animation: none !important;
+    }
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -82,39 +221,25 @@
   }
   
   .tech-grid {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 30px 30px;
+    background-image: none;
   }
 
   .cyber-border {
     position: relative;
-    border: 1px solid rgba(0, 232, 143, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
   }
 
   .cyber-border::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    width: 10px;
-    height: 10px;
-    border-top: 2px solid var(--color-primary);
-    border-left: 2px solid var(--color-primary);
+    content: none;
   }
 
   .cyber-border::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    right: -1px;
-    width: 10px;
-    height: 10px;
-    border-bottom: 2px solid var(--color-primary);
-    border-right: 2px solid var(--color-primary);
+    content: none;
   }
 
   .cyber-button {
-    @apply relative overflow-hidden px-6 py-3 bg-primary text-black font-bold uppercase tracking-widest rounded-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,148,0.4)] active:scale-95;
+    @apply relative overflow-hidden px-6 py-3 bg-primary text-white font-semibold uppercase tracking-[0.08em] rounded-xl transition-all duration-300 hover:brightness-110 active:scale-95;
   }
 
   .cyber-button::before {
@@ -127,7 +252,7 @@
   }
 
   .cyber-card {
-    @apply relative bg-card border border-primary/10 rounded-2xl overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-[0_0_30px_rgba(0,255,148,0.05)];
+    @apply relative bg-card border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/20;
   }
 
   .cyber-card::after {
@@ -140,16 +265,16 @@
   }
 
   .cyber-text {
-    @apply font-display font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white bg-[length:200%_auto] animate-shimmer;
+    @apply font-display font-bold tracking-tight text-white;
   }
 
   .text-glow {
-    text-shadow: 0 0 10px rgba(0, 232, 143, 0.5);
+    text-shadow: none;
   }
 
   .bg-noise {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.02;
+    background-image: none;
+    opacity: 0;
     pointer-events: none;
   }
 }
@@ -182,10 +307,45 @@
   100% { opacity: 0.8; }
 }
 
-.neon-pulse { animation: neon-pulse 2s ease-in-out infinite; }
-.icon-float { animation: icon-float 3s ease-in-out infinite; }
+/**
+ * Motion global de icones (Lucide):
+ * - suaviza cor/transform/filtro
+ * - microinteracao em hover/focus/active para alvos clicaveis
+ */
+:where(svg.lucide):not(.icon-motion-static) {
+  transform-origin: center;
+  transition:
+    transform var(--duration-icon-normal) var(--ease-icon),
+    color var(--duration-fast) var(--ease-icon),
+    opacity var(--duration-fast) var(--ease-icon),
+    filter var(--duration-fast) var(--ease-icon);
+  will-change: transform, filter;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :where(button, a, [role='button'], .group, .group\/tile):is(:hover, :focus-visible)
+    :where(svg.lucide):not(.icon-motion-static) {
+    transform: translateY(-1px) scale(1.06);
+    filter: drop-shadow(0 0 10px rgba(var(--hub-primary-rgb), 0.2));
+  }
+}
+
+:where(button, a, [role='button']):active :where(svg.lucide):not(.icon-motion-static) {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(svg.lucide):not(.icon-motion-static) {
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+.neon-pulse { animation: neon-pulse var(--duration-icon-loop) var(--ease-icon-loop) infinite; }
+.icon-float { animation: icon-float calc(var(--duration-icon-loop) + 800ms) var(--ease-icon-loop) infinite; }
 .animate-spin-slow { animation: spin 8s linear infinite; }
-.animate-flicker { animation: animate-flicker 2s linear infinite; }
+.animate-flicker { animation: animate-flicker var(--duration-icon-loop) linear infinite; }
 
 @keyframes scanline {
   0% {
@@ -232,9 +392,51 @@
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* Background do "fora do app" quando em desktop */
-html, body {
+html,
+body {
   background: #000;
   overscroll-behavior: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/**
+ * Fase 6 — scrollbars (áreas com overflow; .no-scrollbar continua sem barra).
+ * Firefox: scrollbar-width; WebKit: pseudo-elements abaixo.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hub-primary-deep) rgba(255, 255, 255, 0.06);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--hub-primary) 0%, var(--hub-primary-deep) 100%);
+  border-radius: 9999px;
+  border: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--hub-primary);
 }
 
 /* Suaviza o liquid glass em Safari */
@@ -243,6 +445,70 @@ html, body {
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
   }
+}
+
+.liquid-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.56), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.liquid-glass :where(.text-text-secondary) {
+  color: #c4d2cc;
+}
+
+.liquid-glass :where(.text-white\/50, .text-white\/45, .text-white\/40) {
+  color: rgba(255, 255, 255, 0.74);
+}
+
+/**
+ * Bottom tab bar — “liquid glass” iOS-like dock
+ * Vidro escuro + blur forte + borda luminosa suave (não altera outros .liquid-glass)
+ */
+@supports (backdrop-filter: blur(1px)) {
+  .bottom-nav-dock {
+    -webkit-backdrop-filter: blur(36px) saturate(185%);
+    backdrop-filter: blur(36px) saturate(185%);
+  }
+}
+
+.bottom-nav-dock {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.13) 0%,
+      rgba(255, 255, 255, 0.04) 38%,
+      rgba(0, 0, 0, 0.16) 100%
+    );
+  background-color: color-mix(in srgb, var(--hub-bg-overlay) 58%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.42) inset,
+    0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+    0 28px 56px rgba(0, 0, 0, 0.52),
+    0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+/* Brilho superior tipo vidro polido (iOS) */
+.bottom-nav-dock::before {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: 1px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.72),
+    transparent
+  );
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 /* AI Model Selector Styles */
@@ -289,4 +555,16 @@ html, body {
 
 .ai-tag {
   @apply text-[9px] px-2 py-0.5 rounded-full bg-white/5 border border-white/5 font-medium;
+}
+
+/* AkashicRecords — keyframes globais (evita dangerouslySetInnerHTML) */
+@keyframes akashic-twinkle {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }

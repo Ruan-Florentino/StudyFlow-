@@ -1,5 +1,6 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
+import { springs } from '../../lib/animations/easings';
 import { cn } from '../UI';
 import { ROOMS } from '../../data/rooms';
 import { Users } from 'lucide-react';
@@ -41,7 +42,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ roomState, onJoin, index }) 
           </div>
           
           <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.85)]" />
             <span className="text-[9px] font-bold text-white uppercase tracking-widest leading-none mt-px">AO VIVO</span>
           </div>
         </div>
@@ -57,7 +58,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ roomState, onJoin, index }) 
 
         <div className="flex items-center justify-between pt-4 border-t border-white/5">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest leading-none">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none">
               {numOnline} ESTUDANDO
             </span>
           </div>
@@ -73,7 +74,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ roomState, onJoin, index }) 
               />
             ))}
             <div 
-              className="w-6 h-6 rounded-full border border-black text-[8px] font-bold flex items-center justify-center text-black bg-emerald-500"
+              className="w-6 h-6 rounded-full border border-black text-[8px] font-bold flex items-center justify-center text-black bg-primary"
             >
               +{Math.floor(numOnline/2)}
             </div>

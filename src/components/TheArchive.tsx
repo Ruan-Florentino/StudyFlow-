@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, GitCommit, History, Database } from 'lucide-react';
 import { useStore } from '../store';
+import { AthenaChat } from '../features/athena/components/AthenaChat';
+import { BASE_SYSTEM_PROMPT } from '../features/athena/prompts/systemPrompts';
+import { buildArchiveDigestForPrompt } from '../lib/historyAiDigest';
 
 export const TheArchive = ({ onBack }: { onBack: () => void }) => {
   const { sessions, history, prestigeLevel, xp } = useStore();
+
+  const archiveSystemPrompt = useMemo(() => {
+    const digest = buildArchiveDigestForPrompt({ studySessions: sessions, history });
+    return `${BASE_SYSTEM_PROMPT}
+
+## Export do Arquivo (logs do app)
+Estes são registros reais exportados da interface “Archive”. Use para comentários sobre padrões de estudo; não invente eventos fora da lista.
+
+${digest}`;
+  }, [sessions, history]);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#000000] text-[#00FF00] font-mono overflow-hidden flex flex-col">
@@ -79,6 +92,27 @@ export const TheArchive = ({ onBack }: { onBack: () => void }) => {
             <p className="text-[10px] opacity-40 leading-relaxed">
               A estabilidade da simulação após o colapso recursivo.
             </p>
+          </div>
+        </section>
+
+        <section className="space-y-3 border border-[#00FF00]/25 p-4 md:p-6 bg-[#030803] relative z-10">
+          <div className="flex items-center gap-2 text-[#00FF00]/80">
+            <History size={14} />
+            <h2 className="text-[10px] uppercase tracking-[0.35em] font-bold">ATHENA / Consulta ao arquivo</h2>
+          </div>
+          <p className="text-[10px] text-[#00FF00]/40 leading-relaxed max-w-2xl">
+            Chat com contexto dos logs acima (sessões + tentativas). Mesmas conversas podem ser retomadas no Hub de IA.
+          </p>
+          <div className="h-[min(55vh,520px)] rounded-xl overflow-hidden border border-[#00FF00]/20 bg-black/40">
+            <AthenaChat
+              compact
+              sidebarInCompact
+              context="hub"
+              systemPrompt={archiveSystemPrompt}
+              greeting="Interrogar memória do arquivo"
+              placeholder="Ex.: resuma meus últimos erros por padrão"
+              showSidebar={false}
+            />
           </div>
         </section>
 

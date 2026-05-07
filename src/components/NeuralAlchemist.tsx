@@ -33,9 +33,9 @@ export const NeuralAlchemist = ({ onBack }: { onBack: () => void }) => {
     // Save as note
     addNote({
       id: Date.now().toString(),
-      title: `[ALQUIMIA] ${result.title}`,
-      content: `${result.description}\n\nCONHECIMENTO PROIBIDO:\n${result.forbiddenKnowledge}`,
-      subject: 'Alquimia Neural',
+      title: `[REESCRITA] ${result.title}`,
+      content: `${result.description}\n\nINSIGHT-CHAVE:\n${result.forbiddenKnowledge}`,
+      subject: 'Reescrita Inteligente',
       updatedAt: new Date().toISOString()
     });
 
@@ -45,7 +45,7 @@ export const NeuralAlchemist = ({ onBack }: { onBack: () => void }) => {
         id: `alch-${Date.now()}-${i}`,
         front: `[${result.title}] ${f.question}`,
         back: f.answer,
-        subject: 'Alquimia Neural',
+        subject: 'Reescrita Inteligente',
         deckId: 'alquimia-neural',
         level: 'Novo',
         interval: 0,
@@ -53,7 +53,7 @@ export const NeuralAlchemist = ({ onBack }: { onBack: () => void }) => {
       });
     });
 
-    alert("Conhecimento transmutado salvo na sua biblioteca!");
+    alert("Conteúdo salvo na sua biblioteca!");
   };
 
   return (
@@ -69,7 +69,7 @@ export const NeuralAlchemist = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-premium-title italic text-purple-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.8)]">
-          Alquimista Neural<span className="text-white font-normal not-italic ml-1">.</span>
+          Reescrita Inteligente<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
@@ -144,7 +144,7 @@ export const NeuralAlchemist = ({ onBack }: { onBack: () => void }) => {
                   <div className="p-6 bg-black/60 border border-amber-500/20 rounded-2xl space-y-4">
                     <div className="flex items-center gap-2 text-amber-500">
                       <Sparkles size={20} />
-                      <h4 className="text-xs font-bold uppercase tracking-widest">Conhecimento Proibido</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest">Insight-Chave</h4>
                     </div>
                     <p className="text-sm text-amber-50/90 leading-relaxed font-mono">
                       {result.forbiddenKnowledge}

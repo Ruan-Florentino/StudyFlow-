@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, ArrowLeft, Target, Clock, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, Target, Clock, BookOpen, Sparkles, Home, Compass } from 'lucide-react';
 import { GlassCard, AnimatedButton } from './UI';
 import { useStore } from '../store';
 
-export const Onboarding = ({ onComplete }: { onComplete: () => void }) => {
+export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) => void }) => {
   const [step, setStep] = useState(1);
-  const { setOnboardingData, completeOnboarding } = useStore();
+  const { setOnboardingData } = useStore();
   const [data, setData] = useState({
     objetivo: '',
     horas: '',
@@ -16,17 +16,16 @@ export const Onboarding = ({ onComplete }: { onComplete: () => void }) => {
   });
 
   const nextStep = () => {
-    if (step < 4) setStep(s => s + 1);
+    if (step < 5) setStep(s => s + 1);
   };
   
   const prevStep = () => {
     if (step > 1) setStep(s => s - 1);
   };
 
-  const finish = () => {
+  const finishWithRoute = (initialPath: string) => {
     setOnboardingData(data);
-    completeOnboarding();
-    onComplete();
+    onComplete(initialPath);
   };
 
   const difficultiesList = ['Matemática', 'Português', 'Redação', 'História', 'Geografia', 'Biologia', 'Física', 'Química', 'Inglês'];
@@ -37,7 +36,7 @@ export const Onboarding = ({ onComplete }: { onComplete: () => void }) => {
       <div className="h-1 bg-white/10 w-full relative">
         <motion.div 
           initial={{ width: 0 }}
-          animate={{ width: `${(step / 4) * 100}%` }}
+          animate={{ width: `${(step / 5) * 100}%` }}
           className="absolute top-0 left-0 h-full bg-primary shadow-[0_0_10px_rgba(0,255,148,0.5)]"
         />
       </div>
@@ -200,12 +199,81 @@ export const Onboarding = ({ onComplete }: { onComplete: () => void }) => {
               <div className="flex justify-between mt-8">
                 <AnimatedButton onClick={prevStep} variant="ghost" className="px-6">Voltar</AnimatedButton>
                 <AnimatedButton 
-                  onClick={finish} 
+                  onClick={nextStep} 
                   disabled={!data.objetivoFinalText || !data.objetivoFinalDate}
                   className="px-8 border-primary bg-primary text-black"
                 >
                   <Sparkles size={16} />
-                  Criar minha rotina com IA
+                  Continuar
+                </AnimatedButton>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 5 && (
+            <motion.div
+              key="step5"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-8"
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <BookOpen size={32} className="text-primary" />
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold">Seu primeiro passo (rápido)</h2>
+                <p className="text-text-secondary max-w-md mx-auto">
+                  Escolha uma ação para sentir o app agora. Você pode mudar de ideia depois — o objetivo é uma vitória
+                  rápida antes de explorar o restante.
+                </p>
+              </div>
+
+              <div className="grid gap-3">
+                <button
+                  type="button"
+                  onClick={() => finishWithRoute('/questoes')}
+                  className="p-5 rounded-2xl border border-primary/40 bg-primary/10 text-left transition-all hover:border-primary hover:bg-primary/15"
+                >
+                  <span className="flex items-center gap-3">
+                    <BookOpen size={22} className="text-primary shrink-0" />
+                    <span>
+                      <span className="font-bold text-white block">Resolver questões</span>
+                      <span className="text-sm text-white/55">Banco e treino — ganho imediato</span>
+                    </span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => finishWithRoute('/')}
+                  className="p-5 rounded-2xl border border-white/10 bg-white/5 text-left transition-all hover:border-white/20 hover:bg-white/10"
+                >
+                  <span className="flex items-center gap-3">
+                    <Home size={22} className="text-primary shrink-0" />
+                    <span>
+                      <span className="font-bold text-white block">Ver meu painel</span>
+                      <span className="text-sm text-white/55">Foco do dia e atalhos</span>
+                    </span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => finishWithRoute('/explorar')}
+                  className="p-5 rounded-2xl border border-white/10 bg-white/5 text-left transition-all hover:border-white/20 hover:bg-white/10"
+                >
+                  <span className="flex items-center gap-3">
+                    <Compass size={22} className="text-primary shrink-0" />
+                    <span>
+                      <span className="font-bold text-white block">Explorar métodos</span>
+                      <span className="text-sm text-white/55">Descobrir ferramentas de estudo</span>
+                    </span>
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex justify-start">
+                <AnimatedButton onClick={prevStep} variant="ghost" className="px-6">
+                  Voltar
                 </AnimatedButton>
               </div>
             </motion.div>

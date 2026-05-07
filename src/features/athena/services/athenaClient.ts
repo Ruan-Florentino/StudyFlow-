@@ -1,5 +1,8 @@
-/** Tempo máximo até headers da resposta (evita fetch pendente sem limite). */
-const REQUEST_TIMEOUT_MS = 30_000;
+/** Tempo máximo até headers (proxy pode fazer vários modelos + backoff 429). */
+import { devAgentLog } from '../../../lib/devAgentLog';
+import { supabase, isSupabaseConfigured } from '../../../lib/supabase';
+
+const REQUEST_TIMEOUT_MS = 200_000;
 
 function openRouterErrorMessage(body: unknown): string {
   if (body == null || typeof body !== 'object') return '';
@@ -51,6 +54,24 @@ async function fetchWithTimeout(
 class AthenaClient {
   private baseURL = '/api/ai';
 
+  private async buildAuthHeaders(): Promise<HeadersInit> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Autenticação indisponível. Configure o Supabase para usar a IA.');
+    }
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      throw new Error('Falha ao validar sessão de acesso.');
+    }
+    const token = data.session?.access_token;
+    if (!token) {
+      throw new Error('Faça login para usar a IA.');
+    }
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
   /**
    * Streaming: timeout na conexão inicial; leitura do corpo segue sem limite duro
    * (evita cortar respostas longas após o primeiro chunk).
@@ -67,11 +88,12 @@ class AthenaClient {
     let lastStreamErr: unknown;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
+        const headers = await this.buildAuthHeaders();
         response = await fetchWithTimeout(
           this.baseURL,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
               messages: params.messages,
               model: params.model,
@@ -111,6 +133,18 @@ class AthenaClient {
         openRouterErrorMessage(errorData) ||
         (errorData as { error?: string }).error ||
         `HTTP ${response.status}`;
+      devAgentLog({
+        sessionId: '3d88f5',
+        runId: 'post-fix',
+        hypothesisId: 'H5',
+        location: 'athenaClient.ts:streamChat',
+        message: 'stream_http_error',
+        data: {
+          status: response.status,
+          msgHead: String(msg).slice(0, 160),
+          hasErrorField: typeof (errorData as { error?: unknown }).error !== 'undefined',
+        },
+      });
       throw new Error(msg);
     }
 
@@ -155,11 +189,12 @@ class AthenaClient {
   }): Promise<string> {
     let response: Response;
     try {
+      const headers = await this.buildAuthHeaders();
       response = await fetchWithTimeout(
         this.baseURL,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             messages: params.messages,
             model: params.model,
@@ -183,6 +218,18 @@ class AthenaClient {
         openRouterErrorMessage(errorData) ||
         (errorData as { error?: string }).error ||
         `HTTP ${response.status}`;
+      devAgentLog({
+        sessionId: '3d88f5',
+        runId: 'post-fix',
+        hypothesisId: 'H5',
+        location: 'athenaClient.ts:chatOnce',
+        message: 'chat_http_error',
+        data: {
+          status: response.status,
+          msgHead: String(msg).slice(0, 160),
+          hasErrorField: typeof (errorData as { error?: unknown }).error !== 'undefined',
+        },
+      });
       throw new Error(msg);
     }
 

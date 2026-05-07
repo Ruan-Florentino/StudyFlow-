@@ -1,12 +1,41 @@
-import React, { ReactNode } from 'react';
-import { GlobalCelebrations } from '../../components/GlobalCelebrations';
-import { BossBattle, CommandPalette } from '../../components/overlays';
-import { AthenaSidebar } from '../../features/athena/components/AthenaSidebar';
-import { FloatingAIButton } from '../../components/AI/FloatingAIButton';
-import { BottomNav } from '../../components/BottomNav';
-import { useStore } from '../../store';
-import ReactPlayer from 'react-player';
+import React, { ReactNode, Suspense, lazy, useEffect, useState } from 'react';
+import { useSessionStore } from '../../store/useSessionStore';
 
+const CommandPalette = lazy(() =>
+  import('../../components/overlays/CommandPalette/CommandPalette').then((module) => ({
+    default: module.CommandPalette,
+  }))
+);
+
+const BossBattle = lazy(() =>
+  import('../../components/overlays/BossBattle/BossBattle').then((module) => ({
+    default: module.BossBattle,
+  }))
+);
+
+const AthenaSidebar = lazy(() =>
+  import('../../features/athena/components/AthenaSidebar').then((module) => ({
+    default: module.AthenaSidebar,
+  }))
+);
+
+const GlobalCelebrations = lazy(() =>
+  import('../../components/GlobalCelebrations').then((module) => ({
+    default: module.GlobalCelebrations,
+  }))
+);
+
+const FloatingAIButton = lazy(() =>
+  import('../../components/AI/FloatingAIButton').then((module) => ({
+    default: module.FloatingAIButton,
+  }))
+);
+
+const BottomNav = lazy(() =>
+  import('../../components/BottomNav').then((module) => ({
+    default: module.BottomNav,
+  }))
+);
 /**
  * AppShell
  * Layout principal: sidebar + header + área de conteúdo
@@ -27,51 +56,70 @@ export function AppShell({
   setIsCommandPaletteOpen,
   isUserInteracted
 }: AppShellProps) {
-  const { studyRooms } = useStore();
+  const studyRooms = useSessionStore((state) => state.studyRooms);
+  const activeRoom = studyRooms.activeRoom
+    ? studyRooms.rooms.find((room) => room.id === studyRooms.activeRoom)
+    : null;
+  const activeYoutubeId = activeRoom?.youtubeId ?? null;
+  const [PlayerComponent, setPlayerComponent] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
+
+  useEffect(() => {
+    if (!activeYoutubeId) return;
+    if (PlayerComponent) return;
+    let mounted = true;
+    void import('../../components/media/YoutubePlayer').then((module) => {
+      if (!mounted) return;
+      setPlayerComponent(() => module.default as unknown as React.ComponentType<Record<string, unknown>>);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [activeYoutubeId, PlayerComponent]);
 
   return (
-    <div className="min-h-screen bg-black flex justify-center selection:bg-primary selection:text-black">
+    <div className="min-h-screen bg-background flex justify-center selection:bg-primary/30 selection:text-white">
       <div 
         id="root-wrapper"
-        className="w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto min-h-screen relative bg-background overflow-hidden"
-        style={{ boxShadow: '0 0 60px rgba(0,232,143,0.05)' }}
+        className="w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto min-h-screen relative bg-background overflow-hidden border border-white/10 liquid-glass"
+        style={{ boxShadow: '0 24px 70px rgba(0, 0, 0, 0.55)' }}
       >
-        <GlobalCelebrations />
-        <div className="fixed inset-0 bg-noise z-[1000] pointer-events-none" />
-        <div className="absolute inset-0 tech-grid opacity-20 pointer-events-none" />
+        <Suspense fallback={null}>
+          <GlobalCelebrations />
+        </Suspense>
+        <div className="fixed inset-0 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent z-[1000] pointer-events-none" />
         
-        <CommandPalette 
-          isOpen={isCommandPaletteOpen} 
-          onClose={() => setIsCommandPaletteOpen(false)} 
-          onToggle={() => setIsCommandPaletteOpen(!isCommandPaletteOpen)}
-        />
+        {isCommandPaletteOpen && (
+          <Suspense fallback={null}>
+            <CommandPalette
+              isOpen={isCommandPaletteOpen}
+              onClose={() => setIsCommandPaletteOpen(false)}
+              onToggle={() => setIsCommandPaletteOpen(!isCommandPaletteOpen)}
+            />
+          </Suspense>
+        )}
 
 
         {/* Global Audio Player for Study Rooms */}
         <div className="absolute w-[1px] h-[1px] opacity-0 pointer-events-none overflow-hidden">
-          {studyRooms.activeRoom && studyRooms.rooms.find(r => r.id === studyRooms.activeRoom)?.youtubeId && (() => {
-            const Player = ReactPlayer as any;
+          {activeYoutubeId && (() => {
+            const Player = PlayerComponent;
+            if (!Player) return null;
             return (
               <Player
-                url={`https://www.youtube.com/watch?v=${studyRooms.rooms.find(r => r.id === studyRooms.activeRoom)?.youtubeId}`}
+                src={`https://www.youtube.com/watch?v=${activeYoutubeId}`}
                 playing={studyRooms.audioPlaying && isUserInteracted}
                 loop={true}
                 volume={(studyRooms.audioVolume ?? 50) / 100}
                 width="100%"
                 height="100%"
                 playsinline
-                onError={(e: any) => console.error('ReactPlayer Error:', e)}
+                onError={(e: unknown) => console.error('ReactPlayer Error:', e)}
                 config={{
                   youtube: {
-                    playerVars: { 
-                      autoplay: studyRooms.audioPlaying ? 1 : 0, 
-                      controls: 0,
-                      showinfo: 0,
-                      rel: 0,
-                      iv_load_policy: 3,
-                      fs: 0,
-                      disablekb: 1
-                    }
+                    rel: 0,
+                    iv_load_policy: 3,
+                    fs: 0,
+                    disablekb: 1,
                   }
                 }}
               />
@@ -79,15 +127,24 @@ export function AppShell({
           })()}
         </div>
 
-        <BossBattle />
+        <Suspense fallback={null}>
+          <BossBattle />
+        </Suspense>
 
-        <main className="h-full overflow-y-auto no-scrollbar pb-32">
+        <main
+          id="app-main-scroll"
+          className="h-full overflow-y-auto no-scrollbar pb-32"
+        >
           {children}
         </main>
 
-        <AthenaSidebar />
-        <FloatingAIButton />
-        <BottomNav />
+        <Suspense fallback={null}>
+          <AthenaSidebar />
+        </Suspense>
+        <Suspense fallback={null}>
+          <FloatingAIButton />
+          <BottomNav />
+        </Suspense>
       </div>
     </div>
   );

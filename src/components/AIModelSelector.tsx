@@ -6,7 +6,17 @@ interface Props {
   onSelect: (model: AIModel) => void;
 }
 
-export function AIModelSelector({ selected, onSelect }: Props) {
+export function AIModelSelector(props: Props) {
+  if (AI_MODELS.length <= 1) {
+    const only = AI_MODELS[0];
+    if (!only) return null;
+    return (
+      <div className="ai-selector">
+        <p className="text-white/70 text-sm mb-2">Modelo ativo: <strong className="text-white">{only.name}</strong></p>
+      </div>
+    );
+  }
+  const { selected, onSelect } = props;
   return (
     <div className="ai-selector">
       <h3 className="text-white font-bold mb-4">Escolha sua IA:</h3>

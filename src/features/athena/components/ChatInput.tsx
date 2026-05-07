@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, ChevronUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Send, Paperclip } from 'lucide-react';
+import { motion } from 'motion/react';
+import { springs } from '../../../lib/animations/easings';
 
 interface ChatInputProps {
   onSend: (content: string) => void;
@@ -34,7 +35,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, placehol
   };
 
   return (
-    <div className="relative bg-white/5 border border-white/10 rounded-2xl p-2 focus-within:border-emerald-500/50 transition-all shadow-2xl backdrop-blur-xl">
+    <div className="relative bg-white/5 border border-white/10 rounded-2xl p-2 focus-within:border-primary/50 transition-all duration-300 ease-out shadow-2xl backdrop-blur-xl">
       <div className="flex items-end gap-2 px-2">
         <button className="p-2.5 text-white/30 hover:text-white transition-colors shrink-0">
           <Paperclip size={20} />
@@ -45,23 +46,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, placehol
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || "Pergunte algo para Athena..."}
+          placeholder={placeholder || 'Pergunte algo para ATHENA V3…'}
           rows={1}
           className="flex-1 bg-transparent border-none py-2.5 text-sm text-white outline-none resize-none max-h-[200px] scrollbar-none placeholder:text-white/20"
           disabled={disabled}
         />
 
-        <button 
+        <motion.button
+          type="button"
           onClick={handleSend}
           disabled={!input.trim() || disabled}
-          className={`p-2.5 rounded-xl transition-all shrink-0 ${
-            input.trim() && !disabled 
-              ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-100' 
+          whileTap={input.trim() && !disabled ? { scale: 0.94, transition: springs.snappy } : undefined}
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out shrink-0 ${
+            input.trim() && !disabled
+              ? 'bg-primary text-black shadow-[0_0_20px_rgba(var(--hub-primary-rgb),0.35)] scale-100'
               : 'bg-white/5 text-white/20 scale-95'
           }`}
         >
           <Send size={20} />
-        </button>
+        </motion.button>
       </div>
     </div>
   );

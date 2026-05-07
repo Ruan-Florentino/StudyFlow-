@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { motion, HTMLMotionProps } from 'motion/react';
 import { useHaptic } from '../../hooks/useHaptic';
+import { springs } from '../../lib/animations';
 
 export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "className" | "size"> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'glass';
@@ -27,10 +28,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
 }, ref) => {
   const haptic = useHaptic();
 
-  const baseClasses = "relative inline-flex items-center justify-center font-bold outline-none overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
+  const baseClasses = "group relative inline-flex items-center justify-center font-bold outline-none overflow-hidden transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
   
   const variants = {
-    primary: "bg-[#00E88F] text-black shadow-[0_0_20px_rgba(0,232,143,0.3)] hover:shadow-[0_0_30px_rgba(0,232,143,0.5)]",
+    primary: "bg-primary text-black shadow-[0_0_20px_rgba(var(--hub-primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--hub-primary-rgb),0.5)]",
     secondary: "bg-white/10 text-white hover:bg-white/20 border border-white/5",
     ghost: "bg-transparent text-white/70 hover:text-white hover:bg-white/5",
     danger: "bg-rose-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:shadow-[0_0_30px_rgba(244,63,94,0.5)]",
@@ -61,7 +62,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   return (
     <motion.button
       ref={ref}
-      whileTap={(!disabled && !loading) ? { scale: 0.96 } : undefined}
+      transition={springs.snappy}
+      whileHover={!disabled && !loading ? { scale: 1.018, y: -1 } : undefined}
+      whileTap={(!disabled && !loading) ? { scale: 0.97, y: 0 } : undefined}
       className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${widthClass} ${className}`}
       onClick={handleClick}
       disabled={disabled || loading}
@@ -82,7 +85,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
       
       {/* Shine effect for primary */}
       {variant === 'primary' && !disabled && !loading && (
-        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent hover:animate-shimmer" />
+        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
       )}
     </motion.button>
   );

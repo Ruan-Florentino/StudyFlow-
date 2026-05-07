@@ -7,10 +7,10 @@ import { useStore } from '../store';
 export const CosmicPrestige = ({ onBack }: { onBack: () => void }) => {
   const { level, prestigeLevel, prestige } = useStore();
   const [confirming, setConfirming] = useState(false);
-  const [transcending, setTranscending] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const handlePrestige = () => {
-    setTranscending(true);
+    setResetting(true);
     setTimeout(() => {
       prestige();
       setTimeout(() => {
@@ -19,7 +19,7 @@ export const CosmicPrestige = ({ onBack }: { onBack: () => void }) => {
     }, 3000);
   };
 
-  if (transcending) {
+  if (resetting) {
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden">
         <motion.div
@@ -34,7 +34,7 @@ export const CosmicPrestige = ({ onBack }: { onBack: () => void }) => {
           transition={{ delay: 3, duration: 2 }}
           className="absolute text-white font-premium-title italic text-4xl"
         >
-          Renascimento Cósmico.
+          Reinicio de ciclo.
         </motion.div>
       </div>
     );
@@ -64,7 +64,7 @@ export const CosmicPrestige = ({ onBack }: { onBack: () => void }) => {
 
         <div>
           <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 uppercase tracking-widest mb-2">
-            Prestígio Cósmico
+            Prestigio Avancado
           </h2>
           <p className="text-amber-500/70 font-mono tracking-widest uppercase text-sm">
             Nível de Prestígio Atual: {prestigeLevel}
@@ -75,7 +75,7 @@ export const CosmicPrestige = ({ onBack }: { onBack: () => void }) => {
           <div className="flex items-start gap-4 text-amber-400">
             <AlertTriangle size={24} className="shrink-0 mt-1" />
             <p className="text-sm leading-relaxed">
-              O Prestígio Cósmico reiniciará seu Nível (voltará para 1), seu XP e suas conquistas. Em troca, você ganhará um nível de Prestígio, que concede um multiplicador permanente de XP e desbloqueia a aura cósmica no seu perfil.
+              O prestigio avancado reiniciara seu Nivel (voltando para 1), seu XP e suas conquistas. Em troca, voce ganha 1 nivel de prestigio, com multiplicador permanente de XP.
             </p>
           </div>
 

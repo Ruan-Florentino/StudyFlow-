@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Play, Pause, RotateCcw, Volume2, VolumeX, Coffee, Brain, Zap } from 'lucide-react';
 import { useStore } from '../store';
+import { useUserStore } from '../store/useUserStore';
+import { recordStudySession } from '../lib/persistence';
 import { GlassCard, Badge, cn, Header } from './UI';
 import clsx from 'clsx';
 import { playSuccessSound, triggerConfetti } from '../lib/studyUtils';
@@ -15,7 +17,8 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
   const [ambientSound, setAmbientSound] = useState(false);
   const [zenMode, setZenMode] = useState(false);
   const [focusScore, setFocusScore] = useState(0);
-  const { addSession, toggleAppBlocker, isAppBlockerActive, themeColor, addXP, neuralSync, updateNeuralSync } = useStore();
+  const { toggleAppBlocker, isAppBlockerActive, themeColor, addXP, neuralSync, updateNeuralSync } = useStore();
+  const userId = useUserStore((s) => s.userId);
   
   // Use ref to track the exact end time to prevent drift
   const endTimeRef = React.useRef<number | null>(null);
@@ -50,11 +53,15 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         
         if (mode === 'work') {
           triggerConfetti();
-          addSession({
-            id: Math.random().toString(36).substr(2, 9),
-            date: new Date().toISOString().split('T')[0],
-            duration: 25,
-            subject: 'Sessão de Foco'
+          const endedAt = new Date();
+          const elapsedSec = Math.max(1, focusScore);
+          const startedAt = new Date(endedAt.getTime() - elapsedSec * 1000);
+          void recordStudySession({
+            userId: userId || null,
+            startedAt,
+            endedAt,
+            activityType: 'focus',
+            subject: 'Sessão de Foco',
           });
           addXP(Math.floor(focusScore / 10)); // Bonus XP for focus score
           setFocusScore(0);
@@ -85,7 +92,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, mode, addSession, toggleAppBlocker, currentSession, sessionGoal, timeLeft, neuralSync, updateNeuralSync]);
+  }, [isActive, mode, userId, toggleAppBlocker, currentSession, sessionGoal, timeLeft, neuralSync, updateNeuralSync]);
 
   const handleToggle = () => {
     const newActive = !isActive;

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { staggerContainer, staggerItem } from '../../lib/animations/variants';
+import { easings, springs } from '../../lib/animations/easings';
 import { 
   Check, 
   ChevronLeft, 
@@ -32,6 +34,7 @@ const FlashcardsView = () => {
   const [newCardSubject, setNewCardSubject] = useState('');
   const [aiTopic, setAiTopic] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const reduceMotion = useReducedMotion() ?? false;
 
   const deckCards = selectedDeckId ? flashcards.filter(f => f.deckId === selectedDeckId) : [];
   const cardsToReview = deckCards.filter(f => new Date(f.nextReview) <= new Date());
@@ -91,20 +94,31 @@ const FlashcardsView = () => {
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            className="h-full bg-primary shadow-[0_0_10px_rgba(0,255,148,0.5)]"
+            transition={reduceMotion ? { duration: 0.2, ease: easings.smoothOut } : springs.soft}
+            className="h-full bg-primary shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.5)]"
           />
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <Flashcard 
-            key={card.id}
-            front={card.front}
-            back={card.back}
-            subject={card.subject}
-            onDifficulty={handleDifficulty}
-            currentInterval={card.interval}
-            easeFactor={card.easeFactor}
-          />
+        <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={card.id}
+              className="w-full flex flex-col items-center"
+              initial={{ opacity: 0, x: reduceMotion ? 0 : 60, scale: reduceMotion ? 1 : 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : -60, scale: reduceMotion ? 1 : 0.96 }}
+              transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
+            >
+              <Flashcard 
+                front={card.front}
+                back={card.back}
+                subject={card.subject}
+                onDifficulty={handleDifficulty}
+                currentInterval={card.interval}
+                easeFactor={card.easeFactor}
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     );
@@ -230,13 +244,19 @@ const FlashcardsView = () => {
         </div>
       )}
 
-      <div className="grid gap-4">
+      <motion.div
+        className="grid gap-4"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
         {decks.map(deck => {
           const cards = flashcards.filter(f => f.deckId === deck.id);
           const reviewCount = cards.filter(f => new Date(f.nextReview) <= new Date()).length;
 
           return (
-            <GlassCard key={deck.id} className="space-y-4 group relative">
+            <motion.div key={deck.id} variants={staggerItem}>
+            <GlassCard enterAnimation={false} className="space-y-4 group relative">
               <button 
                 onClick={() => {
                   if (confirm(`Excluir deck "${deck.name}" e todos os seus cards?`)) {
@@ -293,23 +313,25 @@ const FlashcardsView = () => {
                 </AnimatedButton>
               </div>
             </GlassCard>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {view === 'ai-generate' && (
         <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
+            transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
             className="w-full max-w-md space-y-6"
           >
             <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto border border-primary/20 shadow-[0_0_30px_rgba(0,255,148,0.2)]">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto border border-primary/20 shadow-[0_0_30px_rgba(var(--hub-primary-rgb),0.2)]">
                 <Sparkles size={32} className="text-primary" />
               </div>
-              <h2 className="text-2xl font-bold">Gerar com IA</h2>
-              <p className="text-xs text-text-secondary uppercase tracking-widest">StudyFlow Neural Engine</p>
+              <h2 className="text-2xl font-bold">Gerar Automaticamente</h2>
+              <p className="text-xs text-text-secondary uppercase tracking-widest">StudyFlow Study Engine</p>
             </div>
 
             <div className="space-y-4">
@@ -324,7 +346,7 @@ const FlashcardsView = () => {
               </div>
 
               <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-[10px] text-primary leading-relaxed">
-                A IA irá analisar o tópico e gerar 5 flashcards otimizados para memorização de longo prazo.
+                O sistema irá analisar o tópico e gerar 5 flashcards otimizados para memorização de longo prazo.
               </div>
 
               <div className="flex gap-3">

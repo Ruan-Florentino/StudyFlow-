@@ -3,16 +3,63 @@ import { v4 as uuidv4 } from 'uuid';
 import { Message, ChatSession } from '../types/chat.types';
 import { AIModel } from '../types/model.types';
 import { athenaClient } from '../services/athenaClient';
-import { historyStorage } from '../services/historyStorage';
+import { historyStorage, ATHENA_CHAT_HISTORY_KEY } from '../services/historyStorage';
 import { BASE_SYSTEM_PROMPT } from '../prompts/systemPrompts';
 import { toast } from 'sonner';
 
-export function useAthena(initialModel: AIModel, context: string = 'home', customSystemPrompt?: string) {
+function sortSessionsDesc(sessions: ChatSession[]): ChatSession[] {
+  return [...sessions].sort((a, b) => b.lastUpdated - a.lastUpdated);
+}
+
+export function useAthena(initialModel: AIModel, _context: string = 'home', customSystemPrompt?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string>(uuidv4());
-  
+  const [sessions, setSessions] = useState<ChatSession[]>(() =>
+    sortSessionsDesc(historyStorage.getSessions())
+  );
+
   const systemPrompt = customSystemPrompt || BASE_SYSTEM_PROMPT;
+
+  const refreshSessions = useCallback(() => {
+    setSessions(sortSessionsDesc(historyStorage.getSessions()));
+  }, []);
+
+  useEffect(() => {
+    refreshSessions();
+  }, [refreshSessions]);
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === ATHENA_CHAT_HISTORY_KEY) refreshSessions();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [refreshSessions]);
+
+  const loadSession = useCallback((id: string): ChatSession | null => {
+    const found = historyStorage.getSessions().find((s) => s.id === id);
+    if (!found) return null;
+    setSessionId(found.id);
+    setMessages(found.messages);
+    return found;
+  }, []);
+
+  const deleteSession = useCallback((id: string) => {
+    const next = historyStorage.getSessions().filter((s) => s.id !== id);
+    historyStorage.saveSessions(next);
+    setSessions(sortSessionsDesc(next));
+    setSessionId((prev) => {
+      if (prev !== id) return prev;
+      setMessages([]);
+      return uuidv4();
+    });
+  }, []);
+
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setSessionId(uuidv4());
+  }, []);
 
   const sendMessage = useCallback(async (content: string, model: AIModel) => {
     if (!content.trim()) return;
@@ -80,6 +127,7 @@ export function useAthena(initialModel: AIModel, context: string = 'home', custo
         });
       }
       historyStorage.saveSessions(currentSessions);
+      setSessions(sortSessionsDesc(currentSessions));
 
     } catch (error: any) {
       console.error('💥 [ATHENA] Erro no Stream:', error);
@@ -89,17 +137,16 @@ export function useAthena(initialModel: AIModel, context: string = 'home', custo
     }
   }, [messages, sessionId, systemPrompt]);
 
-  const clearChat = () => {
-    setMessages([]);
-    setSessionId(uuidv4());
-  };
-
   return {
     messages,
     loading,
+    sessions,
     sendMessage,
     clearChat,
+    loadSession,
+    deleteSession,
+    refreshSessions,
     setMessages,
-    setSessionId
+    setSessionId,
   };
 }

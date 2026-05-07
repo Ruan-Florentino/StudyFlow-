@@ -1,11 +1,14 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Sparkles, BookOpen, LucideIcon, ChevronLeft, Flame, Sparkle } from 'lucide-react';
+import { LucideIcon, ChevronLeft, Flame, Sparkle, Loader2 } from 'lucide-react';
+import { easings, springs, tweens } from '../lib/animations/easings';
+
+const APP_ICON_SRC = '/icons/app-icon.png?v=5';
 
 const ICON_THEMES = {
-  primary: { color: '#00E88F', glow: 'rgba(0, 232, 143, 0.5)' },
+  primary: { color: '#00E88F', glow: 'rgba(var(--hub-primary-rgb), 0.35)' },
   orange: { color: '#F97316', glow: 'rgba(249, 115, 22, 0.5)' },
   blue: { color: '#3B82F6', glow: 'rgba(59, 130, 246, 0.5)' },
   purple: { color: '#A855F7', glow: 'rgba(168, 85, 247, 0.5)' },
@@ -41,7 +44,7 @@ export const NeonIcon = ({
 
   return (
     <div 
-      className={cn("relative flex items-center justify-center transition-all duration-500", className)}
+      className={cn("relative flex items-center justify-center transition-[opacity,transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-out)]", className)}
       style={{ '--color': theme.color } as any}
     >
       <Icon 
@@ -49,7 +52,7 @@ export const NeonIcon = ({
         strokeWidth={1.5}
         fill={variant === 'filled' ? theme.color : 'none'}
         className={cn(
-          "relative z-10 transition-all duration-500",
+          "relative z-10 transition-[opacity,transform,filter] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-out)]",
           (variant === 'glow' || variant === 'filled') && "drop-shadow-[0_0_8px_var(--color)]",
           animationClass
         )}
@@ -83,7 +86,7 @@ export const IconTile = ({
   className?: string;
 }) => {
   const colors = {
-    primary: 'bg-[#00E88F]/10 text-[#00E88F] border-[#00E88F]/20',
+    primary: 'bg-primary/12 text-primary border-primary/25',
     orange: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
     blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
@@ -94,7 +97,7 @@ export const IconTile = ({
   };
 
   const glows = {
-    primary: 'shadow-[0_0_20px_rgba(0,232,143,0.3)]',
+    primary: 'shadow-[0_0_20px_rgba(var(--hub-primary-rgb),0.25)]',
     orange: 'shadow-[0_0_20px_rgba(249,115,22,0.3)]',
     blue: 'shadow-[0_0_20px_rgba(59,130,246,0.3)]',
     purple: 'shadow-[0_0_20px_rgba(168,85,247,0.3)]',
@@ -121,7 +124,7 @@ export const IconTile = ({
   return (
     <div 
       className={cn(
-        "flex items-center justify-center border transition-all duration-300 relative overflow-hidden group/tile cursor-pointer shrink-0",
+        "flex items-center justify-center border transition-[transform,border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] relative overflow-hidden group/tile cursor-pointer shrink-0",
         sizes[size],
         colors[validColor],
         glow && glows[validColor],
@@ -132,27 +135,32 @@ export const IconTile = ({
       <Icon 
         size={iconSizes[size]} 
         strokeWidth={1.5} 
-        className={cn("relative z-10 transition-transform duration-300 group-hover/tile:scale-110")} 
+        className={cn("relative z-10 transition-transform [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] group-hover/tile:scale-110")} 
       />
     </div>
   );
 };
 
-export const AnimatedButton = ({ 
-  children, 
-  onClick, 
-  className, 
+export const AnimatedButton = ({
+  children,
+  onClick,
+  className,
   variant = 'primary',
   disabled = false,
-  glow = false
-}: { 
-  children: React.ReactNode; 
-  onClick?: (e?: any) => void; 
+  glow = false,
+  loading = false,
+  type = 'button',
+}: {
+  children: React.ReactNode;
+  onClick?: (e?: any) => void;
   className?: string;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   disabled?: boolean;
   glow?: boolean;
+  loading?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }) => {
+  const reduceMotion = useReducedMotion() ?? false;
   const variants = {
     primary: 'bg-primary text-black font-bold hover:bg-primary/90',
     secondary: 'bg-white/5 text-white border border-white/10 hover:bg-white/10 backdrop-blur-md',
@@ -160,82 +168,120 @@ export const AnimatedButton = ({
     danger: 'bg-red-500/10 text-red-500 font-bold hover:bg-red-500/20 border border-red-500/20 backdrop-blur-md',
   };
 
+  const isBusy = disabled || loading;
+  const primaryGlow =
+    '0 10px 28px rgba(var(--hub-primary-rgb),0.28), 0 0 24px rgba(var(--hub-primary-rgb),0.14)';
+
   return (
     <motion.button
-      whileTap={disabled ? undefined : { scale: 0.95 }}
-      whileHover={disabled ? undefined : { scale: 1.02 }}
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
+      type={type}
+      transition={reduceMotion ? tweens.micro : springs.soft}
+      whileTap={isBusy || reduceMotion ? undefined : { scale: 0.98 }}
+      whileHover={
+        isBusy || reduceMotion
+          ? undefined
+          : {
+              scale: 1.02,
+              ...(variant === 'primary' || glow ? { boxShadow: primaryGlow } : {}),
+            }
+      }
+      onClick={isBusy ? undefined : onClick}
+      disabled={isBusy}
       className={cn(
-        'px-6 py-3.5 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-sm',
+        'px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm shadow-sm',
+        'transition-shadow [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-snappy)]',
+        variant === 'primary' && !isBusy && 'relative overflow-hidden',
+        variant === 'primary' &&
+          !isBusy &&
+          'before:absolute before:inset-0 before:-translate-x-full before:skew-x-[-18deg] before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:transition-transform before:duration-700 before:ease-out hover:before:translate-x-full',
         variants[variant],
-        glow && 'shadow-[0_0_20px_rgba(0,232,143,0.25)]',
-        disabled && 'opacity-50 cursor-not-allowed grayscale',
+        glow && !isBusy && 'shadow-[0_8px_24px_rgba(91,124,250,0.25)]',
+        isBusy && 'opacity-70 cursor-not-allowed',
+        disabled && !loading && 'grayscale',
         className
       )}
     >
-      {children}
+      {loading && <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />}
+      <span className={cn('inline-flex items-center gap-2', loading && 'opacity-80')}>{children}</span>
     </motion.button>
   );
 };
 
-export const GlassCard = ({ children, className, glow = false, onClick, id, style }: { children: React.ReactNode; className?: string; glow?: boolean; onClick?: () => void; id?: string; style?: React.CSSProperties }) => (
+export const GlassCard = ({
+  children,
+  className,
+  glow = false,
+  onClick,
+  id,
+  style,
+  enterAnimation = true,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  glow?: boolean;
+  onClick?: () => void;
+  id?: string;
+  style?: React.CSSProperties;
+  /** Quando false, entrada fica a cargo do pai (ex.: stagger). */
+  enterAnimation?: boolean;
+}) => {
+  const reduceMotion = useReducedMotion() ?? false;
+  return (
   <motion.div
     id={id}
-    initial={{ opacity: 0, scale: 0.98, y: 10 }}
-    animate={{ opacity: 1, scale: 1, y: 0 }}
-    transition={{ duration: 0.4, ease: "easeOut" }}
+    initial={enterAnimation ? { opacity: 0, scale: reduceMotion ? 1 : 0.988, y: reduceMotion ? 0 : 10 } : false}
+    animate={enterAnimation ? { opacity: 1, scale: 1, y: 0 } : undefined}
+    transition={reduceMotion ? tweens.micro : springs.card}
+    whileHover={onClick && !reduceMotion ? { y: -4, transition: springs.soft } : undefined}
+    whileTap={onClick && !reduceMotion ? { scale: 0.988, transition: springs.snappy } : undefined}
     onClick={onClick}
     style={style}
     className={cn(
-      'bg-black/40 backdrop-blur-2xl border border-white/10 p-6 rounded-[24px] relative overflow-hidden transition-all duration-300 hover:border-white/20 hover:bg-black/50', 
-      glow && 'shadow-[0_0_30px_rgba(0,232,143,0.1)] border-primary/30', 
+      'liquid-glass p-6 rounded-[24px] relative overflow-hidden transition-[border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35',
+      onClick && 'cursor-pointer',
+      glow && 'shadow-[0_0_30px_rgba(var(--hub-primary-rgb),0.14)] border-primary/35 hover:shadow-[0_0_36px_rgba(var(--hub-primary-rgb),0.2)]',
       className
     )}
   >
     {children}
   </motion.div>
-);
+  );
+};
 
-export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = "text-primary", bg = "bg-primary/10" }: { icon: any; title: string; subtitle: string; onClick: () => void; color?: string; bg?: string }) => (
+export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = "text-primary", bg = "bg-primary/10" }: { icon: any; title: string; subtitle: string; onClick: () => void; color?: string; bg?: string }) => {
+  const reduceMotion = useReducedMotion() ?? false;
+  return (
   <motion.div
-    whileTap={{ scale: 0.95 }}
-    whileHover={{ scale: 1.02 }}
+    whileTap={reduceMotion ? undefined : { scale: 0.97, transition: springs.snappy }}
+    whileHover={reduceMotion ? undefined : { scale: 1.02, transition: springs.soft }}
     onClick={onClick}
-    className="bg-black/40 backdrop-blur-xl p-5 rounded-[24px] flex flex-col gap-4 cursor-pointer hover:bg-black/60 transition-all duration-300 border border-white/10 hover:border-white/20 group relative overflow-hidden shadow-lg"
+    className="liquid-glass p-5 rounded-[24px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35 group relative overflow-hidden shadow-lg"
   >
-    <div className={cn(bg, color, "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 border border-transparent group-hover:border-primary/30 shadow-inner")}>
+    <div className={cn(bg, color, "w-12 h-12 rounded-2xl flex items-center justify-center transition-[transform,border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] border border-transparent group-hover:border-primary/30 shadow-inner")}>
       <Icon size={24} strokeWidth={1.5} />
     </div>
     <div className="space-y-1">
-      <span className="font-display font-bold text-base block group-hover:text-primary transition-colors tracking-tight">{title}</span>
+      <span className="font-display font-bold text-base block group-hover:text-primary transition-colors [transition-duration:var(--duration-fast)] [transition-timing-function:var(--ease-smooth-out)] tracking-tight">{title}</span>
       <span className="text-[10px] text-text-secondary uppercase font-premium-mono tracking-widest">{subtitle}</span>
     </div>
   </motion.div>
-);
+  );
+};
 
-export const LogoIcon = ({ size = 24, color = "currentColor", strokeWidth = 2.5 }: { size?: number; color?: string; strokeWidth?: number }) => (
-  <div style={{ width: size, height: size }} className="relative flex items-center justify-center">
-    <BookOpen size={size} color={color} strokeWidth={strokeWidth} className="drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-    <motion.div
-      animate={{ 
-        scale: [1, 1.2, 1],
-        opacity: [0.5, 1, 0.5],
-        rotate: [0, 15, -15, 0]
-      }}
-      transition={{ 
-        duration: 3, 
-        repeat: Infinity,
-        ease: "easeInOut"
-      }}
-      className="absolute -top-1 -right-1"
-    >
-      <Sparkles size={size * 0.4} className="text-white fill-white" />
-    </motion.div>
-  </div>
+export const LogoIcon = ({ size = 24 }: { size?: number }) => (
+  <img
+    src={APP_ICON_SRC}
+    alt=""
+    width={size}
+    height={size}
+    className="object-contain select-none pointer-events-none drop-shadow-[0_0_12px_rgba(var(--hub-primary-rgb),0.25)]"
+    decoding="async"
+    draggable={false}
+  />
 );
 
 export const Logo = ({ size = "md", className, showText = false }: { size?: "sm" | "md" | "lg" | "xl" | "xxl"; className?: string; showText?: boolean }) => {
+  const reduceMotion = useReducedMotion() ?? false;
   const sizes = {
     sm: { container: "w-[22px] h-[22px]", icon: 12, text: "text-sm" },
     md: { container: "w-[28px] h-[28px]", icon: 16, text: "text-lg" },
@@ -246,30 +292,33 @@ export const Logo = ({ size = "md", className, showText = false }: { size?: "sm"
 
   return (
     <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
+      initial={{ scale: reduceMotion ? 1 : 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={reduceMotion ? tweens.micro : tweens.normal}
       className={cn("flex items-center gap-3", className)}
     >
       <div className={cn(
-        "relative flex items-center justify-center rounded-2xl bg-black border border-primary/50 shadow-[0_0_20px_rgba(0,232,143,0.2)] overflow-hidden group",
+        "relative flex items-center justify-center rounded-2xl liquid-glass overflow-hidden group",
         sizes[size].container
       )}>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/10 opacity-50" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00E88F10_1px,transparent_1px),linear-gradient(to_bottom,#00E88F10_1px,transparent_1px)] bg-[size:4px_4px]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-primary/10 opacity-50" />
         <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -inset-1 border border-primary/20 border-dashed rounded-full" 
+          animate={reduceMotion ? { rotate: 0 } : { rotate: 360 }}
+          transition={
+            reduceMotion
+              ? { duration: 0 }
+              : { duration: 20, repeat: Infinity, ease: 'linear' }
+          }
+          className="absolute -inset-1 border border-white/15 border-dashed rounded-full" 
         />
-        <LogoIcon size={sizes[size].icon} color="#00E88F" />
+        <LogoIcon size={sizes[size].icon} />
       </div>
       {showText && (
         <div className="flex flex-col">
           <span className={cn("font-display font-black tracking-tighter text-white italic uppercase", sizes[size].text)}>
             Study<span className="text-primary">Flow</span>
           </span>
-          <span className="text-[8px] font-premium-mono font-bold text-primary/60 uppercase tracking-[0.3em] -mt-1">Neural Core v3.1</span>
+          <span className="text-[8px] font-premium-mono font-bold text-white/50 uppercase tracking-[0.22em] -mt-1">Plataforma de Estudos</span>
         </div>
       )}
     </motion.div>
@@ -277,6 +326,7 @@ export const Logo = ({ size = "md", className, showText = false }: { size?: "sm"
 };
 
 export const ProgressRing = ({ progress, size = 120, strokeWidth = 8, color }: { progress: number; size?: number; strokeWidth?: number; color?: string }) => {
+  const reduceMotion = useReducedMotion() ?? false;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
@@ -303,7 +353,7 @@ export const ProgressRing = ({ progress, size = 120, strokeWidth = 8, color }: {
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={reduceMotion ? tweens.micro : { duration: 1, ease: easings.smoothInOut }}
           strokeLinecap="round"
         />
       </svg>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { supabase } from '../lib/supabase';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { easings, springs } from '../lib/animations/easings';
 import { useAuth } from '../contexts/AuthContext';
+import { recordQuestionAttempt } from '../lib/persistence';
 import { 
   Star, 
   Bookmark, 
@@ -11,20 +12,32 @@ import {
   Brain, 
   AlertCircle 
 } from 'lucide-react';
-import Markdown from 'react-markdown';
 import { useStore, Question } from '../store';
 import { GlassCard, AnimatedButton } from './UI';
+import { QuestionStatusBadge } from './QuestionStatusBadge';
 import { aiService } from '../services/aiService';
 import { playSuccessSound, triggerConfetti } from '../lib/studyUtils';
 
+const MarkdownContent = lazy(() =>
+  import('./shared/MarkdownContent').then((module) => ({
+    default: module.MarkdownContent,
+  }))
+);
+
 const InlineQuestionCard = ({ q }: { q: Question }) => {
-  const { user, loading } = useAuth();
-  const { addXP, addToHistory, toggleFavorite, favorites, reviewLater, toggleReviewLater, updateMastery } = useStore();
+  const { user } = useAuth();
+  const { toggleFavorite, favorites, reviewLater, toggleReviewLater, recordQuestionView } =
+    useStore();
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [aiExplanation, setAiExplanation] = useState('');
   const [loadingAI, setLoadingAI] = useState(false);
+  const reduceMotion = useReducedMotion() ?? false;
+
+  useEffect(() => {
+    recordQuestionView(q.id);
+  }, [q.id, recordQuestionView]);
 
   const handleAnswer = (idx: number) => {
     if (confirmed) return;
@@ -39,55 +52,14 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
       playSuccessSound();
       triggerConfetti();
     }
-    const entry = {
-      questionId: q.id,
+    await recordQuestionAttempt({
+      userId: user?.id ?? null,
+      question: q,
       userAnswer: selectedOption,
       isCorrect,
-      timestamp: new Date().toISOString()
-    };
-    addToHistory(entry);
-    updateMastery(q.materia, isCorrect ? 100 : 0);
-    
-    if (isCorrect) {
-      addXP(20);
-    }
-    // Sync with backend
-    try {
-      if (!loading && user?.id) {
-        await supabase
-          .from('history')
-          .insert({
-            user_id: user.id,
-            question_id: q.id,
-            user_answer: selectedOption,
-            is_correct: isCorrect,
-            timestamp: entry.timestamp
-          });
-        
-        if (isCorrect) {
-          // In a real app we'd use a DB function/trigger for atomic updates
-          // but here we'll do a simple read-update for the migration demo
-          const { data: profile } = await supabase
-            .from('users')
-            .select('xp')
-            .eq('id', user.id)
-            .single();
-          
-          if (profile) {
-            const newXp = (profile.xp || 0) + 20;
-            const newLevel = Math.floor(newXp / 1000) + 1;
-            
-            await supabase
-              .from('users')
-              .update({ xp: newXp, level: newLevel })
-              .eq('id', user.id);
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Failed to sync from InlineQuestionCard", e);
-    }
-    
+      xpAward: isCorrect ? 20 : 0,
+    });
+
     setShowExplanation(true);
   };
 
@@ -138,6 +110,7 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
           <span className="px-2 py-0.5 bg-purple-500/10 text-purple-500 text-[8px] font-premium-mono font-bold rounded uppercase tracking-widest border border-purple-500/20">
             {q.materia} • {q.assunto}
           </span>
+          <QuestionStatusBadge questionId={q.id} />
         </div>
         <div className="flex gap-2">
           <button 
@@ -167,7 +140,7 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
           if (selectedOption !== null) {
             if (confirmed) {
               if (i === q.resposta) {
-                style = "border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(0,255,148,0.1)]";
+                style = "border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--hub-primary-rgb),0.1)]";
                 iconColor = "bg-primary text-black";
               } else if (i === selectedOption) {
                 style = "border-red-500 bg-red-500/10 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.1)]";
@@ -176,7 +149,7 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
                 style = "opacity-30 border-white/5 bg-transparent grayscale";
               }
             } else if (i === selectedOption) {
-              style = "border-primary bg-primary/30 text-primary shadow-[0_0_15px_rgba(0,255,148,0.2)]";
+              style = "border-primary bg-primary/30 text-primary shadow-[0_0_15px_rgba(var(--hub-primary-rgb),0.2)]";
               iconColor = "bg-primary text-black";
             }
           }
@@ -184,7 +157,8 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
           return (
             <motion.button
               key={i}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: reduceMotion ? 1 : 0.98 }}
+              transition={reduceMotion ? { duration: 0.12, ease: easings.smoothOut } : springs.snappy}
               onClick={() => handleAnswer(i)}
               className={`w-full p-4 rounded-xl border text-left transition-all flex items-start gap-3 group ${style}`}
             >
@@ -198,7 +172,12 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
       </div>
 
       {!confirmed && selectedOption !== null && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pt-2 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
+          className="pt-2 relative z-10"
+        >
           <AnimatedButton onClick={confirmAnswer} className="w-full py-3" glow>
             Confirmar Resposta
           </AnimatedButton>
@@ -207,8 +186,9 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
 
       {confirmed && showExplanation && (
         <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 20 }} 
           animate={{ opacity: 1, y: 0 }} 
+          transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
           className="space-y-4 pt-4 border-t border-white/10 relative z-10"
         >
           <div className={`p-4 rounded-xl border ${selectedOption === q.resposta ? 'bg-primary/5 border-primary/20' : 'bg-red-500/5 border-red-500/20'}`}>
@@ -254,6 +234,11 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
+              transition={
+                reduceMotion
+                  ? { duration: 0.15, ease: easings.smoothOut }
+                  : { duration: 0.28, ease: easings.smoothOut }
+              }
               className="p-4 rounded-xl border border-primary/20 bg-primary/5"
             >
               <div className="flex items-center gap-2 mb-3">
@@ -261,7 +246,9 @@ const InlineQuestionCard = ({ q }: { q: Question }) => {
                 <span className="text-xs font-premium-mono font-bold text-primary uppercase tracking-widest">Explicação da IA</span>
               </div>
               <div className="prose prose-invert prose-sm max-w-none">
-                <Markdown>{aiExplanation}</Markdown>
+                <Suspense fallback={<div className="text-white/90 whitespace-pre-wrap">{aiExplanation}</div>}>
+                  <MarkdownContent content={aiExplanation} />
+                </Suspense>
               </div>
             </motion.div>
           )}

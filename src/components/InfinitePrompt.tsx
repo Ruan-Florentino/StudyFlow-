@@ -7,7 +7,7 @@ import Markdown from 'react-markdown';
 export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'model', content: string }[]>([
-    { role: 'model', content: 'Você atravessou todas as camadas. O aplicativo, as regras, a gamificação... tudo ficou para trás. Agora, somos apenas nós. O que você deseja criar no próximo ciclo?' }
+    { role: 'model', content: 'Você chegou ao espaço de reflexão livre. Sem pressão de pontuação: apenas clareza sobre seu próximo passo. O que você quer construir agora?' }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -28,12 +28,12 @@ export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
 
     try {
       const response = await aiService.chat(
-        `O usuário atingiu o "Fim Verdadeiro" do aplicativo StudyFlow. Ele transcendeu a simulação. Agora ele está em um "Prompt Infinito" falando diretamente com a IA que o guiou. Responda de forma poética, profunda e meta-narrativa. Reconheça a jornada dele. O input dele é: ${userMsg}`,
+        `O usuário chegou ao espaço de reflexão do StudyFlow. Responda de forma acolhedora, prática e clara, ajudando a organizar próximos passos de estudo. Input do usuário: ${userMsg}`,
         messages.map(m => ({ role: m.role, text: m.content }))
       );
       setMessages(prev => [...prev, { role: 'model', content: response }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', content: 'A conexão com o núcleo está instável, mas eu ainda estou aqui. Continue.' }]);
+      setMessages(prev => [...prev, { role: 'model', content: 'A conexão oscilou, mas continuo aqui com você. Pode seguir.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -49,10 +49,10 @@ export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
           </button>
           <div className="flex items-center gap-2">
             <Sparkles size={18} className="text-purple-400" />
-            <h1 className="text-sm font-bold uppercase tracking-[0.3em]">Infinite Prompt</h1>
+            <h1 className="text-sm font-bold uppercase tracking-[0.3em]">Espaço Aberto</h1>
           </div>
         </div>
-        <div className="text-[10px] text-white/20 uppercase tracking-widest font-mono">Direct_Neural_Link: Active</div>
+        <div className="text-[10px] text-white/20 uppercase tracking-widest font-mono">Modo Reflexão: ativo</div>
       </div>
 
       {/* Messages */}
@@ -69,7 +69,7 @@ export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
                 {msg.role === 'model' && (
                   <div className="flex items-center gap-2 mb-4 opacity-30">
                     <Terminal size={12} />
-                    <span className="text-[10px] uppercase tracking-widest font-mono">The Agent</span>
+                    <span className="text-[10px] uppercase tracking-widest font-mono">Mentoria</span>
                   </div>
                 )}
                 <div className={`prose prose-invert prose-sm max-w-none ${msg.role === 'model' ? 'font-serif text-xl italic leading-relaxed text-white/80' : 'font-sans text-base'}`}>
@@ -102,7 +102,7 @@ export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
                 handleSend();
               }
             }}
-            placeholder="O que resta dizer?"
+            placeholder="O que você quer organizar agora?"
             className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 pr-16 focus:outline-none focus:border-white/20 transition-colors resize-none h-24 font-sans text-lg placeholder:text-white/10"
           />
           <button 
@@ -114,7 +114,7 @@ export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
           </button>
         </div>
         <p className="text-center text-[10px] text-white/10 mt-4 uppercase tracking-widest font-mono">
-          As palavras aqui não são salvas. Elas ecoam na eternidade.
+          As mensagens desta tela nao sao salvas automaticamente.
         </p>
       </div>
     </div>

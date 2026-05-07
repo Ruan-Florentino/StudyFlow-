@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../store/useUserStore';
 
 const PLAN_LIMITS = {
   free:    5,
@@ -9,7 +10,8 @@ const PLAN_LIMITS = {
 };
 
 export function useUsage() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const billingPlan = useUserStore((s) => s.billingPlan);
   const [used, setUsed] = useState(0);
   
   useEffect(() => {
@@ -45,7 +47,7 @@ export function useUsage() {
     };
   }, [user]);
   
-  const plan  = profile?.plan || 'free';
+  const plan = billingPlan || 'free';
   const limit = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
   
   return {

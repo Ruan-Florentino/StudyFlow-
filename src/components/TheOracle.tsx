@@ -42,8 +42,8 @@ export const TheOracle = ({ onBack }: { onBack: () => void }) => {
           <span className="text-xs uppercase tracking-[0.4em] font-bold">Retornar</span>
         </button>
         <div className="text-center">
-          <h1 className="font-serif text-3xl italic">A Oráculo</h1>
-          <p className="text-xs uppercase tracking-[0.5em] opacity-40">Destiny Analysis Engine</p>
+          <h1 className="font-serif text-3xl italic">Painel de Projeção</h1>
+          <p className="text-xs uppercase tracking-[0.5em] opacity-40">Análise de Desempenho</p>
         </div>
         <div className="w-20" /> {/* Spacer */}
       </div>
@@ -63,8 +63,8 @@ export const TheOracle = ({ onBack }: { onBack: () => void }) => {
               {name}, seu destino <br /> está <span className="italic">escrito</span> nas estrelas.
             </h2>
             <p className="max-w-2xl mx-auto text-sm opacity-60 leading-relaxed">
-              A Oráculo analisou seus {level} níveis de experiência e {prestigeLevel} ciclos de transcendência. 
-              O conhecimento que você acumulou não é apenas informação; é a semente de uma nova realidade.
+              Este painel analisou seus {level} níveis de experiência e {prestigeLevel} ciclos de evolução. 
+              O conhecimento que você acumulou mostra sua direção de crescimento nas próximas provas.
             </p>
           </section>
 
@@ -98,7 +98,7 @@ export const TheOracle = ({ onBack }: { onBack: () => void }) => {
             <section className="space-y-8 p-12 border border-black/5 bg-white/50 rounded-[40px] flex flex-col justify-center relative overflow-hidden">
               <div className="flex items-center gap-4 opacity-30">
                 <Anchor size={16} />
-                <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Profecia do Arquiteto</h3>
+                <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold">Projeção de Evolução</h3>
               </div>
               
               <AnimatePresence mode="wait">
@@ -111,7 +111,7 @@ export const TheOracle = ({ onBack }: { onBack: () => void }) => {
                     className="flex flex-col items-center justify-center py-12 space-y-4"
                   >
                     <Loader2 size={32} className="animate-spin text-amber-600" />
-                    <p className="text-[10px] uppercase tracking-widest opacity-50 font-bold">Lendo as estrelas...</p>
+                    <p className="text-[10px] uppercase tracking-widest opacity-50 font-bold">Calculando projeções...</p>
                   </motion.div>
                 ) : prophecyData && (
                   <motion.div 

@@ -31,7 +31,7 @@ export const NeuralForge = ({ onBack }: { onBack: () => void }) => {
       const data = await aiService.forgeConcepts(conceptA, conceptB);
       setResult(data);
     } catch (error) {
-      console.error("Erro na Forja Neural:", error);
+      console.error("Erro no Laboratório de Ideias:", error);
     } finally {
       clearInterval(sparkInterval);
       setIsForging(false);
@@ -48,7 +48,7 @@ export const NeuralForge = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-premium-title italic text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]">
-          Forja Neural<span className="text-white font-normal not-italic ml-1">.</span>
+          Laboratório de Ideias<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
@@ -177,8 +177,8 @@ export const NeuralForge = ({ onBack }: { onBack: () => void }) => {
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-4">
                     <Info size={20} className="text-red-400 shrink-0" />
                     <p className="text-xs text-text-secondary leading-relaxed">
-                      Esta síntese foi gerada através de uma colisão semântica de alta energia. 
-                      Use este novo conhecimento para expandir as fronteiras da sua compreensão atual.
+                      Esta síntese foi gerada a partir da combinação estratégica dos dois conceitos. 
+                      Use este material para ampliar repertório e aplicar em exercícios.
                     </p>
                   </div>
                 </div>

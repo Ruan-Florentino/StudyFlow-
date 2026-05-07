@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Button } from './Button';
+import { springs } from '../../lib/animations';
 
 export interface EmptyStateProps {
   icon: React.ReactNode;
@@ -23,10 +24,11 @@ export const EmptyState = ({
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={springs.card}
       className={`flex flex-col items-center justify-center p-8 text-center ${className}`}
     >
       <div className="w-20 h-20 bg-[#1c1c20] rounded-full flex items-center justify-center text-white/40 mb-6 relative">
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[#00E88F]/10 to-transparent rounded-full opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary/10 to-transparent rounded-full opacity-50" />
         {icon}
       </div>
       

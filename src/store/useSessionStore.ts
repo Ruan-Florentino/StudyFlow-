@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { ensureNoteUuid } from '../lib/ensureNoteUuid';
+import { syncNoteToSupabase } from '../lib/supabase/syncNoteToSupabase';
+import { toast } from './useToastStore';
 import type { StudySession, StudyRoutine, Message, Note, MindMap, Essay } from './types';
 
 export interface SessionStore {
@@ -97,7 +100,20 @@ export const useSessionStore = create<SessionStore>()(
         studyRooms: { ...state.studyRooms, audioPlaying: playing }
       })),
       
-      addNote: (note) => set((state) => ({ notes: [note, ...state.notes] })),
+      addNote: (note) => {
+        const id = ensureNoteUuid(note.id);
+        const updatedAt = note.updatedAt || new Date().toISOString();
+        const normalized: Note = { ...note, id, updatedAt };
+        set((state) => ({
+          notes: [normalized, ...state.notes.filter((n) => n.id !== id)],
+        }));
+        void syncNoteToSupabase(normalized).catch(() => {
+          toast.error(
+            'Notas',
+            'Não foi possível salvar na nuvem. Verifique a conexão; a nota permanece neste aparelho.'
+          );
+        });
+      },
       addMindMap: (map) => set((state) => ({ mindMaps: [map, ...state.mindMaps] })),
       addEssay: (essay) => set((state) => ({ essays: [essay, ...state.essays] })),
       toggleSavedTopic: (id) => set(state => ({

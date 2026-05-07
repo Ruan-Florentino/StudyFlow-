@@ -141,19 +141,39 @@ export interface ExamDetail extends UpcomingExam {
   materias: string[];
   nivel: 'Fácil' | 'Médio' | 'Difícil' | 'Muito Difícil';
   descricao: string;
+  /** Quando definido, filtra questões onde `Question.prova === provaTag` (ex.: ENEM para o cartão "ENEM 2026"). */
+  provaTag?: string;
 }
 
-export interface LeaderboardEntry {
+/**
+ * Linha de `public.users` usada no ranking por XP (select * — campos extras ignorados pelo app).
+ */
+export interface LeaderboardUserRow {
   id: string;
-  name: string;
-  solved: number;
-  correct: number;
-  streak: number;
-  level: number;
-  xp: number;
-  medals: {
-    gold: number;
-    silver: number;
-    bronze: number;
-  };
+  name?: string | null;
+  xp?: number | null;
+  level?: number | null;
+  streak?: number | null;
+  league?: string | null;
+  daily_xp?: number | null;
+  profile_pic?: string | null;
+}
+
+/** Payload de perfil vindos do Supabase (snake_case + colunas opcionais). */
+export interface SupabaseUserProfilePayload {
+  name?: string | null;
+  bio?: string | null;
+  xp?: number | null;
+  level?: number | null;
+  streak?: number | null;
+  longest_streak?: number | null;
+  league?: string | null;
+  daily_xp?: number | null;
+  last_study_date?: string | null;
+  daily_goal_minutes?: number | null;
+  profile_pic?: string | null;
+  cover_pic?: string | null;
+  role?: string | null;
+  plan?: string | null;
+  created_at?: string | null;
 }

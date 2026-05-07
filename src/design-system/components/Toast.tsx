@@ -4,8 +4,17 @@ import { CheckCircle2, XCircle, AlertCircle, Info, X } from 'lucide-react';
 import { useToastStore } from '../../store/useToastStore';
 import { useHaptic } from '../../hooks/useHaptic';
 import { createPortal } from 'react-dom';
+import { springs } from '../../lib/animations';
 
-const ToastItem = ({ toast }: { toast: any }) => {
+type ToastPayload = {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  title: string;
+  message?: string;
+  duration?: number;
+};
+
+const ToastItem = ({ toast }: { toast: ToastPayload }) => {
   const { removeToast } = useToastStore();
   const haptic = useHaptic();
 
@@ -41,9 +50,10 @@ const ToastItem = ({ toast }: { toast: any }) => {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      initial={{ opacity: 0, y: -14, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+      exit={{ opacity: 0, x: 24, scale: 0.96, transition: { duration: 0.18 } }}
+      transition={springs.card}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={{ left: 0.2, right: 1 }}

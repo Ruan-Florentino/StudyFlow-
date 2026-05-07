@@ -171,12 +171,12 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
     <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 max-w-lg mx-auto w-full">
       <Header 
         title="Salas Ao Vivo"
-        subtitle="Sincronia neural para foco absoluto."
+        subtitle="Ambiente colaborativo para foco absoluto."
         icon={Network}
         color="primary"
         onBack={onBack}
         rightContent={
-          <Badge variant="primary" className="animate-pulse bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
+          <Badge variant="primary" className="animate-pulse bg-primary/20 text-primary border-primary/30">
             {rooms.reduce((acc, r) => acc + (r.onlineUsers?.length || 0), 0) + 124} ONLINE
           </Badge>
         }
@@ -202,12 +202,12 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
       )}
 
       {/* Quick Action */}
-      <GlassCard className="mt-8 p-6 flex flex-col gap-4 border-emerald-500/20 bg-emerald-500/5 items-center text-center">
+      <GlassCard className="mt-8 p-6 flex flex-col gap-4 border-primary/20 bg-primary/5 items-center text-center">
          <div className="space-y-1">
-           <h4 className="text-lg font-premium-title italic text-white">Salto Neural</h4>
-           <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Entre em qualquer frequência disponível</p>
+           <h4 className="text-lg font-premium-title italic text-white">Entrada Rápida</h4>
+           <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Entre em qualquer sala disponível</p>
          </div>
-         <AnimatedButton className="w-full bg-emerald-500 text-black py-4" onClick={() => {
+         <AnimatedButton className="w-full bg-primary text-black py-4" onClick={() => {
             const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
             if (randomRoom) joinRoom(randomRoom.id);
          }}>

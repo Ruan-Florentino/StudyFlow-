@@ -1,16 +1,44 @@
 import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
+import { devAgentLog } from './devAgentLog';
+import { supabase, isSupabaseConfigured } from './supabase';
+
+let debugTestOpenRouterInvocation = 0;
+/** Evita par duplo do Strict Mode (React 18) — ver logs H2 invocation 1+2 a 2ms. */
+let lastHealthCheckAt = 0;
+const HEALTH_CHECK_DEDUPE_MS = 4000;
 
 export async function testOpenRouterConnection() {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-  
-  console.log('🔑 API Key existe?', !!apiKey);
-  console.log('🔑 API Key começa com sk-or?', apiKey?.startsWith('sk-or'));
-  console.log('🔑 Tamanho da key:', apiKey?.length);
-  
-  if (!apiKey) {
-    console.error('❌ VITE_OPENROUTER_API_KEY não definida!');
+  if (!isSupabaseConfigured) return;
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) return;
+
+  const now = Date.now();
+  if (now - lastHealthCheckAt < HEALTH_CHECK_DEDUPE_MS) {
+    devAgentLog({
+      sessionId: '3d88f5',
+      runId: 'post-fix',
+      hypothesisId: 'H2',
+      location: 'testAPI.ts:testOpenRouterConnection',
+      message: 'health_check_deduped',
+      data: { deltaMs: now - lastHealthCheckAt },
+    });
     return;
   }
+  lastHealthCheckAt = now;
+
+  debugTestOpenRouterInvocation += 1;
+  const inv = debugTestOpenRouterInvocation;
+  devAgentLog({
+    sessionId: '3d88f5',
+    runId: 'post-fix',
+    hypothesisId: 'H2',
+    location: 'testAPI.ts:testOpenRouterConnection',
+    message: 'health_check_invoked',
+    data: { invocation: inv, ts: Date.now() },
+  });
+
+  console.log('🔎 Testando conectividade do proxy interno /api/ai');
   
   try {
     const response = await fetch(
@@ -19,6 +47,7 @@ export async function testOpenRouterConnection() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           model: DEFAULT_OPENROUTER_CHAT_MODEL,

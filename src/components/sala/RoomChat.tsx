@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
+import { springs } from '../../lib/animations/easings';
 import { Send, Loader2, MessageCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,11 +17,11 @@ interface Message {
 interface RoomChatProps {
   roomId: string;
   color: string;
-  glow: string;
 }
 
-export function RoomChat({ roomId, color, glow }: RoomChatProps) {
+export function RoomChat({ roomId, color }: RoomChatProps) {
   const { user } = useAuth();
+  const reduceMotion = useReducedMotion() ?? false;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -100,18 +101,33 @@ export function RoomChat({ roomId, color, glow }: RoomChatProps) {
   
   return (
     <div 
-      className="rounded-3xl flex flex-col relative overflow-hidden"
+      className="rounded-3xl flex flex-col relative overflow-hidden border border-[rgba(var(--hub-primary-rgb),0.2)]"
       style={{
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: `linear-gradient(180deg, rgba(var(--hub-primary-rgb),0.06), rgba(255,255,255,0.02))`,
         backdropFilter: 'blur(20px)',
         height: '320px',
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.35)`,
       }}
     >
+      <div
+        className="shrink-0 px-3 py-2.5 flex items-center justify-between gap-2 border-b border-[rgba(var(--hub-primary-rgb),0.15)]"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className="w-2 h-2 rounded-full animate-pulse shrink-0 bg-primary shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.55)]"
+          />
+          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/55 truncate">
+            Canal da sala
+          </span>
+        </div>
+        <span className="text-[9px] text-white/30 font-medium uppercase tracking-wider shrink-0">
+          Tempo real
+        </span>
+      </div>
       {/* Lista de mensagens */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar"
+        className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar min-h-0"
       >
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center opacity-30">
@@ -128,8 +144,9 @@ export function RoomChat({ roomId, color, glow }: RoomChatProps) {
           messages.map((msg) => (
             <motion.div
               key={msg.id}
-              initial={{ opacity: 0, y: 5 }}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 5 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={reduceMotion ? { duration: 0.1 } : springs.card}
               className="flex flex-col gap-1"
             >
               <div className="flex items-baseline gap-2">
@@ -165,23 +182,26 @@ export function RoomChat({ roomId, color, glow }: RoomChatProps) {
           maxLength={200}
         />
         <motion.button
-          whileTap={{ scale: 0.9 }}
+          type="button"
+          whileTap={{ scale: 0.9, transition: springs.snappy }}
           onClick={sendMessage}
           disabled={!input.trim()}
           className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-30"
           style={{
-            background: input.trim() 
-              ? `linear-gradient(135deg, rgba(${glow},0.4), rgba(${glow},0.2))` 
+            background: input.trim()
+              ? `linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.42), rgba(var(--hub-primary-rgb),0.15))`
               : 'rgba(255,255,255,0.05)',
-            border: input.trim() 
-              ? `1px solid rgba(${glow},0.5)` 
+            border: input.trim()
+              ? `1px solid rgba(var(--hub-primary-rgb),0.5)`
               : '1px solid rgba(255,255,255,0.1)',
-            boxShadow: input.trim() ? `0 0 12px rgba(${glow},0.4)` : 'none',
+            boxShadow: input.trim()
+              ? `0 0 12px rgba(var(--hub-primary-rgb),0.35)`
+              : 'none',
           }}
         >
-          <Send 
-            size={14} 
-            style={{ color: input.trim() ? color : 'rgba(255,255,255,0.3)' }} 
+          <Send
+            size={14}
+            className={input.trim() ? 'text-primary' : 'text-white/30'}
             strokeWidth={2.5}
           />
         </motion.button>

@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { devAgentLog } from '../../lib/devAgentLog';
 import { NavigationTab } from '../../types/navigation';
 
 /**
@@ -18,6 +20,7 @@ const pathToTabMap: Record<string, NavigationTab> = {
   '/perfil': 'profile',
   '/metodos': 'methods',
   '/exames': 'exams',
+  '/simulados': 'exams',
   '/estatisticas': 'stats',
 };
 
@@ -29,6 +32,16 @@ export function useAppNavigation() {
   // Deriva a a aba atual com base na URL
   const currentTab = pathToTabMap[location.pathname] || 'home';
 
+  // Log só quando rota/tab muda (params no payload; omitidos das deps por instabilidade de referência)
+  useEffect(() => {
+    devAgentLog({
+      hypothesisId: 'H3',
+      location: 'src/app/router/useAppNavigation.ts',
+      message: 'Navigation state computed',
+      data: { pathname: location.pathname, currentTab, params },
+    });
+  }, [location.pathname, currentTab]);
+
   return {
     // Navegação simples
     goTo: (path: string) => navigate(path),
@@ -38,7 +51,7 @@ export function useAppNavigation() {
     // Navegação semântica (atalhos)
     goToDashboard:    () => navigate('/'),
     goToMethods:      () => navigate('/metodos'),
-    goToExams:        () => navigate('/exames'),
+    goToExams:        () => navigate('/simulados'),
     goToProfile:      () => navigate('/perfil'),
     goToExplore:      () => navigate('/explorar'),
     goToCommunity:    () => navigate('/comunidade'),

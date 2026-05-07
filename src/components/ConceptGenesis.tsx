@@ -13,8 +13,8 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
     setIsGenerating(true);
     try {
       const response = await aiService.generateContent(
-        `Crie um novo conceito de estudo transcendental baseado em: ${prompt}. 
-        Explique o conceito, como ele altera a percepção do estudante e forneça uma "lei fundamental" para este conceito.`
+        `Crie um novo conceito de estudo prático baseado em: ${prompt}. 
+        Explique o conceito, como ele melhora a aprendizagem do estudante e forneça um princípio central para aplicar no dia a dia.`
       );
       setResult(response);
     } catch (error) {
@@ -33,11 +33,11 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
           <span className="text-xs uppercase tracking-[0.4em] font-bold">Retornar</span>
         </button>
         <div className="text-center">
-          <h1 className="text-sm uppercase tracking-[0.6em] font-bold opacity-40">Concept Genesis</h1>
+          <h1 className="text-sm uppercase tracking-[0.6em] font-bold opacity-40">Laboratorio de Conceitos</h1>
         </div>
         <div className="flex items-center gap-2 text-orange-500">
           <Sparkles size={16} />
-          <span className="text-xs uppercase tracking-widest font-bold">AI Engine Active</span>
+          <span className="text-xs uppercase tracking-widest font-bold">Motor de estudo ativo</span>
         </div>
       </div>
 
@@ -61,14 +61,14 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
               
               <div className="max-w-2xl space-y-6">
                 <p className="text-sm opacity-60 leading-relaxed">
-                  Insira uma ideia, um sentimento ou um paradoxo. A Gênese de Conceitos usará o poder da IA para transformar sua intenção em uma nova estrutura de conhecimento.
+                  Insira uma ideia ou desafio. O laboratorio de conceitos vai transformar sua intencao em uma estrutura de estudo aplicavel.
                 </p>
                 <div className="relative">
                   <input 
                     type="text"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Ex: A geometria do silêncio..."
+                    placeholder="Ex: Como estudar historia sem decorar mecanicamente..."
                     className="w-full bg-white border-b-2 border-black p-6 text-2xl font-serif italic focus:outline-none focus:border-orange-500 transition-colors"
                   />
                   <button 
@@ -101,10 +101,10 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
                       <h3 className="text-xs uppercase tracking-[0.2em] font-bold">Conceito Gerado</h3>
                     </div>
                     <div className="p-8 bg-white border border-black/5 rounded-[40px] shadow-xl">
-                      <div className="text-4xl font-serif italic mb-4">A Revelação</div>
+                      <div className="text-4xl font-serif italic mb-4">Resultado</div>
                       <div className="h-[1px] bg-black/10 w-full mb-6" />
                       <p className="text-xs opacity-60 leading-relaxed italic">
-                        "O conhecimento não é descoberto, ele é lembrado através da intenção pura."
+                        "Conhecimento praticado de forma consistente vira resultado."
                       </p>
                     </div>
                   </div>
@@ -118,7 +118,7 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
                         <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white">
                           <Wand2 size={20} />
                         </div>
-                        <span className="text-xs uppercase tracking-widest font-bold">Integrado ao Multiverso</span>
+                        <span className="text-xs uppercase tracking-widest font-bold">Integrado a biblioteca</span>
                       </div>
                       <button className="px-8 py-3 bg-black text-white text-xs uppercase tracking-[0.2em] font-bold rounded-full hover:bg-orange-500 transition-colors">
                         Salvar no Arquivo
@@ -135,7 +135,7 @@ export const ConceptGenesis = ({ onBack }: { onBack: () => void }) => {
 
       {/* Vertical Rail Text */}
       <div className="fixed right-4 top-1/2 -translate-y-1/2 writing-mode-vertical-rl rotate-180 text-[10px] uppercase tracking-[0.5em] opacity-10 pointer-events-none font-bold">
-        Concept Genesis Engine / Manifestation Protocol / v9.9.9
+        Concept Lab Engine / Study Protocol / v2.0
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 
 export const FlorestaScene = () => {
+  const reduceMotion = useReducedMotion() ?? false;
+
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#064e3b]">
       <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
@@ -12,7 +14,6 @@ export const FlorestaScene = () => {
           </linearGradient>
         </defs>
 
-        {/* Camada de Árvores ao Fundo */}
         {[...Array(8)].map((_, i) => (
           <path
             key={`tree-back-${i}`}
@@ -22,7 +23,6 @@ export const FlorestaScene = () => {
           />
         ))}
 
-        {/* Raios de Sol */}
         {[...Array(4)].map((_, i) => (
           <motion.rect
             key={`ray-${i}`}
@@ -32,12 +32,13 @@ export const FlorestaScene = () => {
             height="2000"
             fill="url(#sunRay)"
             transform="rotate(30)"
-            animate={{ opacity: [0.4, 0.7, 0.4] }}
-            transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
+            animate={reduceMotion ? { opacity: 0.55 } : { opacity: [0.4, 0.7, 0.4] }}
+            transition={
+              reduceMotion ? { duration: 0 } : { duration: 4 + i, repeat: Infinity, ease: 'easeInOut' }
+            }
           />
         ))}
 
-        {/* Camada de Árvores da Frente */}
         {[300, 700].map((x, i) => (
           <g key={`tree-front-${i}`}>
             <rect x={x} y="400" width="40" height="600" fill="#451a03" />
@@ -48,14 +49,15 @@ export const FlorestaScene = () => {
                 cy={y - 150}
                 r={60 + j * 20}
                 fill="#065f46"
-                animate={{ skewX: [-2, 2, -2] }}
-                transition={{ duration: 3 + j, repeat: Infinity, ease: "easeInOut" }}
+                animate={reduceMotion ? { skewX: 0 } : { skewX: [-2, 2, -2] }}
+                transition={
+                  reduceMotion ? { duration: 0 } : { duration: 3 + j, repeat: Infinity, ease: 'easeInOut' }
+                }
               />
             ))}
           </g>
         ))}
 
-        {/* Vagalumes */}
         {[...Array(20)].map((_, i) => (
           <motion.circle
             key={`firefly-${i}`}
@@ -63,20 +65,27 @@ export const FlorestaScene = () => {
             cy={Math.random() * 1000}
             r={1.5 + Math.random() * 1.5}
             fill="#fcd34d"
-            animate={{
-              x: [0, (Math.random() - 0.5) * 100, 0],
-              y: [0, (Math.random() - 0.5) * 100, 0],
-              opacity: [0, 0.8, 0]
-            }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5
-            }}
+            animate={
+              reduceMotion
+                ? { x: 0, y: 0, opacity: 0.45 }
+                : {
+                    x: [0, (Math.random() - 0.5) * 100, 0],
+                    y: [0, (Math.random() - 0.5) * 100, 0],
+                    opacity: [0, 0.8, 0],
+                  }
+            }
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : {
+                    duration: 3 + Math.random() * 4,
+                    repeat: Infinity,
+                    delay: Math.random() * 5,
+                  }
+            }
           />
         ))}
 
-        {/* Folhas Caindo */}
         {[...Array(10)].map((_, i) => (
           <motion.path
             key={`leaf-${i}`}
@@ -84,17 +93,25 @@ export const FlorestaScene = () => {
             fill="#065f46"
             stroke="#064e3b"
             strokeWidth="1"
-            animate={{
-              y: [0, 1000],
-              x: [0, Math.sin(i) * 100],
-              rotate: [0, 360]
-            }}
-            transition={{
-              duration: 8 + Math.random() * 10,
-              repeat: Infinity,
-              ease: "linear",
-              delay: Math.random() * 10
-            }}
+            animate={
+              reduceMotion
+                ? { y: 200, x: 0, rotate: 0, opacity: 0.5 }
+                : {
+                    y: [0, 1000],
+                    x: [0, Math.sin(i) * 100],
+                    rotate: [0, 360],
+                  }
+            }
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : {
+                    duration: 8 + Math.random() * 10,
+                    repeat: Infinity,
+                    ease: 'linear',
+                    delay: Math.random() * 10,
+                  }
+            }
             style={{ x: Math.random() * 1000, y: -20 }}
           />
         ))}

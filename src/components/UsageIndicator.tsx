@@ -1,6 +1,8 @@
 import React from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useUsage } from '../hooks/useUsage';
 import { cn } from './UI';
+import { springs } from '../lib/animations';
 
 interface Props {
   onUpgradeClick?: () => void;
@@ -16,27 +18,47 @@ export function UsageIndicator({ onUpgradeClick }: Props) {
       : 'bg-red-500';
 
   return (
-    <div className="flex flex-col gap-1 min-w-[120px]">
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={springs.card}
+      className="flex flex-col gap-1 min-w-[120px]"
+    >
       <div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-bold">
         <span className="text-text-secondary">IA Hoje</span>
-        <span className={cn(isExhausted ? 'text-red-500' : 'text-white')}>
+        <motion.span
+          key={`${used}-${limit}`}
+          initial={{ opacity: 0, y: -3 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={springs.snappy}
+          className={cn(isExhausted ? 'text-red-500' : 'text-white')}
+        >
           {used}/{limit}
-        </span>
+        </motion.span>
       </div>
       <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <div 
-          className={cn("h-full transition-all duration-500", colorClass)} 
-          style={{ width: `${Math.min(100, percentage)}%` }}
+        <motion.div
+          className={cn("h-full", colorClass)}
+          initial={false}
+          animate={{ width: `${Math.min(100, percentage)}%` }}
+          transition={springs.soft}
         />
       </div>
-      {percentage >= 80 && onUpgradeClick && (
-        <button 
-          onClick={onUpgradeClick}
-          className="text-[9px] text-amber-500 hover:text-amber-400 uppercase tracking-widest text-right mt-1"
-        >
-          {isExhausted ? 'Upgrade Necessário' : 'Fazer Upgrade'}
-        </button>
-      )}
-    </div>
+      <AnimatePresence>
+        {percentage >= 80 && onUpgradeClick && (
+          <motion.button
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            whileTap={{ scale: 0.97 }}
+            transition={springs.snappy}
+            onClick={onUpgradeClick}
+            className="text-[9px] text-amber-500 hover:text-amber-400 uppercase tracking-widest text-right mt-1 transition-colors duration-300 ease-out"
+          >
+            {isExhausted ? 'Upgrade Necessário' : 'Fazer Upgrade'}
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

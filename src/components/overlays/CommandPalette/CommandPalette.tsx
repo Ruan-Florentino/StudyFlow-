@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { 
   Home, Timer, BookOpen, PenTool, FileText, Users, Brain, ShieldAlert, Library, 
-  UploadCloud, Zap, Clock, Network, Headphones, Cpu, Download, Terminal, Eye, 
+  Zap, Clock, Network, Headphones, Cpu, Download, Terminal, Eye, 
   Activity, Beaker, Hammer, Database, Star, Layers, Wand2, Settings, Trophy, Search, Sparkles 
 } from 'lucide-react';
 import { useAppNavigation } from '../../../app/router/useAppNavigation';
+import { springs, staggerContainer, staggerItemTight } from '../../../lib/animations';
 
 /**
  * CommandPalette
@@ -21,6 +22,7 @@ interface CommandPaletteProps {
 
 export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
+  const reduceMotion = useReducedMotion();
   const inputRef = useRef<HTMLInputElement>(null);
   const { goTo } = useAppNavigation();
 
@@ -49,27 +51,25 @@ export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProp
     { path: '/foco', name: 'Modo Foco', icon: Timer, shortcut: 'F' },
     { path: '/questoes', name: 'Questões', icon: BookOpen, shortcut: 'Q' },
     { path: '/redacao', name: 'Redação', icon: PenTool, shortcut: 'R' },
-    { path: '/exames', name: 'Simulados', icon: FileText, shortcut: 'S' },
+    { path: '/simulados', name: 'Simulados', icon: FileText, shortcut: 'S' },
     { path: '/comunidade', name: 'Comunidade', icon: Users, shortcut: 'C' },
-    { path: '/ai', name: 'Athena (IA)', icon: Sparkles, shortcut: 'A' },
-    { path: '/palacio-memoria', name: 'Palácio da Memória', icon: Brain, shortcut: 'M' },
-    { path: '/duelo-socratico', name: 'Arena Socrática', icon: ShieldAlert, shortcut: 'D' },
+    { path: '/ai', name: 'Mentoria', icon: Sparkles, shortcut: 'A' },
+    { path: '/palacio-memoria', name: 'Memorização Visual', icon: Brain, shortcut: 'M' },
+    { path: '/duelo-socratico', name: 'Debate Guiado', icon: ShieldAlert, shortcut: 'D' },
     { path: '/analisador-documentos', name: 'Análise de Documentos', icon: FileText, shortcut: 'D' },
-    { path: '/upload-cerebral', name: 'Upload Cerebral', icon: UploadCloud, shortcut: 'U' },
-    { path: '/leitura-quantica', name: 'Leitura Quântica', icon: Zap, shortcut: 'Q' },
-    { path: '/dilatacao-tempo', name: 'Dilatação Temporal', icon: Clock, shortcut: 'T' },
-    { path: '/registros-akasicos', name: 'Registros Akáshicos', icon: Network, shortcut: 'K' },
-    { path: '/audio-subliminar', name: 'Frequências Neurais', icon: Headphones, shortcut: 'F' },
-    { path: '/tutor-holografico', name: 'Tutor Holográfico', icon: Cpu, shortcut: 'H' },
-    { path: '/matrix-download', name: 'Download Direto', icon: Download, shortcut: 'X' },
-    { path: '/terminal-neural', name: 'Terminal Neural', icon: Terminal, shortcut: 'N' },
-    { path: '/implantes-ciberneticos', name: 'Implantes Cibernéticos', icon: Cpu, shortcut: 'C' },
-    { path: '/protocolo-onisciencia', name: 'Protocolo Onisciência', icon: Eye, shortcut: 'O' },
-    { path: '/oraculo', name: 'A Oráculo', icon: Star, shortcut: 'O' },
-    { path: '/escultor-neural', name: 'Escultor Neural', icon: Cpu, shortcut: 'S' },
-    { path: '/genese-conceitos', name: 'Gênese de Conceitos', icon: Wand2, shortcut: 'G' },
+    { path: '/leitura-quantica', name: 'Leitura Dinâmica', icon: Zap, shortcut: 'Q' },
+    { path: '/dilatacao-tempo', name: 'Gestão de Tempo', icon: Clock, shortcut: 'T' },
+    { path: '/registros-akasicos', name: 'Base de Anotações', icon: Network, shortcut: 'K' },
+    { path: '/audio-subliminar', name: 'Áudio de Concentração', icon: Headphones, shortcut: 'F' },
+    { path: '/tutor-holografico', name: 'Tutor Interativo', icon: Cpu, shortcut: 'H' },
+    { path: '/matrix-download', name: 'Síntese Rápida', icon: Download, shortcut: 'X' },
+    { path: '/terminal-neural', name: 'Console de Estudos', icon: Terminal, shortcut: 'N' },
+    { path: '/implantes-ciberneticos', name: 'Ferramentas Avançadas', icon: Cpu, shortcut: 'C' },
+    { path: '/protocolo-onisciencia', name: 'Painel de Diagnóstico', icon: Eye, shortcut: 'O' },
+    { path: '/oraculo', name: 'Planejamento de Provas', icon: Star, shortcut: 'O' },
+    { path: '/escultor-neural', name: 'Ajuste de Perfil', icon: Cpu, shortcut: 'S' },
+    { path: '/genese-conceitos', name: 'Construtor de Conceitos', icon: Wand2, shortcut: 'G' },
     { path: '/creditos', name: 'Créditos', icon: Star, shortcut: 'C' },
-    { path: '/god-mode', name: 'Modo Deus', icon: Eye, shortcut: 'G' },
     { path: '/ranking', name: 'Ranking', icon: Trophy, shortcut: 'L' },
     { path: '/perfil', name: 'Configurações', icon: Settings, shortcut: ',' },
   ];
@@ -88,9 +88,10 @@ export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProp
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: -18 }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: -12 }}
+            transition={reduceMotion ? { duration: 0.12 } : springs.card}
             className="w-full max-w-xl bg-card border border-border rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] relative z-10"
           >
             <div className="p-4 border-b border-border flex items-center gap-3">
@@ -104,14 +105,21 @@ export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProp
               />
               <div className="px-2 py-1 bg-white/5 rounded-md border border-white/10 text-[10px] font-mono text-text-secondary">ESC</div>
             </div>
-            <div className="max-h-[60vh] overflow-y-auto p-2 no-scrollbar">
+            <motion.div
+              className="max-h-[60vh] overflow-y-auto p-2 no-scrollbar"
+              variants={reduceMotion ? undefined : staggerContainer}
+              initial={reduceMotion ? undefined : "hidden"}
+              animate={reduceMotion ? undefined : "show"}
+            >
               {filtered.map((c, idx) => (
-                <button
+                <motion.button
                   key={c.path || idx}
+                  variants={reduceMotion ? undefined : staggerItemTight}
                   onClick={() => {
                     if (c.path) goTo(c.path);
                     onClose();
                   }}
+                  whileTap={reduceMotion ? undefined : { scale: 0.985 }}
                   className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-white/5 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
@@ -121,14 +129,14 @@ export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProp
                     <span className="text-sm font-medium">{c.name}</span>
                   </div>
                   <div className="text-[10px] font-mono text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity">⌘{c.shortcut}</div>
-                </button>
+                </motion.button>
               ))}
               {filtered.length === 0 && (
                 <div className="p-8 text-center">
                   <p className="text-sm text-text-secondary">Nenhum comando encontrado para "{query}"</p>
                 </div>
               )}
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       )}

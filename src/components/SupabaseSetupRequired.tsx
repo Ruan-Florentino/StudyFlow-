@@ -1,26 +1,39 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Database, AlertTriangle, ExternalLink } from 'lucide-react';
 import { GlassCard, AnimatedButton } from './UI';
+import { springs, staggerContainer, staggerItem } from '../lib/animations';
 
 export const SupabaseSetupRequired = () => {
+  const reduceMotion = useReducedMotion();
+
   return (
     <div className="min-h-screen bg-[#020205] text-white flex items-center justify-center p-4">
       <GlassCard className="max-w-md w-full p-8 border-primary/20 bg-primary/5">
-        <div className="flex flex-col items-center text-center gap-6">
-          <div className="w-20 h-20 rounded-2xl bg-primary/20 flex items-center justify-center animate-pulse">
+        <motion.div
+          className="flex flex-col items-center text-center gap-6"
+          variants={reduceMotion ? undefined : staggerContainer}
+          initial={reduceMotion ? undefined : "hidden"}
+          animate={reduceMotion ? undefined : "show"}
+        >
+          <motion.div
+            variants={reduceMotion ? undefined : staggerItem}
+            className="w-20 h-20 rounded-2xl bg-primary/20 flex items-center justify-center"
+            animate={reduceMotion ? undefined : { scale: [1, 1.04, 1] }}
+            transition={reduceMotion ? undefined : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          >
             <Database size={40} className="text-primary" />
-          </div>
+          </motion.div>
           
-          <div className="space-y-2">
+          <motion.div variants={reduceMotion ? undefined : staggerItem} className="space-y-2">
             <h1 className="text-2xl font-bold tracking-tight">Configuração Necessária</h1>
             <p className="text-white/60 text-sm">
               As variáveis de ambiente do Supabase não foram encontradas. 
               Siga as instruções abaixo para ativar o backend.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="w-full space-y-4 text-left">
+          <motion.div variants={reduceMotion ? undefined : staggerItem} className="w-full space-y-4 text-left">
             <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
               <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
                 <AlertTriangle size={14} />
@@ -36,7 +49,7 @@ export const SupabaseSetupRequired = () => {
                 </li>
               </ol>
             </div>
-          </div>
+          </motion.div>
 
           <AnimatedButton 
             className="w-full py-4 bg-primary text-black font-bold flex items-center justify-center gap-2"
@@ -53,7 +66,7 @@ export const SupabaseSetupRequired = () => {
           >
             Ir para Supabase Dashboard <ExternalLink size={12} />
           </a>
-        </div>
+        </motion.div>
       </GlassCard>
     </div>
   );

@@ -7,7 +7,7 @@ import Markdown from 'react-markdown';
 
 export const HolographicTutor = ({ onBack }: { onBack: () => void }) => {
   const [messages, setMessages] = useState<{role: string, content: string}[]>([
-    { role: 'assistant', content: 'Olá. Eu sou seu Tutor Holográfico. Fui programado com todo o conhecimento do sistema. O que vamos dominar hoje?' }
+    { role: 'assistant', content: 'Olá. Eu sou seu Tutor Interativo. Vamos montar seu próximo passo de estudo?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +80,7 @@ export const HolographicTutor = ({ onBack }: { onBack: () => void }) => {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'pt-BR';
     utterance.rate = 1.1;
-    utterance.pitch = 0.9; // Slightly lower pitch for AI feel
+    utterance.pitch = 1;
     
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
@@ -106,7 +106,7 @@ export const HolographicTutor = ({ onBack }: { onBack: () => void }) => {
     setIsLoading(true);
 
     try {
-      const prompt = `Você é um Tutor Holográfico de IA de elite. Responda de forma concisa, inteligente e direta.
+      const prompt = `Você é um tutor de estudos objetivo. Responda de forma concisa, clara e direta.
       
       Histórico:
       ${messages.map(m => `${m.role}: ${m.content}`).join('\n')}
@@ -118,7 +118,7 @@ export const HolographicTutor = ({ onBack }: { onBack: () => void }) => {
       setMessages(prev => [...prev, { role: 'assistant', content: response }]);
       speakText(response);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Erro de conexão neural. Tente novamente.' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Não consegui responder agora. Tente novamente em instantes.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +132,7 @@ export const HolographicTutor = ({ onBack }: { onBack: () => void }) => {
         </AnimatedButton>
         <div className="flex-1">
           <h2 className="text-3xl font-premium-title italic text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
-            Tutor Holográfico<span className="text-white font-normal not-italic ml-1">.</span>
+            Tutor Interativo<span className="text-white font-normal not-italic ml-1">.</span>
           </h2>
         </div>
         <AnimatedButton 
@@ -173,7 +173,7 @@ export const HolographicTutor = ({ onBack }: { onBack: () => void }) => {
           </motion.div>
           
           <div className="mt-8 text-center space-y-2">
-            <h3 className="text-xl font-bold text-cyan-300 font-mono tracking-widest uppercase">A.I. Mentor</h3>
+            <h3 className="text-xl font-bold text-cyan-300 font-mono tracking-widest uppercase">Mentor de Estudos</h3>
             <p className="text-xs text-cyan-500/70 font-mono">
               Status: {isLoading ? 'Processando...' : isSpeaking ? 'Falando...' : isListening ? 'Ouvindo...' : 'Online'}
             </p>

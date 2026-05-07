@@ -32,8 +32,6 @@ export type NavigationTab =
   | 'comunidade'
   | 'memory-palace'
   | 'socratic-duel'
-  | 'brain-upload'
-  | 'god-mode'
   | 'quantum-reading'
   | 'singularity'
   | 'time-dilation'

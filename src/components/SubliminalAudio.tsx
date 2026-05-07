@@ -8,7 +8,7 @@ const FREQUENCIES = [
   { id: 'beta', name: 'Ondas Beta (20Hz)', desc: 'Atenção ativa, pensamento analítico e resolução de problemas.', color: 'text-blue-400', bg: 'bg-blue-500/20' },
   { id: 'alpha', name: 'Ondas Alpha (10Hz)', desc: 'Relaxamento alerta, super-aprendizado e fluxo criativo.', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
   { id: 'theta', name: 'Ondas Theta (6Hz)', desc: 'Meditação profunda, intuição e consolidação de memória.', color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
-  { id: 'delta', name: 'Ondas Delta (2Hz)', desc: 'Sono profundo, cura e recuperação neural.', color: 'text-indigo-400', bg: 'bg-indigo-500/20' },
+  { id: 'delta', name: 'Ondas Delta (2Hz)', desc: 'Sono profundo, recuperação física e mental.', color: 'text-indigo-400', bg: 'bg-indigo-500/20' },
 ];
 
 export const SubliminalAudio = ({ onBack }: { onBack: () => void }) => {
@@ -99,7 +99,7 @@ export const SubliminalAudio = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-premium-title italic text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.8)]">
-          Frequências Neurais<span className="text-white font-normal not-italic ml-1">.</span>
+          Frequências de Foco<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 

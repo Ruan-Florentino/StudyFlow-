@@ -18,7 +18,7 @@ export const ViewDisabledFallback = ({ feature, onBack }: ViewDisabledFallbackPr
         <div className="space-y-2">
           <h3 className="text-lg font-bold text-white uppercase tracking-wider">Acesso Restrito</h3>
           <p className="text-xs text-text-secondary leading-relaxed">
-            O recurso <span className="text-rose-400 font-bold">{feature}</span> está temporariamente desativado para manutenção ou processamento neural.
+            O recurso <span className="text-rose-400 font-bold">{feature}</span> está temporariamente desativado para manutenção.
           </p>
         </div>
 

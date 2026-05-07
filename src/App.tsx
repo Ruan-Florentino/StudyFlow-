@@ -1,10 +1,27 @@
-import { useEffect } from 'react';
-import { RouterProvider } from 'react-router-dom';
+import { Suspense, useEffect } from 'react';
 import { AppProviders } from './app/providers';
-import { router } from './app/router/RouterConfig';
-import { PWAUpdatePrompt } from './components/shared/PWAUpdatePrompt';
-import { PWAInstallPrompt } from './components/PWAInstallPrompt';
-import { testOpenRouterConnection } from './lib/testAPI';
+import { lazy } from 'react';
+import { devAgentLog } from './lib/devAgentLog';
+import { shouldRunOpenRouterHealthCheckOnMount } from './lib/openRouterHealthCheck';
+
+const PWAUpdatePrompt = lazy(() =>
+  import('./components/shared/PWAUpdatePrompt').then((module) => ({ default: module.PWAUpdatePrompt }))
+);
+
+const PWAInstallPrompt = lazy(() =>
+  import('./components/PWAInstallPrompt').then((module) => ({ default: module.PWAInstallPrompt }))
+);
+
+const AppRouterProvider = lazy(() =>
+  import('./app/router/AppRouterProvider').then((module) => ({ default: module.AppRouterProvider }))
+);
+
+devAgentLog({
+  hypothesisId: 'H0',
+  location: 'src/App.tsx:module',
+  message: 'App module evaluated',
+  data: { hasWindow: typeof window !== 'undefined' },
+});
 
 /**
  * App
@@ -14,14 +31,34 @@ import { testOpenRouterConnection } from './lib/testAPI';
 
 export default function App() {
   useEffect(() => {
-    testOpenRouterConnection();
+    devAgentLog({
+      hypothesisId: 'H0',
+      location: 'src/App.tsx:mount',
+      message: 'App mounted effect',
+      data: { pathname: window.location.pathname, search: window.location.search },
+    });
+    if (shouldRunOpenRouterHealthCheckOnMount()) {
+      void import('./lib/testAPI').then((module) => {
+        void module.testOpenRouterConnection();
+      });
+    }
   }, []);
 
   return (
     <AppProviders>
-      <RouterProvider router={router} />
-      <PWAUpdatePrompt />
-      <PWAInstallPrompt />
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-black flex items-center justify-center text-white/60 text-sm font-mono">
+            Carregando…
+          </div>
+        }
+      >
+        <AppRouterProvider />
+      </Suspense>
+      <Suspense fallback={null}>
+        <PWAUpdatePrompt />
+        <PWAInstallPrompt />
+      </Suspense>
     </AppProviders>
   );
 }

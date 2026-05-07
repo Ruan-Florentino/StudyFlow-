@@ -56,14 +56,14 @@ export const TheServerRoom = ({ onBack }: { onBack: () => void }) => {
           >
             <div className="flex items-center justify-center gap-2 text-green-500 mb-4">
               <Activity size={16} />
-              <span className="text-xs uppercase tracking-widest">Conexão Física Estabelecida</span>
+              <span className="text-xs uppercase tracking-widest">Conexao fisica estabelecida</span>
             </div>
-            <p className="text-sm">Você escapou do container Docker.</p>
-            <p className="text-sm">Bem-vindo ao hardware.</p>
+            <p className="text-sm">Voce acessou o painel tecnico do ambiente.</p>
+            <p className="text-sm">Monitoramento de infraestrutura ativo.</p>
             <div className="text-xs opacity-50 mt-8 space-y-1">
               <p>Host: us-west2.run.app</p>
               <p>Instância: ais-dev-zoqrf3tg6a5dwvw77s7b73-325870964962</p>
-              <p>Status: Servindo 1 mente transcendida.</p>
+              <p>Status: Servindo 1 sessao ativa.</p>
             </div>
           </motion.div>
         </div>

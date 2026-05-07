@@ -52,6 +52,39 @@ Restaurar operação rapidamente em produção quando houver falha crítica apó
 - Corrigir configuração de ambiente e revalidar fluxo.
 - Se necessário, desativar temporariamente CTA de compra até normalizar.
 
+### 2.1) Pagamento aprovado no Mercado Pago, mas plano não atualiza no app
+
+**Sintomas:** usuário mostra comprovante “aprovado”; conta continua free; Premium não abre.
+
+**Checagem rápida (ordem):**
+
+1. **Webhook:** painel Mercado Pago → integrações / webhooks → últimas entregas: status HTTP (esperado 2xx). Corpo rejeitado ou timeout?
+2. **Função receptora:** logs no Vercel (ou host da Edge Function) no horário do pagamento; assinatura secreta do webhook validada?
+3. **Supabase:** registro do usuário / tabela de assinatura (conforme schema do projeto): campo de plano ou `premium_until` atualizado?
+4. **Cliente:** usuário fez logout/login após alguns minutos? Cache de sessão antiga?
+5. **Ambiente:** webhook aponta para URL de **produção**, não preview antigo; secret MP corresponde ao ambiente (prod vs sandbox).
+
+**Mitigação imediata:**
+
+- Corrigir URL/secret do webhook e redeploy; reenviar notificação de teste no MP quando disponível.
+- **Atendimento:** atualizar plano manualmente no Supabase **só** com procedimento interno documentado e comprovante (evitar bypass sistemático).
+- Comunicar ao usuário pelo canal de suporte com prazo de regularização.
+
+**Pós-incidente:** adicionar alerta manual pós-deploy (primeira compra do dia) conforme [`OBSERVABILITY.md`](OBSERVABILITY.md).
+
+### 2.2) Compra aprovada na Play Store / App Store, mas plano não atualiza
+
+**Sintomas:** usuário mostra assinatura ativa na loja; app continua free.
+
+**Checagem rápida:**
+
+1. **Recibo / Purchase Token:** backend está recebendo e validando com a API da Google ou Apple?
+2. **Logs** da função de validação (Vercel/Supabase): 401, assinatura inválida, bundle ID errado?
+3. **Sandbox vs produção:** conta de teste na loja correta; produto e grupo de assinatura batendo com o app publicado.
+4. **Supabase:** atualização de `plan` / entitlement após validação bem-sucedida.
+
+**Mitigação:** corrigir credenciais da loja no servidor, mapeamento de `productId`, ou bug na persistência; atendimento manual só com comprovante da loja.
+
 ---
 
 ## 3) Rota branca/tela vazia

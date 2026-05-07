@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
+import { staggerContainer, staggerItem } from '../../lib/animations/variants';
+import { easings, springs } from '../../lib/animations/easings';
 import { 
   Share2, 
   Check, 
@@ -16,12 +18,14 @@ import {
   Upload,
   Smartphone,
   Mail,
-  FileText,
   Lock,
   Info,
-  Shield
+  Shield,
+  Crown,
+  Scale,
+  ScrollText,
+  ExternalLink
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import { useStore } from '../../store';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -38,14 +42,19 @@ import {
   BarChart,
   Bar,
   XAxis,
+  YAxis,
   Tooltip
 } from 'recharts';
 import { clsx } from 'clsx';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
+import { useUserAccess } from '../../hooks/useUserAccess';
+import { calendarDayLocal, sessionMatchesLocalChartDay } from '../../lib/persistence';
 
 const ProfileView = () => {
   const { goBack, goTo } = useAppNavigation();
   const { user } = useAuth();
+  const { isFree, isSupremo, plan: accessPlan } = useUserAccess();
+  const reduceMotion = useReducedMotion() ?? false;
   const { 
     name, 
     bio, 
@@ -59,8 +68,7 @@ const ProfileView = () => {
     setCoverPic, 
     history, 
     sessions, 
-    featureUsage, 
-    plan, 
+    featureUsage,
     setThemeColor, 
     themeColor 
   } = useStore();
@@ -82,17 +90,19 @@ const ProfileView = () => {
   }, [sessions, history]);
 
   const activityData = useMemo(() => {
-    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    const today = new Date();
-    return Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date();
-      d.setDate(today.getDate() - (6 - i));
-      const dateStr = d.toISOString().split('T')[0];
-      const daySessions = (sessions || []).filter(s => s && s.date === dateStr);
+    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(startOfToday);
+      d.setDate(startOfToday.getDate() - (6 - i));
+      const dateStr = calendarDayLocal(d);
+      const daySessions = (sessions || []).filter(
+        (s) => s && sessionMatchesLocalChartDay(s.date, dateStr)
+      );
       const minutes = daySessions.reduce((acc, s) => acc + (s.duration || 0), 0);
-      
       return {
-        name: days[d.getDay()],
+        name: dayLabels[d.getDay()],
         minutos: minutes,
       };
     });
@@ -199,6 +209,7 @@ const ProfileView = () => {
     if (!card) return;
 
     try {
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(card, {
         backgroundColor: '#0a0a0a',
         scale: 2,
@@ -234,11 +245,18 @@ const ProfileView = () => {
             </div>
             <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
               <p className="text-[10px] font-premium-mono text-text-secondary uppercase">Precisão</p>
-              <p className="text-xl font-bold text-[#00ff94]">{stats.accuracyRate}%</p>
+              <p
+                className="text-xl font-bold text-[#00ff94]"
+                title="Taxa de acerto nas questões registradas no app neste dispositivo."
+              >
+                {stats.accuracyRate}%
+              </p>
             </div>
           </div>
           <div className="text-center pt-2">
-            <p className="text-[8px] font-premium-mono text-text-secondary uppercase tracking-[0.3em]">Gerado por StudyFlow AI</p>
+            <p className="text-[8px] font-premium-mono text-text-secondary uppercase tracking-[0.3em]">
+              StudyFlow · resumo do seu progresso no app
+            </p>
           </div>
         </div>
       </div>
@@ -324,18 +342,25 @@ const ProfileView = () => {
             </div>
           ) : (
             <div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-2xl font-bold">{name}</h1>
-                <Badge variant={plan === 'premium' ? 'primary' : 'warning'} className="text-[8px] tracking-widest uppercase">
-                  {plan === 'premium' ? 'Premium ⭐' : 'Free'}
-                </Badge>
+                {isSupremo ? (
+                  <Badge variant="orange" className="text-[8px] tracking-widest uppercase border-amber-500/40 text-amber-300">
+                    <Crown size={10} className="inline mr-1" />
+                    Supremo
+                  </Badge>
+                ) : (
+                  <Badge variant={accessPlan === 'premium' ? 'primary' : 'warning'} className="text-[8px] tracking-widest uppercase">
+                    {accessPlan === 'premium' ? 'Premium ⭐' : 'Free'}
+                  </Badge>
+                )}
               </div>
               <p className="text-text-secondary text-sm mt-1">{bio}</p>
             </div>
           )}
 
           {/* Plan Card */}
-          {plan === 'free' && (
+          {isFree && (
             <GlassCard className="p-4 border-primary/30 bg-primary/5 flex items-center justify-between" glow>
               <div>
                 <p className="text-xs font-bold">Plano Free</p>
@@ -352,63 +377,83 @@ const ProfileView = () => {
           )}
 
           {/* Stats Grid (2x2 requested) */}
-          <div className="grid grid-cols-2 gap-3">
-            <GlassCard className="p-4 space-y-1" glow>
-              <div className="flex items-center gap-2 text-orange-500">
-                <Flame size={14} fill="currentColor" />
-                <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Streak</span>
-              </div>
-              <p className="text-2xl font-premium-title italic">{streak} Dias</p>
-            </GlassCard>
-            <GlassCard className="p-4 space-y-1" glow>
-              <div className="flex items-center gap-2 text-primary">
-                <Clock size={14} />
-                <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Horas</span>
-              </div>
-              <p className="text-2xl font-premium-title italic">{stats.totalHours}h</p>
-            </GlassCard>
-            <GlassCard className="p-4 space-y-1" glow>
-              <div className="flex items-center gap-2 text-blue-400">
-                <BookOpen size={14} />
-                <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Questões</span>
-              </div>
-              <p className="text-2xl font-premium-title italic">{stats.questionsSolved}</p>
-            </GlassCard>
-            <GlassCard className="p-4 space-y-1" glow>
-              <div className="flex items-center gap-2 text-purple-400">
-                <Target size={14} />
-                <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Precisão</span>
-              </div>
-              <p className="text-2xl font-premium-title italic">{stats.accuracyRate}%</p>
-            </GlassCard>
-          </div>
+          <p className="text-[10px] font-premium-mono text-text-secondary uppercase tracking-wider">
+            Métricas com base em sessões e questões registradas neste aparelho.
+          </p>
+          <motion.div
+            className="grid grid-cols-2 gap-3"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            {[
+              { icon: Flame, iconProps: { fill: 'currentColor' }, color: 'text-orange-500', label: 'Streak', value: `${streak} Dias` },
+              { icon: Clock, color: 'text-primary', label: 'Horas', value: `${stats.totalHours}h` },
+              { icon: BookOpen, color: 'text-blue-400', label: 'Questões', value: String(stats.questionsSolved) },
+              { icon: Target, color: 'text-purple-400', label: 'Precisão', value: `${stats.accuracyRate}%` },
+            ].map(({ icon: Icon, iconProps, color, label, value }) => (
+              <motion.div key={label} variants={staggerItem}>
+                <GlassCard enterAnimation={false} className="p-4 space-y-1" glow>
+                  <div className={`flex items-center gap-2 ${color}`}>
+                    <Icon size={14} {...(iconProps ?? {})} />
+                    <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">{label}</span>
+                  </div>
+                  <p className="text-2xl font-premium-title italic">{value}</p>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </motion.div>
 
           {/* Activity Graph */}
           <div className="pt-6 space-y-3">
-            <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Atividade (7 Dias)</h3>
-            <GlassCard className="p-4 h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={activityData}>
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 'bold' }} 
-                  />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                    labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}
-                    itemStyle={{ color: themeColor, fontWeight: 'bold', fontSize: '12px' }}
-                  />
-                  <Bar 
-                    dataKey="minutos" 
-                    fill={themeColor} 
-                    radius={[4, 4, 0, 0]} 
-                    barSize={20}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            <h3
+              className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]"
+              title="Minutos de estudo por dia conforme sessões salvas localmente."
+            >
+              Atividade (7 dias)
+            </h3>
+            <GlassCard className="p-4 flex flex-col gap-2 min-h-[12.5rem]">
+              <div className="h-40 w-full min-h-[10rem] shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={activityData} margin={{ top: 8, right: 4, left: 4, bottom: 4 }}>
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 'bold' }}
+                    />
+                    <YAxis hide domain={[0, 'auto']} />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                      contentStyle={{
+                        backgroundColor: '#0a0a0a',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                      }}
+                      labelStyle={{
+                        color: 'rgba(255,255,255,0.5)',
+                        fontSize: '10px',
+                        textTransform: 'uppercase',
+                        marginBottom: '4px',
+                      }}
+                      itemStyle={{ color: themeColor, fontWeight: 'bold', fontSize: '12px' }}
+                      formatter={(value: number) => [`${value} min`, 'Estudo']}
+                    />
+                    <Bar
+                      dataKey="minutos"
+                      fill={themeColor}
+                      radius={[4, 4, 0, 0]}
+                      barSize={20}
+                      minPointSize={4}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              {activityData.every((x) => x.minutos === 0) && (
+                <p className="text-[10px] text-text-secondary text-center font-medium">
+                  Nenhum minuto registrado nos últimos 7 dias. Use o modo Foco para gravar sessões.
+                </p>
+              )}
             </GlassCard>
           </div>
 
@@ -433,8 +478,13 @@ const ProfileView = () => {
           <div className="pt-2">
             <motion.button
               onClick={() => goTo('/estatisticas')}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={
+                reduceMotion
+                  ? { scale: 1 }
+                  : { scale: 1.02, boxShadow: '0 0 20px rgba(var(--hub-primary-rgb),0.18)' }
+              }
+              whileTap={{ scale: reduceMotion ? 1 : 0.97 }}
+              transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
               className="w-full flex items-center justify-between p-4 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -516,28 +566,139 @@ const ProfileView = () => {
               <ChevronRight size={16} className="text-white/20" />
             </GlassCard>
             
-            <div className="pt-6 space-y-3">
-              <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Legal e Suporte</h3>
-              {[
-                { label: 'Suporte Oficial', icon: Mail, path: '/perfil/suporte' },
-                { label: 'Termos de Uso', icon: FileText, path: '/perfil/termos-de-uso' },
-                { label: 'Política de Privacidade', icon: Lock, path: '/perfil/politica-de-privacidade' },
-                { label: 'Dados pessoais (LGPD)', icon: Shield, path: '/perfil/dados-pessoais' },
-                { label: 'Sobre o StudyFlow', icon: Info, path: '/perfil/sobre' },
-              ].map((item, i) => (
-                <GlassCard 
-                  key={i}
-                  className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => goTo(item.path)}
+            <div className="pt-6 space-y-4">
+              <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">
+                Privacidade, legal e proteção de dados
+              </h3>
+
+              <motion.div
+                initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
+              >
+                <GlassCard
+                  enterAnimation={false}
+                  className="p-5 md:p-6 border-[rgba(var(--hub-primary-rgb),0.22)] bg-[rgba(var(--hub-primary-rgb),0.06)]"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/5 rounded-xl text-white">
-                      <item.icon size={20} className="text-primary" />
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex gap-3">
+                      <div
+                        className="shrink-0 p-2.5 rounded-2xl border border-[rgba(var(--hub-primary-rgb),0.25)] bg-[rgba(var(--hub-primary-rgb),0.12)]"
+                        aria-hidden
+                      >
+                        <Shield size={22} className="text-primary" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <p className="text-sm font-bold text-white tracking-tight">
+                          Conformidade LGPD e transparência ampliada
+                        </p>
+                        <p className="text-xs text-white/70 leading-relaxed max-w-prose">
+                          Política de Privacidade com mais de 200 pontos numerados (rastreáveis em solicitações ao
+                          encarregado), cobrindo bases legais, IA, retenção, segurança, transferência internacional e
+                          direitos do titular. Termos de Uso complementam limites do serviço educacional.
+                        </p>
+                        <p className="text-[11px] text-white/45 font-premium-mono uppercase tracking-wider">
+                          Encarregado: altavistaholdingltda@gmail.com
+                        </p>
+                      </div>
                     </div>
-                    <span className="font-bold">{item.label}</span>
+                    <button
+                      type="button"
+                      onClick={() => goTo('/perfil/politica-de-privacidade')}
+                      className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-[var(--bg-primary)] bg-[var(--color-primary)] hover:opacity-95 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-secondary)]"
+                    >
+                      <ScrollText size={16} aria-hidden />
+                      Ler política completa
+                    </button>
                   </div>
-                  <ChevronRight size={16} className="text-white/20" />
                 </GlassCard>
+              </motion.div>
+
+              {(
+                [
+                  {
+                    label: 'Política de Privacidade (200+ pontos)',
+                    hint: 'Documento ampliado para auditoria e exercício de direitos',
+                    icon: Lock,
+                    path: '/perfil/politica-de-privacidade',
+                  },
+                  {
+                    label: 'Termos de Uso',
+                    hint: 'Contrato de uso do StudyFlow e limites do serviço',
+                    icon: Scale,
+                    path: '/perfil/termos-de-uso',
+                  },
+                  {
+                    label: 'Dados pessoais no perfil',
+                    hint: 'Correção de nome e bio; demais pedidos via encarregado',
+                    icon: Shield,
+                    path: '/perfil/dados-pessoais',
+                  },
+                  {
+                    label: 'Encarregado LGPD (e-mail)',
+                    hint: 'Art. 18, incidentes, portabilidade e dúvidas de tratamento',
+                    icon: Mail,
+                    mailto:
+                      'mailto:altavistaholdingltda@gmail.com?subject=StudyFlow%20%E2%80%94%20LGPD%20%2F%20Privacidade',
+                  },
+                  {
+                    label: 'Suporte oficial',
+                    hint: 'Fila de atendimento e dúvidas sobre o produto',
+                    icon: ExternalLink,
+                    path: '/perfil/suporte',
+                  },
+                  {
+                    label: 'Sobre o StudyFlow',
+                    hint: 'Informações do app e canais institucionais',
+                    icon: Info,
+                    path: '/perfil/sobre',
+                  },
+                ] as const
+              ).map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, x: reduceMotion ? 0 : -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={
+                    reduceMotion
+                      ? { duration: 0.15, delay: i * 0.02, ease: easings.smoothOut }
+                      : { ...springs.soft, delay: i * 0.04 }
+                  }
+                >
+                  <GlassCard
+                    enterAnimation={false}
+                    className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors text-left w-full"
+                    onClick={() => {
+                      if ('mailto' in item) {
+                        window.location.href = item.mailto;
+                        return;
+                      }
+                      goTo(item.path);
+                    }}
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="p-2 bg-white/5 rounded-xl text-white shrink-0">
+                        <item.icon size={20} className="text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-bold block truncate">{item.label}</span>
+                        {'hint' in item ? (
+                          <span className="text-[11px] text-white/50 leading-snug block mt-0.5">{item.hint}</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <motion.div
+                      animate={{ x: 0 }}
+                      whileHover={reduceMotion ? undefined : { x: 3 }}
+                      transition={reduceMotion ? { duration: 0 } : springs.soft}
+                      className="shrink-0"
+                    >
+                      <ChevronRight size={16} className="text-white/20" />
+                    </motion.div>
+                  </GlassCard>
+                </motion.div>
               ))}
             </div>
           </div>

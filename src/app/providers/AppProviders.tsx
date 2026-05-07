@@ -1,6 +1,12 @@
-import { ReactNode } from 'react';
+import { ReactNode, Suspense, lazy } from 'react';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { ErrorBoundary } from '../../components/shared/ErrorBoundary';
+
+const DevAccessPanel = lazy(() =>
+  import('../../components/dev/DevAccessPanel').then((module) => ({
+    default: module.DevAccessPanel,
+  }))
+);
 
 /**
  * AppProviders
@@ -17,6 +23,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     <ErrorBoundary>
       <AuthProvider>
         {children}
+        <Suspense fallback={null}>
+          <DevAccessPanel />
+        </Suspense>
       </AuthProvider>
     </ErrorBoundary>
   );

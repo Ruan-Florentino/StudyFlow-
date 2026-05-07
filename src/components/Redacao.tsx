@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { PenTool, FileText, Bookmark, ChevronLeft, Sparkles, CheckCircle2, AlertCircle, Bot } from 'lucide-react';
 import { GlassCard, Header, IconTile } from './UI';
@@ -8,6 +8,9 @@ import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
 import { ATHENA_CONFIG } from '../features/athena/constants/config';
 import { exportToPDF } from '../lib/studyUtils';
 import clsx from 'clsx';
+import { AthenaChat } from '../features/athena/components/AthenaChat';
+import { REDACAO_SYSTEM_PROMPT } from '../features/athena/prompts/systemPrompts';
+import { buildEssayHistoryDigestForPrompt } from '../lib/historyAiDigest';
 // import { useAIUI } from '../hooks/useAIUI'; // Deleted
 
 const PROPOSTAS = [
@@ -52,6 +55,16 @@ export const Redacao = ({ onBack }: { onBack: () => void }) => {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<any>(null);
   const [isSuggesting, setIsSuggesting] = useState(false);
+
+  const essayHistorySystemPrompt = useMemo(() => {
+    const digest = buildEssayHistoryDigestForPrompt(essays);
+    return `${REDACAO_SYSTEM_PROMPT}
+
+## Histórico de redações do aluno (dados reais do app)
+Personalize sugestões com base neste histórico. Não invente redações que não estejam listadas.
+
+${digest}`;
+  }, [essays]);
 
   const handleGetSuggestions = async () => {
     if (!essayText.trim() || !selectedProposta || isSuggesting) return;
@@ -413,6 +426,26 @@ Retorne APENAS um JSON válido com a seguinte estrutura:
               ))}
             </div>
           )}
+
+          <div className="pt-2">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-1 h-4 bg-primary rounded-full" />
+              <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">
+                Athena · seu histórico de redações
+              </h3>
+            </div>
+            <div className="min-h-[min(55vh,480px)]">
+              <AthenaChat
+                compact
+                sidebarInCompact
+                context="redacao"
+                systemPrompt={essayHistorySystemPrompt}
+                greeting="Quer evoluir com base nas suas redações?"
+                placeholder="Ex.: onde mais errei nas competências?"
+                showSidebar={false}
+              />
+            </div>
+          </div>
         </div>
       )}
 

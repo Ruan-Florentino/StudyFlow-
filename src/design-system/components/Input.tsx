@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
+import { easings } from '../../lib/animations';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label: string;
@@ -47,12 +48,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     <div className={`relative w-full ${containerClassName}`}>
       <div 
         className={`
-          relative flex items-center w-full h-14 rounded-2xl border transition-all duration-300 bg-[#141416]
-          ${error ? 'border-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.2)]' : isFocused ? 'border-[#00E88F] shadow-[0_0_15px_rgba(0,232,143,0.15)] bg-[#1a1a1c]' : 'border-white/10 hover:border-white/20'}
+          relative flex items-center w-full h-14 rounded-2xl border transition-all duration-300 ease-out bg-[#141416]
+          ${error ? 'border-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.2)]' : isFocused ? 'border-primary shadow-[0_0_15px_rgba(var(--hub-primary-rgb),0.15)] bg-[#1a1a1c]' : 'border-white/10 hover:border-white/20'}
         `}
       >
         {icon && (
-          <div className={`pl-4 flex items-center justify-center transition-colors ${isFocused ? 'text-[#00E88F]' : 'text-white/40'}`}>
+          <div className={`pl-4 flex items-center justify-center transition-colors duration-300 ease-out ${isFocused ? 'text-primary' : 'text-white/40'}`}>
             {icon}
           </div>
         )}
@@ -66,8 +67,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
               scale: (isFocused || hasValue) ? 0.75 : 1,
               opacity: (isFocused || hasValue) ? 0.7 : 0.5
             }}
-            transition={{ duration: 0.2, type: 'tween' }}
-            className={`absolute left-4 origin-left pointer-events-none font-medium ${error ? 'text-rose-500' : isFocused ? 'text-[#00E88F]' : 'text-white'}`}
+            transition={{ duration: 0.2, ease: easings.smoothOut }}
+            className={`absolute left-4 origin-left pointer-events-none font-medium ${error ? 'text-rose-500' : isFocused ? 'text-primary' : 'text-white'}`}
           >
             {label}
           </motion.label>

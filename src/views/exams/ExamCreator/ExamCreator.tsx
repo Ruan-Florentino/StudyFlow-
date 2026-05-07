@@ -57,7 +57,7 @@ export const ExamCreator = ({ exam, onBack }: ExamCreatorProps) => {
     return (
       <div className="app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-primary font-bold animate-pulse text-center">IA Analisando Edital e Histórico da {exam.nome}...</p>
+        <p className="text-primary font-bold animate-pulse text-center">Analisando edital e histórico da {exam.nome}...</p>
         <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">Calculando Probabilidades e Pesos...</p>
       </div>
     );
@@ -132,7 +132,7 @@ export const ExamCreator = ({ exam, onBack }: ExamCreatorProps) => {
         <button onClick={onBack} className="p-2 bg-white/5 rounded-xl border border-white/10">
           <ChevronLeft size={20} />
         </button>
-        <h2 className="text-2xl font-premium-title italic">PLANO DE ESTUDO IA</h2>
+        <h2 className="text-2xl font-premium-title italic">PLANO DE ESTUDO</h2>
       </header>
 
       <GlassCard className="p-8 text-center space-y-6 border-primary/20 bg-primary/5">
@@ -141,7 +141,7 @@ export const ExamCreator = ({ exam, onBack }: ExamCreatorProps) => {
         </div>
         <div className="space-y-2">
           <h3 className="text-xl font-bold">Gerar Roteiro para {exam.nome}</h3>
-          <p className="text-sm text-text-secondary">Nossa IA analisará as tendências dos últimos 5 anos desta prova e criará um cronograma otimizado para o seu tempo disponível.</p>
+          <p className="text-sm text-text-secondary">Vamos analisar as tendências dos últimos 5 anos desta prova e criar um cronograma otimizado para o seu tempo disponível.</p>
         </div>
         <div className="flex justify-center gap-8 py-4 border-y border-white/5">
           <div className="text-center">
@@ -158,7 +158,7 @@ export const ExamCreator = ({ exam, onBack }: ExamCreatorProps) => {
           </div>
         </div>
         <AnimatedButton onClick={generatePlan} className="w-full py-5 text-xs font-premium-mono font-bold uppercase tracking-[0.3em]" glow>
-          Iniciar Inteligência Estratégica
+          Iniciar Análise Estratégica
         </AnimatedButton>
       </GlassCard>
 

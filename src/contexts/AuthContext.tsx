@@ -1,12 +1,17 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
+import { useSupabaseAuthSession } from './SupabaseAuthSessionContext';
+import { useUserStore, type UserStore } from '../store/useUserStore';
+import type { UserRole } from '../types/userAccess';
 
 interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
   plan: 'free' | 'pro' | 'premium';
+  /** Papel de acesso (FASE-1). Coluna `public.users.role`. */
+  role: UserRole;
   createdAt: number;
 }
 
@@ -14,134 +19,130 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
-  signIn:    (email: string, pass: string) => Promise<void>;
-  signUp:    (email: string, pass: string, name: string) => Promise<void>;
+  signIn: (email: string, pass: string) => Promise<void>;
+  signUp: (email: string, pass: string, name: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  logout:    () => Promise<void>;
+  logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+function pickAuthProfileFields(s: UserStore) {
+  return {
+    name: s.name,
+    accessRole: s.accessRole,
+    billingPlan: s.billingPlan,
+    profileCreatedAtMs: s.profileCreatedAtMs,
+  };
+}
+
+function sessionUserToProfile(user: User, store: UserStore): UserProfile {
+  return {
+    uid: user.id,
+    email: user.email ?? '',
+    displayName: store.name,
+    plan: store.billingPlan,
+    role: store.accessRole,
+    createdAt: store.profileCreatedAtMs ?? 0,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null);
+  const { user, authHydrated } = useSupabaseAuthSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProfile = useCallback(async (uid: string, emailFromSession?: string | null) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', uid)
-      .single();
-
-    if (data && !error) {
-      setProfile({
-        uid: data.id,
-        email: emailFromSession ?? '',
-        displayName: data.name,
-        plan: data.plan || 'free',
-        createdAt: new Date(data.created_at).getTime()
-      });
-    }
-  }, []);
+  const userRef = useRef<User | null>(user);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
+    userRef.current = user;
+  }, [user]);
 
+  useEffect(() => {
     let cancelled = false;
+    let lastAuthFields = pickAuthProfileFields(useUserStore.getState());
 
-    const applySession = async (session: Session | null) => {
+    const pushProfile = () => {
       if (cancelled) return;
-      const nextUser = session?.user ?? null;
-      setUser(nextUser);
-      if (nextUser) {
-        await fetchProfile(nextUser.id, nextUser.email);
-      } else {
+      const u = userRef.current;
+      if (!u) {
         setProfile(null);
+        return;
       }
-      if (!cancelled) setLoading(false);
+      setProfile(sessionUserToProfile(u, useUserStore.getState()));
     };
 
-    // Hidrata sessão persistida antes de liberar a UI (evita flash de "deslogado" no F5).
-    supabase.auth
-      .getSession()
-      .then(({ data, error }) => {
-        if (error) {
-          console.error('[AuthContext] getSession:', error);
-        }
-        const session = data?.session ?? null;
-        return applySession(session);
-      })
-      .catch((e) => {
-        console.error('[AuthContext] getSession falhou:', e);
-        if (!cancelled) {
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
-        }
-      });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      void applySession(session);
+    const unsubStore = useUserStore.subscribe((state) => {
+      if (!userRef.current || cancelled) return;
+      const next = pickAuthProfileFields(state);
+      if (
+        next.name === lastAuthFields.name &&
+        next.accessRole === lastAuthFields.accessRole &&
+        next.billingPlan === lastAuthFields.billingPlan &&
+        next.profileCreatedAtMs === lastAuthFields.profileCreatedAtMs
+      ) {
+        return;
+      }
+      lastAuthFields = next;
+      pushProfile();
     });
+
+    lastAuthFields = pickAuthProfileFields(useUserStore.getState());
+    pushProfile();
 
     return () => {
       cancelled = true;
-      subscription.unsubscribe();
+      unsubStore();
     };
-  }, [fetchProfile]);
-  
+  }, [user]);
+
+  const loading = !authHydrated;
+
   const signIn = async (email: string, pass: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
   };
-  
+
   const signUp = async (email: string, pass: string, name: string) => {
-    const { data, error } = await supabase.auth.signUp({ 
-      email, 
+    const { error } = await supabase.auth.signUp({
+      email,
       password: pass,
       options: {
         data: {
-          full_name: name
-        }
-      }
+          full_name: name,
+        },
+      },
     });
     if (error) throw error;
-    
-    if (data.user) {
-      // Profile creation is typically handled in SupabaseProvider on first load,
-      // or via Supabase triggers. Here we just ensure the user is set.
-      setUser(data.user);
-    }
   };
-  
+
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
     if (error) throw error;
   };
-  
+
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    setUser(null);
-    setProfile(null);
   };
-  
+
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) throw error;
   };
-  
+
   return (
-    <AuthContext.Provider value={{
-      user, profile, loading, 
-      signIn, signUp, signInWithGoogle, 
-      logout, resetPassword,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        signIn,
+        signUp,
+        signInWithGoogle,
+        logout,
+        resetPassword,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

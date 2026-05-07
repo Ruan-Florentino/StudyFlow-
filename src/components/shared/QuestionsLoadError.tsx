@@ -1,4 +1,7 @@
 import React from 'react';
+import { motion } from 'motion/react';
+import { RefreshCw } from 'lucide-react';
+import { springs } from '../../lib/animations';
 
 interface QuestionsLoadErrorProps {
   error?: Error;
@@ -19,8 +22,13 @@ export function QuestionsLoadError({ error, onRetry }: QuestionsLoadErrorProps) 
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-      <div className="text-6xl mb-4">📚</div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={springs.card}
+      className="flex flex-col items-center justify-center min-h-[60vh] px-4"
+    >
+      <div className="text-6xl mb-4" aria-hidden>📚</div>
       
       <h2 className="text-xl font-semibold text-white mb-2 text-center">
         {isChunkError 
@@ -34,12 +42,15 @@ export function QuestionsLoadError({ error, onRetry }: QuestionsLoadErrorProps) 
           : 'Não conseguimos carregar as questões agora. Verifique sua conexão e tente novamente.'}
       </p>
       
-      <button
+      <motion.button
         onClick={handleRetry}
-        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+        whileTap={{ scale: 0.97 }}
+        transition={springs.snappy}
+        className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-black px-6 py-3 rounded-xl font-bold transition-colors duration-300 ease-out"
       >
-        {isChunkError ? '🔄 Atualizar agora' : '🔄 Tentar novamente'}
-      </button>
-    </div>
+        <RefreshCw size={16} />
+        {isChunkError ? 'Atualizar agora' : 'Tentar novamente'}
+      </motion.button>
+    </motion.div>
   );
 }

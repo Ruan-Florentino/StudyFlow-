@@ -1,15 +1,18 @@
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeHighlight from 'rehype-highlight';
-import { motion } from 'motion/react';
-import { Copy, RotateCcw, User, Zap } from 'lucide-react';
+import React, { Suspense, lazy } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { Copy, User, Zap } from 'lucide-react';
 import { Message } from '../types/chat.types';
 import { ATHENA_CONFIG } from '../constants/config';
-import 'katex/dist/katex.min.css';
-import 'highlight.js/styles/github-dark.css';
+import { springs } from '../../../lib/animations/easings';
+
+const ChatMarkdownBasic = lazy(() =>
+  import('./ChatMarkdown').then((module) => ({ default: module.ChatMarkdown }))
+);
+const ChatMarkdownEnhanced = lazy(() =>
+  import('./ChatMarkdownEnhanced').then((module) => ({ default: module.ChatMarkdownEnhanced }))
+);
+
+const ENHANCED_MARKDOWN_PATTERN = /```|`[^`\n]+`|\$\$[\s\S]*?\$\$|(?<!\\)\$[^$\n]+?\$|\\\(|\\\[/;
 
 interface ChatMessageProps {
   message: Message;
@@ -18,6 +21,9 @@ interface ChatMessageProps {
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
   const isAssistant = message.role === 'assistant';
+  const reduceMotion = useReducedMotion() ?? false;
+  const messageContent = message.content + (isStreaming ? '●' : '');
+  const needsEnhancedMarkdown = ENHANCED_MARKDOWN_PATTERN.test(messageContent);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message.content);
@@ -25,13 +31,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={reduceMotion ? { duration: 0.12 } : springs.card}
       className={`flex w-full gap-4 p-4 ${isAssistant ? 'bg-white/5' : ''}`}
     >
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-        isAssistant ? 'bg-emerald-500/20 text-emerald-500' : 'bg-indigo-500/20 text-indigo-500'
-      }`}>
+      <div
+        className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+          isAssistant ? 'bg-primary/20 text-primary' : 'bg-indigo-500/20 text-indigo-500'
+        }`}
+      >
         {isAssistant ? <Zap size={16} /> : <User size={16} />}
       </div>
 
@@ -41,24 +50,31 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
             {isAssistant ? ATHENA_CONFIG.NAME : 'Você'}
           </span>
           {isAssistant && (
-            <button 
+            <motion.button
+              type="button"
               onClick={copyToClipboard}
-              className="p-1 hover:bg-white/10 rounded transition-colors opacity-30 hover:opacity-100"
+              whileTap={{ scale: 0.92, transition: springs.snappy }}
+              className="p-1 hover:bg-white/10 rounded transition-colors duration-200 ease-out opacity-30 hover:opacity-100"
               title="Copiar"
             >
               <Copy size={12} />
-            </button>
+            </motion.button>
           )}
         </div>
 
-        <div className="prose prose-invert prose-sm max-w-none text-white/90 leading-relaxed font-medium">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex, rehypeHighlight]}
-          >
-            {message.content + (isStreaming ? '●' : '')}
-          </ReactMarkdown>
-        </div>
+        <Suspense
+          fallback={
+            <div className="text-white/90 leading-relaxed font-medium whitespace-pre-wrap">
+              {messageContent}
+            </div>
+          }
+        >
+          {needsEnhancedMarkdown ? (
+            <ChatMarkdownEnhanced content={messageContent} />
+          ) : (
+            <ChatMarkdownBasic content={messageContent} />
+          )}
+        </Suspense>
       </div>
     </motion.div>
   );

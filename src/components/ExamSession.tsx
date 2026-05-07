@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { easings, springs } from '../lib/animations/easings';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -10,8 +11,9 @@ import {
   Info,
   Clock
 } from 'lucide-react';
-import { Question } from '../store';
+import { Question, useStore } from '../store';
 import { GlassCard, AnimatedButton, Header } from './UI';
+import { QuestionStatusBadge } from './QuestionStatusBadge';
 import ExamTimer from './ExamTimer';
 
 interface ExamSessionProps {
@@ -22,12 +24,14 @@ interface ExamSessionProps {
 }
 
 const ExamSession = ({ questions, durationMinutes, onComplete, onCancel }: ExamSessionProps) => {
+  const recordQuestionView = useStore((s) => s.recordQuestionView);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
-  
+  const reduceMotion = useReducedMotion() ?? false;
+
   // Calculate duration
   const totalDuration = durationMinutes 
     ? durationMinutes * 60 
@@ -60,6 +64,11 @@ const ExamSession = ({ questions, durationMinutes, onComplete, onCancel }: ExamS
       handleSubmit();
     }, 3000);
   };
+
+  useEffect(() => {
+    const q = questions[currentIndex];
+    if (q) recordQuestionView(q.id);
+  }, [currentIndex, questions, recordQuestionView]);
 
   const handleSelectOption = (optIdx: number) => {
     setUserAnswers(prev => ({ ...prev, [currentIndex]: optIdx }));
@@ -107,6 +116,7 @@ const ExamSession = ({ questions, durationMinutes, onComplete, onCancel }: ExamS
                 <span className="px-2 py-0.5 bg-white/5 text-text-secondary text-[8px] font-premium-mono font-bold rounded uppercase tracking-widest border border-white/5">
                   {currentQuestion.prova} {currentQuestion.ano}
                 </span>
+                <QuestionStatusBadge questionId={currentQuestion.id} compact />
               </div>
               <div className="text-[10px] font-premium-mono text-text-secondary flex items-center gap-2">
                 <Clock size={12} /> Sugestão: 2:00m
@@ -223,9 +233,10 @@ const ExamSession = ({ questions, durationMinutes, onComplete, onCancel }: ExamS
         {isDiscardModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
              <motion.div 
-               initial={{ opacity: 0, scale: 0.9, y: 20 }}
+               initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.9, y: reduceMotion ? 0 : 20 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
-               exit={{ opacity: 0, scale: 0.9, y: 20 }}
+               exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.9, y: reduceMotion ? 0 : 20 }}
+               transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
                className="w-full max-w-sm"
              >
                 <GlassCard className="p-8 text-center space-y-6 border-rose-500/30">
@@ -263,9 +274,10 @@ const ExamSession = ({ questions, durationMinutes, onComplete, onCancel }: ExamS
         {isSubmitModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
              <motion.div 
-               initial={{ opacity: 0, scale: 0.9, y: 20 }}
+               initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.9, y: reduceMotion ? 0 : 20 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
-               exit={{ opacity: 0, scale: 0.9, y: 20 }}
+               exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.9, y: reduceMotion ? 0 : 20 }}
+               transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
                className="w-full max-w-sm"
              >
                 <GlassCard className="p-8 text-center space-y-6 border-orange-500/30">
@@ -302,12 +314,13 @@ const ExamSession = ({ questions, durationMinutes, onComplete, onCancel }: ExamS
       <AnimatePresence>
         {isTimeUp && (
           <motion.div 
-            initial={{ opacity: 0, y: -50 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : -50 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
             className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] w-full max-w-md px-6"
           >
              <div className="bg-rose-500 text-white p-4 rounded-2xl flex items-center justify-center gap-4 shadow-2xl shadow-rose-500/40">
-                <Clock className="animate-spin" size={24} />
+                <Clock className={reduceMotion ? '' : 'animate-spin'} size={24} />
                 <div className="text-center">
                    <p className="text-xs font-bold uppercase tracking-widest">Tempo Esgotado!</p>
                    <p className="text-[10px] opacity-80">Enviando respostas automaticamente...</p>

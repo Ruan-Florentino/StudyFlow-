@@ -12,6 +12,8 @@ export interface ExamStore {
   learningPaths: Record<string, { subject: string, milestones: any[] }>;
   currentBossBattle: { subject: string, questions: any[], score: number, isActive: boolean } | null;
   history: QuestionHistory[];
+  /** questionId → ISO da primeira vez que a questão apareceu na UI (vista, sem responder) */
+  viewedAtByQuestionId: Record<string, string>;
   showOnlyReviewLater: boolean;
 
   toggleFavorite: (id: string) => void;
@@ -24,6 +26,7 @@ export interface ExamStore {
   startBossBattle: (subject: string, questions?: any[]) => void;
   endBossBattle: (finalScore?: number) => void;
   addToHistory: (entry: QuestionHistory) => void;
+  recordQuestionView: (questionId: string) => void;
   setShowOnlyReviewLater: (val: boolean) => void;
 }
 
@@ -35,16 +38,17 @@ export const useExamStore = create<ExamStore>()(
       reviewLater: [],
       favoriteExams: [],
       exams: [
-        { id: "enem_2026", nome: "ENEM 2026", tipo: "vestibular", data: "2026-11-08", diasRestantes: 0, materias: ["Matemática","Português","Humanas","Natureza"], nivel: "Médio", descricao: "Exame Nacional do Ensino Médio" },
-        { id: "fuvest_2026", nome: "Fuvest 2026", tipo: "vestibular", data: "2026-11-22", diasRestantes: 0, materias: ["Geral"], nivel: "Difícil", descricao: "Vestibular da USP" },
-        { id: "ita_2026", nome: "ITA 2026", tipo: "vestibular", data: "2026-10-10", diasRestantes: 0, materias: ["Matemática", "Física", "Química"], nivel: "Muito Difícil", descricao: "Vestibular do ITA" },
-        { id: "policia_federal", nome: "Polícia Federal", tipo: "concurso", data: "2026-06-19", diasRestantes: 0, materias: ["Direito","Informática","Raciocínio Lógico"], nivel: "Difícil", descricao: "Concurso Agente PF" },
+        { id: "enem_2026", nome: "ENEM 2026", provaTag: "ENEM", tipo: "vestibular", data: "2026-11-08", diasRestantes: 0, materias: ["Matemática","Português","Humanas","Natureza"], nivel: "Médio", descricao: "Exame Nacional do Ensino Médio" },
+        { id: "fuvest_2026", nome: "Fuvest 2026", provaTag: "Fuvest", tipo: "vestibular", data: "2026-11-22", diasRestantes: 0, materias: ["Geral"], nivel: "Difícil", descricao: "Vestibular da USP" },
+        { id: "ita_2026", nome: "ITA 2026", provaTag: "ITA", tipo: "vestibular", data: "2026-10-10", diasRestantes: 0, materias: ["Matemática", "Física", "Química"], nivel: "Muito Difícil", descricao: "Vestibular do ITA" },
+        { id: "policia_federal", nome: "Polícia Federal", provaTag: "Polícia Federal", tipo: "concurso", data: "2026-06-19", diasRestantes: 0, materias: ["Direito","Informática","Raciocínio Lógico"], nivel: "Difícil", descricao: "Concurso Agente PF" },
       ],
       dailyChallenge: null,
       smartRecommendation: null,
       learningPaths: {},
       currentBossBattle: null,
       history: [],
+      viewedAtByQuestionId: {},
       showOnlyReviewLater: false,
 
       toggleFavorite: (id) => set((state) => ({
@@ -74,8 +78,38 @@ export const useExamStore = create<ExamStore>()(
       startBossBattle: (subject, questions = []) => set({ currentBossBattle: { subject, questions, score: 0, isActive: true } }),
       endBossBattle: () => set({ currentBossBattle: null }),
       addToHistory: (entry) => set(state => ({ history: [entry, ...state.history] })),
+      recordQuestionView: (questionId) =>
+        set((state) => {
+          if (state.viewedAtByQuestionId[questionId]) return state;
+          return {
+            viewedAtByQuestionId: {
+              ...state.viewedAtByQuestionId,
+              [questionId]: new Date().toISOString(),
+            },
+          };
+        }),
       setShowOnlyReviewLater: (showOnlyReviewLater) => set({ showOnlyReviewLater }),
     }),
-    { name: 'studyflow-exams' }
+    {
+      name: 'studyflow-exams',
+      version: 2,
+      migrate: (persisted, version) => {
+        if (version >= 2) return persisted as ExamStore;
+        const s = persisted as Partial<ExamStore>;
+        const tags: Record<string, string> = {
+          enem_2026: 'ENEM',
+          fuvest_2026: 'Fuvest',
+          ita_2026: 'ITA',
+          policia_federal: 'Polícia Federal',
+        };
+        return {
+          ...s,
+          exams: (s.exams ?? []).map((e) => ({
+            ...e,
+            provaTag: e.provaTag ?? tags[e.id] ?? e.nome,
+          })),
+        } as ExamStore;
+      },
+    }
   )
 );

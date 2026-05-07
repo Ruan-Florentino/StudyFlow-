@@ -1,18 +1,31 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, Crown, Award, Shield, Gem, Flame, Sparkles, ShieldPlus, Trophy, Users as UsersIcon, Globe } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { easings, springs } from '../lib/animations/easings';
+import {
+  ChevronLeft,
+  Crown,
+  Award,
+  Shield,
+  Gem,
+  Flame,
+  ShieldPlus,
+  Trophy,
+  Users as UsersIcon,
+  Globe,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useStore } from '../store';
+import { LEAGUE_XP_TIERS } from '../lib/leagueThresholds';
+import { rankingCopy } from '../lib/productDisclosure';
 import { GlassCard, cn } from './UI';
 import confetti from 'canvas-confetti';
 
+/** Quatro ligas — mesmos cortes de XP que `useUserStore.addXP` (`LEAGUE_XP_TIERS`). */
 const LEAGUES = [
-  { id: 'bronze',     name: 'Bronze',      color: '#CD7F32', glow: 'rgba(205,127,50,0.4)',  min: 0,    icon: 'Shield'    },
-  { id: 'prata',      name: 'Prata',       color: '#C0C0C0', glow: 'rgba(192,192,192,0.4)', min: 500,  icon: 'ShieldPlus'},
-  { id: 'ouro',       name: 'Ouro',        color: '#FFD700', glow: 'rgba(255,215,0,0.5)',   min: 1500, icon: 'Award'     },
-  { id: 'diamante',   name: 'Diamante',    color: '#B9F2FF', glow: 'rgba(185,242,255,0.6)', min: 3500, icon: 'Gem'       },
-  { id: 'mestre',     name: 'Mestre',      color: '#9D4EDD', glow: 'rgba(157,78,221,0.6)',  min: 6500, icon: 'Crown'     },
-  { id: 'graomestre', name: 'Grão-Mestre', color: '#FF006E', glow: 'rgba(255,0,110,0.6)',   min: 10000,icon: 'Flame'     },
-  { id: 'lendario',   name: 'Lendário',    color: '#00F0FF', glow: 'rgba(0,240,255,0.7)',   min: 20000,icon: 'Sparkles'  },
+  { id: 'bronze', name: 'Bronze', color: '#CD7F32', glow: 'rgba(205,127,50,0.4)', min: 0, icon: 'Shield' },
+  { id: 'prata', name: 'Prata', color: '#C0C0C0', glow: 'rgba(192,192,192,0.4)', min: LEAGUE_XP_TIERS.prata, icon: 'ShieldPlus' },
+  { id: 'ouro', name: 'Ouro', color: '#FFD700', glow: 'rgba(255,215,0,0.5)', min: LEAGUE_XP_TIERS.ouro, icon: 'Award' },
+  { id: 'diamante', name: 'Diamante', color: '#B9F2FF', glow: 'rgba(185,242,255,0.6)', min: LEAGUE_XP_TIERS.diamante, icon: 'Gem' },
 ];
 
 const FAKE_NAMES = [
@@ -36,69 +49,213 @@ const FAKE_USERS = FAKE_NAMES.map((name, i) => ({
   xpTotal: Math.floor(Math.random() * 50000) + 500,
   level: Math.floor(Math.random() * 50) + 1,
   streak: Math.floor(Math.random() * 60),
-  league: ['bronze','prata','ouro','diamante','mestre','graomestre','lendario'][Math.floor(Math.random() * 7)],
+  league: (['bronze', 'prata', 'ouro', 'diamante'] as const)[Math.floor(Math.random() * 4)],
 }));
 
-const LEAGUE_ICONS: Record<string, any> = {
-  bronze: Shield, prata: ShieldPlus, ouro: Award, diamante: Gem,
-  mestre: Crown, graomestre: Flame, lendario: Sparkles
+const LEAGUE_ICONS: Record<string, LucideIcon> = {
+  bronze: Shield,
+  prata: ShieldPlus,
+  ouro: Award,
+  diamante: Gem,
 };
 
+interface RankedPlayer {
+  id: string;
+  name: string;
+  avatar: string;
+  xpWeekly: number;
+  xpTotal: number;
+  level: number;
+  streak: number;
+  league: string;
+}
+
+function avatarUrlForName(displayName: string, pic?: string): string {
+  if (pic && /^https?:\/\//i.test(pic)) return pic;
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
+}
+
+function normalizeLeagueIdFromRow(league: unknown): string {
+  if (typeof league !== 'string') return 'bronze';
+  const key = league.toLowerCase();
+  if (LEAGUES.some((l) => l.id === key)) return key;
+  const pt: Record<string, string> = {
+    bronze: 'bronze',
+    prata: 'prata',
+    ouro: 'ouro',
+    diamante: 'diamante',
+  };
+  if (pt[key]) return pt[key];
+  // Tiers antigos do demo (removidos) — mapeia para a liga máxima do produto atual
+  if (key === 'mestre' || key === 'graomestre' || key === 'lendario') return 'diamante';
+  return 'bronze';
+}
+
+function mapRemoteLeaderboardRow(raw: unknown): RankedPlayer | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r.id !== 'string') return null;
+  const displayName = typeof r.name === 'string' ? r.name : 'Usuário';
+  const xpTotal = typeof r.xp === 'number' ? r.xp : 0;
+  const dailyRemote =
+    typeof r.daily_xp === 'number'
+      ? r.daily_xp
+      : typeof r.dailyXP === 'number'
+        ? r.dailyXP
+        : null;
+  const xpWeekly =
+    typeof dailyRemote === 'number' && dailyRemote > 0 ? dailyRemote : xpTotal % 1000;
+  const level = typeof r.level === 'number' ? r.level : 1;
+  const streak = typeof r.streak === 'number' ? r.streak : 0;
+  const pic =
+    typeof r.profile_pic === 'string'
+      ? r.profile_pic
+      : typeof r.profilePic === 'string'
+        ? r.profilePic
+        : '';
+  return {
+    id: r.id,
+    name: displayName,
+    avatar: avatarUrlForName(displayName, pic),
+    xpWeekly: Math.max(0, xpWeekly),
+    xpTotal,
+    level,
+    streak,
+    league: normalizeLeagueIdFromRow(r.league),
+  };
+}
+
+function buildSelfRow(params: {
+  userId: string | null;
+  name: string;
+  xp: number;
+  dailyXP: number;
+  level: number;
+  streak: number;
+  userLeagueId: string;
+  profilePic: string;
+}): RankedPlayer {
+  const { userId, name, xp, dailyXP, level, streak, userLeagueId, profilePic } = params;
+  const displayName = name || 'Você';
+  return {
+    id: userId ?? 'self',
+    name: displayName,
+    avatar: avatarUrlForName(displayName, profilePic),
+    xpWeekly: dailyXP > 0 ? dailyXP : xp % 1000,
+    xpTotal: xp,
+    level,
+    streak,
+    league: userLeagueId,
+  };
+}
+
+function isSelfRow(user: RankedPlayer, selfId: string | null): boolean {
+  if (user.id === 'self') return true;
+  return selfId !== null && user.id === selfId;
+}
+
 export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const { name, xp, level, streak, league } = useStore();
+  const { name, xp, level, streak, league, leaderboard, userId, dailyXP, profilePic } = useStore();
   const [activeTab, setActiveTab] = useState<'liga' | 'amigos' | 'mundial'>('liga');
-  
+  const reduceMotion = useReducedMotion() ?? false;
+
   const userLeague = LEAGUES.find(l => l.id === (league?.toLowerCase() || 'bronze')) || LEAGUES[0];
-  const LeagueIcon = LEAGUE_ICONS[userLeague.id];
+  const LeagueIcon = LEAGUE_ICONS[userLeague.id] ?? Shield;
+
+  const hasRealGlobalLeaderboard = useMemo(
+    () =>
+      leaderboard.length > 0 &&
+      leaderboard.some((row) => mapRemoteLeaderboardRow(row as unknown) !== null),
+    [leaderboard]
+  );
   
-  // Usuários da minha liga (filtra os fake pela liga + adiciona o próprio user)
+  // Usuários da minha liga (ilustração + você); ligas reais virão com produto de ranking.
   const myLeagueUsers = useMemo(() => {
     const sameLeague = FAKE_USERS.filter(u => u.league === userLeague.id);
-    const selfUser = {
-      id: 'self', name: name || 'Você', 
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'You')}`,
-      xpWeekly: xp % 1000, xpTotal: xp, level, streak, league: userLeague.id
-    };
+    const selfUser = buildSelfRow({
+      userId,
+      name,
+      xp,
+      dailyXP,
+      level,
+      streak,
+      userLeagueId: userLeague.id,
+      profilePic,
+    });
     return [...sameLeague, selfUser].sort((a,b) => b.xpWeekly - a.xpWeekly).slice(0, 30);
-  }, [name, xp, level, streak, userLeague.id]);
+  }, [name, xp, level, streak, userLeague.id, userId, dailyXP, profilePic]);
   
-  const myPosition = myLeagueUsers.findIndex(u => u.id === 'self') + 1;
+  const myPosition = myLeagueUsers.findIndex(u => isSelfRow(u, userId)) + 1;
   const totalInLeague = myLeagueUsers.length;
   
-  // Zona
-  let zone: 'promo' | 'safe' | 'danger' = 'safe';
-  let zoneText = '🛡️ Zona Segura. Continue assim.';
+  let zoneText = `🛡️ ${rankingCopy.zoneSafe}`;
   let zoneColor = '#3B82F6';
   if (myPosition <= 5) {
-    zone = 'promo';
-    zoneText = `🚀 Zona de Promoção! Top ${myPosition}`;
+    zoneText = `🚀 Zona de promoção (cenário de exemplo): você está #${myPosition} na lista fictícia.`;
     zoneColor = '#00E88F';
   } else if (myPosition >= totalInLeague - 4) {
-    zone = 'danger';
-    zoneText = '⚠️ Zona de Perigo! Estude mais pra não ser rebaixado.';
+    zoneText = `⚠️ ${rankingCopy.zoneRisk}`;
     zoneColor = '#EF4444';
   }
   
-  // Global (todos ordenados por xpTotal)
+  // Global: usa amostra do Supabase quando existir; senão mantém placeholders.
   const globalUsers = useMemo(() => {
-    const selfUser = {
-      id: 'self', name: name || 'Você',
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'You')}`,
-      xpWeekly: xp % 1000, xpTotal: xp, level, streak, league: userLeague.id
-    };
-    return [...FAKE_USERS, selfUser].sort((a,b) => b.xpTotal - a.xpTotal).slice(0, 100);
-  }, [name, xp, level, streak, userLeague.id]);
+    const selfUser = buildSelfRow({
+      userId,
+      name,
+      xp,
+      dailyXP,
+      level,
+      streak,
+      userLeagueId: userLeague.id,
+      profilePic,
+    });
+    const parsed = leaderboard
+      .map((row) => mapRemoteLeaderboardRow(row as unknown))
+      .filter((x): x is RankedPlayer => x !== null);
+
+    if (parsed.length > 0) {
+      const byId = new Map<string, RankedPlayer>(parsed.map((u) => [u.id, u]));
+      if (userId) {
+        const existing = byId.get(userId);
+        if (existing) {
+          byId.set(userId, {
+            ...existing,
+            name: selfUser.name,
+            avatar: selfUser.avatar,
+            xpWeekly: selfUser.xpWeekly,
+            xpTotal: selfUser.xpTotal,
+            level: selfUser.level,
+            streak: selfUser.streak,
+            league: selfUser.league,
+          });
+        } else {
+          byId.set(userId, selfUser);
+        }
+      } else {
+        byId.set('self', { ...selfUser, id: 'self' });
+      }
+      return [...byId.values()].sort((a, b) => b.xpTotal - a.xpTotal).slice(0, 100);
+    }
+
+    return [...FAKE_USERS, { ...selfUser, id: 'self' as const }].sort((a,b) => b.xpTotal - a.xpTotal).slice(0, 100);
+  }, [name, xp, level, streak, userLeague.id, leaderboard, userId, dailyXP, profilePic]);
   
-  // Amigos (pega 10 aleatórios)
+  // Amigos (placeholder até feature social)
   const friends = useMemo(() => {
     const shuffled = [...FAKE_USERS].sort(() => 0.5 - Math.random()).slice(0, 9);
-    const selfUser = {
-      id: 'self', name: name || 'Você',
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'You')}`,
-      xpWeekly: xp % 1000, xpTotal: xp, level, streak, league: userLeague.id
-    };
-    return [...shuffled, selfUser].sort((a,b) => b.xpWeekly - a.xpWeekly);
-  }, [name, xp, level, streak, userLeague.id]);
+    const selfUser = buildSelfRow({
+      userId,
+      name,
+      xp,
+      dailyXP,
+      level,
+      streak,
+      userLeagueId: userLeague.id,
+      profilePic,
+    });
+    return [...shuffled, { ...selfUser, id: 'self' as const }].sort((a,b) => b.xpWeekly - a.xpWeekly);
+  }, [name, xp, level, streak, userLeague.id, userId, dailyXP, profilePic]);
 
   // Timer temporada
   const [timeLeft, setTimeLeft] = useState('');
@@ -119,29 +276,33 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     return () => clearInterval(int);
   }, []);
 
-  // Confete quando abre em mundial e user tá top 3
+  // Confete quando abre em mundial e user tá top 3 (lista atual — demo ou nuvem)
   useEffect(() => {
     if (activeTab === 'mundial') {
-      const pos = globalUsers.findIndex(u => u.id === 'self');
+      const pos = globalUsers.findIndex((u) => isSelfRow(u, userId));
       if (pos >= 0 && pos < 3) {
         setTimeout(() => {
           confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 }, colors: ['#FFD700','#C0C0C0','#CD7F32'] });
         }, 500);
       }
     }
-  }, [activeTab, globalUsers]);
+  }, [activeTab, globalUsers, userId]);
 
-  const renderUserRow = (user: any, position: number, isHighlight: boolean = false) => {
-    const isSelf = user.id === 'self';
+  const renderUserRow = (user: RankedPlayer, position: number) => {
+    const isSelf = isSelfRow(user, userId);
     const isTop3 = position <= 3;
     const medalColor = position === 1 ? '#FFD700' : position === 2 ? '#C0C0C0' : position === 3 ? '#CD7F32' : null;
     
     return (
       <motion.div
         key={user.id}
-        initial={{ opacity: 0, x: -20 }}
+        initial={{ opacity: 0, x: reduceMotion ? 0 : -20 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: position * 0.02 }}
+        transition={
+          reduceMotion
+            ? { duration: 0.12, delay: position * 0.01, ease: easings.smoothOut }
+            : { ...springs.soft, delay: position * 0.02 }
+        }
         className={cn(
           "flex items-center gap-3 p-3 rounded-2xl border transition-all",
           isSelf 
@@ -150,7 +311,7 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               ? "bg-white/[0.03] border-white/10"
               : "bg-white/[0.02] border-white/5"
         )}
-        style={isSelf ? { boxShadow: '0 0 20px rgba(0,232,143,0.2)' } : {}}
+        style={isSelf ? { boxShadow: '0 0 20px rgba(var(--hub-primary-rgb),0.2)' } : {}}
       >
         {/* Position */}
         <div className="w-10 shrink-0 flex items-center justify-center">
@@ -185,8 +346,12 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </span>
             {isSelf && (
               <motion.span
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+                animate={reduceMotion ? { opacity: 1 } : { opacity: [0.6, 1, 0.6] }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0 }
+                    : { duration: 1.5, repeat: Infinity }
+                }
                 className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-primary text-black"
               >
                 VOCÊ
@@ -232,15 +397,19 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         
         <div className="flex flex-col items-center text-center space-y-3 pt-4">
           <motion.div
-            animate={{ 
-              scale: [1, 1.05, 1],
-              filter: [
-                `drop-shadow(0 0 20px ${userLeague.glow})`,
-                `drop-shadow(0 0 40px ${userLeague.glow})`,
-                `drop-shadow(0 0 20px ${userLeague.glow})`,
-              ]
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
+            animate={
+              reduceMotion
+                ? { scale: 1, filter: `drop-shadow(0 0 20px ${userLeague.glow})` }
+                : {
+                    scale: [1, 1.05, 1],
+                    filter: [
+                      `drop-shadow(0 0 20px ${userLeague.glow})`,
+                      `drop-shadow(0 0 40px ${userLeague.glow})`,
+                      `drop-shadow(0 0 20px ${userLeague.glow})`,
+                    ],
+                  }
+            }
+            transition={reduceMotion ? { duration: 0 } : { duration: 3, repeat: Infinity }}
             className="relative"
           >
             <div 
@@ -264,10 +433,14 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             {userLeague.name}
           </h1>
           
-          <div className="flex items-center gap-4 text-xs text-white/60 font-mono">
-            <span>#{myPosition} · {(xp % 1000).toLocaleString('pt-BR')} XP</span>
-            <span>·</span>
-            <span>Temporada: {timeLeft}</span>
+          <div className="flex flex-col items-center gap-1 text-xs text-white/60 text-center max-w-[320px] px-2">
+            <span className="font-mono">
+              {rankingCopy.heroMeta({
+                myPosition,
+                xpInLeague: (xp % 1000).toLocaleString('pt-BR'),
+              })}
+            </span>
+            <span className="font-mono text-white/50">Temporada: {timeLeft}</span>
           </div>
         </div>
       </div>
@@ -276,9 +449,14 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <div className="sticky top-0 z-20 app-shell-premium py-3 bg-black/70 backdrop-blur-xl border-b border-white/5">
         <div className="flex gap-2">
           {[
-            { id: 'liga', label: 'Minha Liga', icon: Trophy },
-            { id: 'amigos', label: 'Amigos', icon: UsersIcon },
-            { id: 'mundial', label: 'Mundial', icon: Globe },
+            { id: 'liga', label: 'Minha liga', hint: rankingCopy.tabHintLeague, icon: Trophy },
+            { id: 'amigos', label: 'Amigos', hint: rankingCopy.tabHintFriends, icon: UsersIcon },
+            {
+              id: 'mundial',
+              label: 'Global',
+              hint: hasRealGlobalLeaderboard ? rankingCopy.tabHintGlobalCloud : rankingCopy.tabHintGlobalLocal,
+              icon: Globe,
+            },
           ].map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -292,10 +470,15 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     ? "bg-primary/15 text-primary border border-primary/30" 
                     : "bg-white/5 text-white/40 border border-transparent"
                 )}
-                style={active ? { boxShadow: '0 0 15px rgba(0,232,143,0.2)' } : {}}
+                style={active ? { boxShadow: '0 0 15px rgba(var(--hub-primary-rgb),0.2)' } : {}}
               >
                 <Icon size={14} />
-                {tab.label}
+                <span className="flex flex-col items-center leading-tight">
+                  <span>{tab.label}</span>
+                  <span className="text-[8px] font-normal normal-case tracking-normal text-white/45">
+                    {tab.hint}
+                  </span>
+                </span>
               </button>
             );
           })}
@@ -304,13 +487,20 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
       {/* CONTENT */}
       <div className="app-shell-premium py-4">
+        <p
+          className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[10px] leading-relaxed text-white/70"
+          role="note"
+        >
+          {hasRealGlobalLeaderboard ? rankingCopy.noteWhenGlobalSynced : rankingCopy.noteWhenLocalOnly}
+        </p>
         <AnimatePresence mode="wait">
           {activeTab === 'liga' && (
             <motion.div 
               key="liga"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: reduceMotion ? 0 : -20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : 20 }}
+              transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
               className="space-y-3"
             >
               {/* Zone banner */}
@@ -332,9 +522,10 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           {activeTab === 'amigos' && (
             <motion.div 
               key="amigos"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: reduceMotion ? 0 : -20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : 20 }}
+              transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
               className="space-y-3"
             >
               <button className="w-full py-3 rounded-xl border-2 border-dashed border-white/10 text-white/40 text-sm font-bold hover:border-primary/30 hover:text-primary transition-colors">
@@ -347,9 +538,10 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           {activeTab === 'mundial' && (
             <motion.div 
               key="mundial"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: reduceMotion ? 0 : -20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : 20 }}
+              transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
               className="space-y-4"
             >
               {/* Pódio top 3 */}
@@ -365,9 +557,13 @@ export const Ranking: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   return (
                     <motion.div
                       key={user.id}
-                      initial={{ y: 100, opacity: 0 }}
+                      initial={{ y: reduceMotion ? 0 : 100, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: pos * 0.2 }}
+                      transition={
+                        reduceMotion
+                          ? { duration: 0.15, delay: pos * 0.05, ease: easings.smoothOut }
+                          : { ...springs.soft, delay: pos * 0.2 }
+                      }
                       className="flex flex-col items-center"
                     >
                       {pos === 1 && <Crown size={24} className="text-yellow-400 mb-1" style={{ filter: 'drop-shadow(0 0 8px #FFD700)' }} />}

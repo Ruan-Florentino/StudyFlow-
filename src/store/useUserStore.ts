@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Achievement, LeaderboardEntry, QuestionHistory } from './types';
+import { LEAGUE_XP_TIERS } from '../lib/leagueThresholds';
+import type { UserRole } from '../types/userAccess';
+import type { Achievement, LeaderboardUserRow, QuestionHistory } from './types';
 
 export interface UserStore {
   // Auth
@@ -10,11 +12,18 @@ export interface UserStore {
   coverPic: string;
   userId: string | null;
   isAuthReady: boolean;
+  /** Espelho de `public.users.role` — fonte para gates (com override DEV em `useUserAccess`). */
+  accessRole: UserRole;
+  /** Espelho de `public.users.plan` (free | pro | premium). */
+  billingPlan: 'free' | 'pro' | 'premium';
+  /** `users.created_at` em ms; usado pelo `AuthContext.profile.createdAt`. */
+  profileCreatedAtMs: number | null;
   
   // Stats
   xp: number;
   level: number;
   streak: number;
+  longestStreak: number;
   league: 'Bronze' | 'Prata' | 'Ouro' | 'Diamante';
   dailyXP: number;
   lastStudyDate: string | null;
@@ -23,7 +32,7 @@ export interface UserStore {
   prestigeLevel: number;
   mastery: Record<string, number>;
   achievements: Achievement[];
-  leaderboard: LeaderboardEntry[];
+  leaderboard: LeaderboardUserRow[];
   levelUpData: { oldLevel: number, newLevel: number } | null;
 
   // Actions
@@ -52,9 +61,13 @@ export const useUserStore = create<UserStore>()(
       coverPic: '',
       userId: null,
       isAuthReady: false,
+      accessRole: 'free',
+      billingPlan: 'free',
+      profileCreatedAtMs: null,
       xp: 0,
       level: 1,
       streak: 0,
+      longestStreak: 0,
       league: 'Bronze',
       dailyXP: 0,
       lastStudyDate: null,
@@ -78,9 +91,9 @@ export const useUserStore = create<UserStore>()(
         const newXP = xp + amount;
         const newLevel = Math.min(100, Math.floor(newXP / 1000) + 1);
         let newLeague = league;
-        if (newXP >= 10000) newLeague = 'Diamante';
-        else if (newXP >= 5000) newLeague = 'Ouro';
-        else if (newXP >= 2000) newLeague = 'Prata';
+        if (newXP >= LEAGUE_XP_TIERS.diamante) newLeague = 'Diamante';
+        else if (newXP >= LEAGUE_XP_TIERS.ouro) newLeague = 'Ouro';
+        else if (newXP >= LEAGUE_XP_TIERS.prata) newLeague = 'Prata';
 
         set({
           xp: newXP,

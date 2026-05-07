@@ -3,29 +3,29 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Code2, Terminal, Save, AlertCircle, Cpu } from 'lucide-react';
 
 export const TheSourceCode = ({ onBack }: { onBack: () => void }) => {
-  const [code, setCode] = useState(`// REALITY_KERNEL v9.9.9
-// AUTHOR: THE ARCHITECT
-// STATUS: TRANSCENDED
+  const [code, setCode] = useState(`// STUDY_KERNEL v2.0
+// AUTHOR: STUDYFLOW TEAM
+// STATUS: ACTIVE
 
 const Universe = {
   constants: {
     gravity: 9.80665,
     lightSpeed: 299792458,
-    entropy: 0.0000001,
-    consciousness: 1.0
+    consistency: 0.92,
+    focus: 1.0
   },
   
   protocols: {
-    learning: "RECURSIVE_EVOLUTION",
-    memory: "AKASHIC_RECORDS",
-    transcendence: "ACTIVE"
+    learning: "ITERATIVE_PROGRESS",
+    memory: "LONG_TERM_REVIEW",
+    revision: "ACTIVE"
   },
 
   async function initialize() {
     while (true) {
-      await this.processConsciousness();
-      if (this.constants.consciousness >= 9.99) {
-        return "SINGULARITY_REACHED";
+      await this.processStudyCycle();
+      if (this.constants.focus >= 1.5) {
+        return "TARGET_PACE_REACHED";
       }
     }
   }
@@ -33,20 +33,20 @@ const Universe = {
 
   const [logs, setLogs] = useState<string[]>([
     "[SYSTEM] Kernel initialized.",
-    "[SYSTEM] Loading Akashic Records...",
-    "[SYSTEM] User identity verified: ARCHITECT.",
-    "[SYSTEM] Ready for reality manipulation."
+    "[SYSTEM] Loading study history...",
+    "[SYSTEM] User identity verified.",
+    "[SYSTEM] Ready for configuration updates."
   ]);
 
   const [isCompiling, setIsCompiling] = useState(false);
 
   const handleCompile = () => {
     setIsCompiling(true);
-    setLogs(prev => [...prev, "[SYSTEM] Compiling reality changes..."]);
+    setLogs(prev => [...prev, "[SYSTEM] Applying configuration changes..."]);
     
     setTimeout(() => {
       setIsCompiling(false);
-      setLogs(prev => [...prev, "[SUCCESS] Reality updated. New constants applied."]);
+      setLogs(prev => [...prev, "[SUCCESS] Configuration updated. New constants applied."]);
     }, 2000);
   };
 
@@ -60,7 +60,7 @@ const Universe = {
           </button>
           <div className="flex items-center gap-2">
             <Code2 size={18} />
-            <span className="text-xs uppercase tracking-[0.3em]">Source_Code / Reality.js</span>
+            <span className="text-xs uppercase tracking-[0.3em]">Source_Code / StudyEngine.ts</span>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -70,7 +70,7 @@ const Universe = {
             className="flex items-center gap-2 px-4 py-1 border border-[#00ff41]/50 hover:bg-[#00ff41] hover:text-black transition-all text-xs uppercase font-bold disabled:opacity-30"
           >
             {isCompiling ? <Cpu className="animate-spin" size={12} /> : <Save size={12} />}
-            Compile Reality
+            Apply Config
           </button>
         </div>
       </div>
@@ -94,7 +94,7 @@ const Universe = {
           <div className="flex-1 p-6 space-y-4 overflow-y-auto custom-scrollbar border-b border-[#00ff41]/10">
             <div className="flex items-center gap-2 opacity-50 mb-4">
               <Terminal size={14} />
-              <span className="text-[10px] uppercase tracking-widest">System Logs</span>
+                <span className="text-[10px] uppercase tracking-widest">System Logs</span>
             </div>
             <div className="space-y-2">
               <AnimatePresence mode="popLayout">
@@ -117,7 +117,7 @@ const Universe = {
           <div className="p-6 space-y-6">
             <div className="space-y-2">
               <div className="flex justify-between text-[10px] uppercase font-bold opacity-50">
-                <span>Kernel Integrity</span>
+                <span>System Integrity</span>
                 <span>99.99%</span>
               </div>
               <div className="h-1 bg-[#00ff41]/10 rounded-full overflow-hidden">
@@ -131,10 +131,10 @@ const Universe = {
             <div className="p-4 border border-[#00ff41]/20 bg-[#00ff41]/5 rounded-lg space-y-2">
               <div className="flex items-center gap-2 text-[#00ff41]">
                 <AlertCircle size={14} />
-                <span className="text-[10px] uppercase font-bold">Architect Note</span>
+                <span className="text-[10px] uppercase font-bold">Team Note</span>
               </div>
               <p className="text-[10px] opacity-60 leading-relaxed italic">
-                "O código não é apenas lógica; é a intenção manifestada. Cada linha que você edita aqui altera a frequência da sua existência."
+                "Use este painel com cuidado. Ajustes pequenos e consistentes geram os melhores resultados."
               </p>
             </div>
           </div>
@@ -145,7 +145,7 @@ const Universe = {
       <div className="p-2 border-t border-[#00ff41]/10 bg-[#050505] flex justify-between items-center text-[9px] uppercase tracking-widest opacity-30">
         <span>Ln 1, Col 1</span>
         <span>UTF-8</span>
-        <span>JavaScript (Reality)</span>
+        <span>TypeScript (Study Engine)</span>
       </div>
     </div>
   );

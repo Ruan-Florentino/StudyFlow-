@@ -1,10 +1,12 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Share, PlusSquare, Download, Check, X, Smartphone, Monitor, ArrowRight, Zap, ShieldCheck, Sparkles } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { GlassCard, AnimatedButton, Logo, cn } from './UI';
+import { springs, staggerContainer, staggerItemTight } from '../lib/animations';
 
 export const PWAInstallPrompt = () => {
+  const reduceMotion = useReducedMotion();
   const { 
     platform, 
     showPrompt, 
@@ -17,11 +19,17 @@ export const PWAInstallPrompt = () => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md"
+      >
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: 22 }}
+          animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 12 }}
+          transition={reduceMotion ? { duration: 0.12 } : springs.card}
           className="w-full max-w-md relative"
         >
           <GlassCard className="p-0 border-primary/20 overflow-visible shadow-2xl shadow-primary/10">
@@ -59,21 +67,30 @@ export const PWAInstallPrompt = () => {
                 {platform === 'ios' && (
                   <div className="space-y-4">
                     <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] text-center">Tutorial de Instalação</p>
-                    <div className="space-y-3">
+                    <motion.div
+                      className="space-y-3"
+                      variants={reduceMotion ? undefined : staggerContainer}
+                      initial={reduceMotion ? undefined : "hidden"}
+                      animate={reduceMotion ? undefined : "show"}
+                    >
                       {[
                         { icon: Share, text: 'Toque no ícone de Compartilhar na barra do Safari' },
                         { icon: PlusSquare, text: 'Role para baixo e toque em "Adicionar à Tela de Início"' },
                         { icon: Check, text: 'Toque em "Adicionar" no canto superior direito' }
                       ].map((step, i) => (
-                        <div key={i} className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5">
+                        <motion.div
+                          key={step.text}
+                          variants={reduceMotion ? undefined : staggerItemTight}
+                          className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5"
+                        >
                           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
                             {i + 1}
                           </div>
                           <p className="text-xs font-medium text-white/80">{step.text}</p>
                           <step.icon size={16} className="text-white/20 ml-auto" />
-                        </div>
+                        </motion.div>
                       ))}
-                    </div>
+                    </motion.div>
                   </div>
                 )}
 
@@ -109,7 +126,7 @@ export const PWAInstallPrompt = () => {
                   </div>
                   <div className="flex items-center gap-2 text-[9px] font-bold text-white/30 uppercase tracking-widest">
                     <Sparkles size={12} className="text-primary" />
-                    Neural Core v3.1
+                    Plataforma de Estudos
                   </div>
                 </div>
               </div>
@@ -138,7 +155,7 @@ export const PWAInstallPrompt = () => {
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
           </GlassCard>
         </motion.div>
-      </div>
+      </motion.div>
     </AnimatePresence>
   );
 };

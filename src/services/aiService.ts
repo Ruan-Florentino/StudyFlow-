@@ -1,5 +1,7 @@
 import { athenaClient } from '../features/athena/services/athenaClient';
-import { AI_MODELS, DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
+import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
+import type { RecommendedTrail } from '../data/explore';
+import { parseExploreTrailFromAiContent } from '../lib/aiExploreTrail';
 
 /**
  * AI Service Wrapper
@@ -85,6 +87,99 @@ export const aiService = {
     return JSON.parse(cleanJson);
   },
 
+  /**
+   * Treino Estratégico: escolhe ids de questões já existentes no manifest (não inventa questões).
+   */
+  /** Trilha única para a tela Explorar (JSON → RecommendedTrail validado). */
+  generateExploreTrail: async (userPrompt: string, contextSummary?: string): Promise<RecommendedTrail> => {
+    const response = await athenaClient.chat({
+      messages: [
+        {
+          role: 'system',
+          content:
+            'Você é a Athena, mentora de estudos para ENEM e concursos. Gere UMA trilha de estudo. Responda APENAS com um objeto JSON válido (UTF-8), sem markdown nem texto extra.',
+        },
+        {
+          role: 'user',
+          content: `Pedido do aluno:
+"${userPrompt.slice(0, 520)}"
+
+Contexto de desempenho (opcional):
+${(contextSummary ?? '—').slice(0, 420)}
+
+Regras:
+- startPath deve ser exatamente um: /questoes, /redacao, /simulados, /notas ou /metodos (use /questoes se for prática de questões).
+- navFilters: apenas chaves opcionais "subject", "topic", "difficulty", "search" (strings). Para ENEM use matérias como Matemática, Português, Ciências da Natureza, Ciências Humanas quando fizer sentido.
+- topics: array com 4 a 10 passos ou módulos curtos.
+- icon: um único emoji.
+- durationLabel e level em português.
+
+Schema:
+{"title":"","description":"","topics":[],"durationLabel":"","level":"","icon":"","startPath":"/questoes","navFilters":{}}`,
+        },
+      ],
+      model: DEFAULT_OPENROUTER_CHAT_MODEL,
+      temperature: 0.45,
+    });
+    return parseExploreTrailFromAiContent(response);
+  },
+
+  planStrategicTraining: async (
+    performanceText: string,
+    manifestCompact: { i: string; m: string; a: string; d: string }[]
+  ): Promise<{ selectedIds: string[]; mentorNote?: string }> => {
+    const response = await athenaClient.chat({
+      messages: [
+        {
+          role: 'system',
+          content:
+            'Você é a Athena, mentora de vestibular/concursos. Responda APENAS com um objeto JSON válido (UTF-8). Sem markdown, sem texto antes ou depois.',
+        },
+        {
+          role: 'user',
+          content: `Monte um treino de EXATAMENTE 15 questões escolhendo só os ids do manifest (campo "i").
+
+Regras:
+- Use somente ids presentes no manifest.
+- Priorize matérias/assuntos com mais erros no resumo; equilibre matérias quando fizer sentido.
+- "selectedIds" deve ter 15 strings distintas quando o manifest tiver pelo menos 15 itens; se o manifest for menor, use todos sem repetir.
+
+DESEMPENHO RESUMIDO:
+${performanceText}
+
+MANIFEST (i=id, m=matéria, a=assunto, d=difficulty):
+${JSON.stringify(manifestCompact)}
+
+Formato exato: {"selectedIds":["..."],"mentorNote":"frase curta em português para o aluno (opcional)"}`,
+        },
+      ],
+      model: DEFAULT_OPENROUTER_CHAT_MODEL,
+      temperature: 0.25,
+    });
+    const raw = response.replace(/```json|```/g, '').trim();
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      const start = raw.indexOf('{');
+      const end = raw.lastIndexOf('}');
+      if (start < 0 || end <= start) throw new Error('Resposta da IA não é JSON válido');
+      parsed = JSON.parse(raw.slice(start, end + 1));
+    }
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('Formato inesperado da IA');
+    }
+    const o = parsed as Record<string, unknown>;
+    const ids = o.selectedIds;
+    if (!Array.isArray(ids)) throw new Error('selectedIds ausente');
+    const selectedIds = ids.filter((x): x is string => typeof x === 'string' && x.length > 0);
+    const note = o.mentorNote;
+    return {
+      selectedIds,
+      mentorNote: typeof note === 'string' ? note.slice(0, 400) : undefined,
+    };
+  },
+
   summarizeVideo: async (url: string) => {
     const response = await athenaClient.chat({
       messages: [
@@ -113,7 +208,7 @@ export const aiService = {
   generateStudyPlan: async (prompt: string) => {
     return athenaClient.chat({
       messages: [{ role: 'user', content: prompt }],
-      model: AI_MODELS.GEMINI_PRO.id
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -126,18 +221,6 @@ export const aiService = {
       model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     return response.trim();
-  },
-
-  processBrainUpload: async (text: string) => {
-    const response = await athenaClient.chat({
-      messages: [
-        { role: 'system', content: 'Analisador de Conhecimento. Retorne JSON: {summary, concepts: [], connections: []}' },
-        { role: 'user', content: `Texto: ${text}` }
-      ],
-      model: DEFAULT_OPENROUTER_CHAT_MODEL
-    });
-    const cleanJson = response.replace(/```json|```/g, '').trim();
-    return JSON.parse(cleanJson);
   },
 
   generateContent: async (topic: string, format?: string) => {
@@ -160,7 +243,7 @@ export const aiService = {
         ...history.map(h => ({ role: h.sender === persona ? 'assistant' : 'user', content: h.text })),
         { role: 'user', content: `Dê sua contribuição sobre ${topic}.` }
       ],
-      model: AI_MODELS.GEMINI_PRO.id
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   },
 
@@ -210,7 +293,7 @@ export const aiService = {
   generateOracleProphecy: async (name: string, level: number, prestige: number, subjects: any[]) => {
     const response = await athenaClient.chat({
       messages: [{ role: 'user', content: `Gere uma profecia para ${name} (Lvl ${level}, Prestige ${prestige}) focado em ${JSON.stringify(subjects)}. Retorne JSON: {prophecy, convergenceProbability, finalQuote}` }],
-      model: AI_MODELS.GEMINI_PRO.id
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
     const cleanJson = response.replace(/```json|```/g, '').trim();
     return JSON.parse(cleanJson);
@@ -357,7 +440,7 @@ export const aiService = {
         ...history.map(h => ({ role: h.role || (h.sender === 'user' ? 'user' : 'assistant'), content: h.content || h.text })),
         { role: 'user', content: message }
       ],
-      model: AI_MODELS.GEMINI_PRO.id
+      model: DEFAULT_OPENROUTER_CHAT_MODEL
     });
   }
 };

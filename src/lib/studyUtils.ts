@@ -1,6 +1,4 @@
 import confetti from 'canvas-confetti';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 let audioCtx: AudioContext | null = null;
 
@@ -155,6 +153,10 @@ export const exportToPDF = async (elementId: string, filename: string) => {
   if (!element) return;
   
   try {
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ]);
     const canvas = await html2canvas(element, {
       scale: 2,
       backgroundColor: '#121214', // Match app background

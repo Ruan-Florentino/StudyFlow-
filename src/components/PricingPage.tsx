@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Check, Star, ArrowLeft, ShieldCheck, Sparkles, Zap, Crown } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Check, ArrowLeft, ShieldCheck, Sparkles, Zap, Crown } from 'lucide-react';
 import { GlassCard, AnimatedButton, Badge } from './UI';
-import { useStore } from '../store';
 import { PAYMENT_CONFIG } from '../config/payment';
 import { toast } from '../store/useToastStore';
+import { aiPremiumCopy, premiumConsumerCopy } from '../lib/productDisclosure';
 
 export const PricingPage = ({ onBack }: { onBack: () => void }) => {
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const planDetails = PAYMENT_CONFIG.premium;
 
+  useEffect(() => {
+    if (searchParams.get('payment') !== 'pending') return;
+    toast.info(
+      'Pagamento',
+      'Pagamento pendente. Quando o processador ou a loja confirmar, seu plano pode atualizar neste app.',
+    );
+    const next = new URLSearchParams(searchParams);
+    next.delete('payment');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const handleCheckout = () => {
-    setLoading(true);
-    toast.success("Checkout", "Redirecionando para o pagamento seguro...");
-    
-    // Pequeno delay para feedback visual do toast
-    setTimeout(() => {
-      window.open(planDetails.mercadoPagoUrl, '_blank');
-      setLoading(false);
-    }, 1000);
+    navigate('/premium/checkout', { state: { plan: 'premium' as const, period: 'monthly' as const } });
   };
 
   return (
@@ -53,10 +59,35 @@ export const PricingPage = ({ onBack }: { onBack: () => void }) => {
             <p className="text-text-secondary text-base md:text-xl max-w-2xl mx-auto font-medium">
               Desbloqueie todo o potencial dos seus estudos com inteligência artificial de elite.
             </p>
+            <p className="text-white/55 text-sm md:text-base max-w-2xl mx-auto leading-relaxed border border-primary/20 bg-primary/5 rounded-2xl px-4 py-3">
+              {aiPremiumCopy.banner}
+            </p>
           </div>
         </section>
 
         <div className="grid md:grid-cols-1 gap-8 items-center max-w-2xl mx-auto">
+          <GlassCard className="p-5 md:p-6 border-white/10 bg-white/[0.02]">
+            <div className="flex items-center gap-2 mb-2">
+              <ShieldCheck size={18} className="text-primary shrink-0" aria-hidden />
+              <h2 className="text-sm font-bold text-white/90">{premiumConsumerCopy.pricingCardTitle}</h2>
+            </div>
+            <p className="text-xs text-white/65 leading-relaxed mb-3">{premiumConsumerCopy.pricingCardBody}</p>
+            <p className="text-[11px] text-white/50 leading-relaxed border-l-2 border-primary/40 pl-3">
+              {premiumConsumerCopy.pricingDemoNote}
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-[10px] font-bold uppercase tracking-wider text-white/40">
+              <Link to="/perfil/termos-de-uso" className="hover:text-primary transition-colors">
+                Termos de Uso
+              </Link>
+              <Link to="/perfil/politica-de-privacidade" className="hover:text-primary transition-colors">
+                Privacidade (LGPD)
+              </Link>
+              <Link to="/perfil/suporte" className="hover:text-primary transition-colors">
+                Suporte / reclamações
+              </Link>
+            </div>
+          </GlassCard>
+
           {/* Main Premium Card */}
           <GlassCard 
             glow 
@@ -107,28 +138,21 @@ export const PricingPage = ({ onBack }: { onBack: () => void }) => {
 
               {/* Botão de Checkout */}
               <div className="space-y-4">
-                <AnimatedButton 
-                  onClick={handleCheckout} 
-                  disabled={loading}
+                <AnimatedButton
+                  onClick={handleCheckout}
                   className="w-full bg-primary text-black border-primary py-5 rounded-2xl font-bold text-lg uppercase tracking-widest shadow-lg shadow-primary/20"
                   glow
                 >
                   <div className="flex items-center justify-center gap-2">
-                    {loading ? (
-                      <Zap className="animate-spin" size={20} />
-                    ) : (
-                      <>
-                        <Zap size={20} fill="currentColor" />
-                        Assinar Agora
-                      </>
-                    )}
+                    <Zap size={20} fill="currentColor" />
+                    Assinar Agora
                   </div>
                 </AnimatedButton>
                 
                 <div className="flex items-center justify-center gap-4 pt-2">
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/30 lowercase italic">
                     <ShieldCheck size={12} className="text-primary" />
-                    Pagamento seguro via Mercado Pago
+                    Assinatura paga: prevista nas lojas Play / App Store
                   </div>
                 </div>
               </div>
@@ -145,7 +169,7 @@ export const PricingPage = ({ onBack }: { onBack: () => void }) => {
           {[
             { icon: Sparkles, label: 'Upgrade Imediato' },
             { icon: Zap, label: 'Cancele quando quiser' },
-            { icon: ShieldCheck, label: 'Satisfação Garantida' },
+            { icon: ShieldCheck, label: 'Pagamento seguro' },
           ].map((item, i) => (
             <div key={i} className="flex flex-col items-center gap-2 text-center">
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
@@ -159,8 +183,18 @@ export const PricingPage = ({ onBack }: { onBack: () => void }) => {
         <footer className="text-center pt-12 text-[10px] text-white/20 uppercase tracking-[0.2em]">
           <p>© 2026 StudyFlow AI • São Paulo, Brasil</p>
           <div className="flex justify-center gap-4 mt-2">
-            <span className="hover:text-white transition-colors cursor-pointer">Termos de Uso</span>
-            <span className="hover:text-white transition-colors cursor-pointer">Privacidade</span>
+            <Link
+              to="/perfil/termos-de-uso"
+              className="hover:text-white transition-colors underline-offset-2 hover:underline"
+            >
+              Termos de Uso
+            </Link>
+            <Link
+              to="/perfil/politica-de-privacidade"
+              className="hover:text-white transition-colors underline-offset-2 hover:underline"
+            >
+              Privacidade
+            </Link>
           </div>
         </footer>
       </div>

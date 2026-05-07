@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { springs } from '../../lib/animations';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ export interface ModalProps {
 }
 
 export const Modal = ({ isOpen, onClose, title, children, closeOnOutsideClick = true }: ModalProps) => {
+  const reduceMotion = useReducedMotion();
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -37,10 +40,10 @@ export const Modal = ({ isOpen, onClose, title, children, closeOnOutsideClick = 
 
           {/* Modal content */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: 22 }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 12 }}
+            transition={reduceMotion ? { duration: 0.12 } : springs.card}
             className="relative w-full max-w-full md:max-w-sm h-full md:h-auto max-h-screen md:max-h-[85vh] bg-[#141416] border border-white/10 rounded-none md:rounded-3xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8),_inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden flex flex-col"
           >
             {/* Header */}

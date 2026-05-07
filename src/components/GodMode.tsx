@@ -34,7 +34,7 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
         <Lock size={64} className="text-white/20 mb-4" />
         <h2 className="text-3xl font-premium-title italic text-white/50">Acesso Negado</h2>
         <p className="text-text-secondary text-center max-w-xs">
-          O Modo Deus requer Nível 10 ou 5000 XP. Continue estudando para transcender.
+          O modo avançado requer Nível 10 ou 5000 XP. Continue estudando para desbloquear.
         </p>
       </div>
     );
@@ -44,7 +44,7 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 min-h-screen bg-black relative overflow-hidden">
-      {/* Matrix / God Mode Background Effects */}
+      {/* Background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-black to-black opacity-50" />
       <div className={cn("absolute inset-0 pointer-events-none transition-all duration-75", glitch ? "bg-white/10 mix-blend-overlay" : "bg-transparent")} />
       
@@ -53,12 +53,12 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-premium-title italic text-primary">
-          MODO DEUS<span className="text-white font-normal not-italic ml-1">.</span>
+          MODO AVANÇADO<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-        {/* Omniscience Core */}
+        {/* Core status */}
         <GlassCard className="p-8 flex flex-col items-center justify-center space-y-6 border-primary/50 bg-primary/5 shadow-[0_0_50px_rgba(0,255,148,0.1)] md:col-span-2">
           <div className="relative">
             <motion.div
@@ -76,8 +76,8 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
             </div>
           </div>
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold text-white tracking-widest uppercase">Onisciência</h3>
-            <p className="text-primary font-mono">Sincronização Neural: {neuralSync}%</p>
+            <h3 className="text-2xl font-bold text-white tracking-widest uppercase">Visão Estratégica</h3>
+            <p className="text-primary font-mono">Consistência Atual: {neuralSync}%</p>
           </div>
         </GlassCard>
 
@@ -113,12 +113,12 @@ export const GodMode = ({ onBack }: { onBack: () => void }) => {
         <GlassCard className="p-6 border-white/10 bg-black/50 space-y-4">
           <div className="flex items-center gap-3 text-purple-400 mb-6">
             <Activity size={24} />
-            <h3 className="font-bold tracking-widest uppercase">Previsão do Oráculo</h3>
+            <h3 className="font-bold tracking-widest uppercase">Previsão de Desempenho</h3>
           </div>
           <div className="space-y-4">
             <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
               <p className="text-sm text-purple-200 leading-relaxed font-mono">
-                Com base no seu ritmo atual de {streak} dias de ofensiva e {Math.round(totalMastery)}% de domínio, a probabilidade de aprovação nos próximos exames é de <strong className="text-purple-400 text-lg">98.7%</strong>.
+                Com base no seu ritmo atual de {streak} dias de sequência e {Math.round(totalMastery)}% de domínio, a probabilidade de aprovação nos próximos exames é de <strong className="text-purple-400 text-lg">98.7%</strong>.
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-white/50">

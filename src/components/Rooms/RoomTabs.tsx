@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { springs } from '../../lib/animations/easings';
 import { Users, MessageCircle, Target, Send, CheckCircle2 } from 'lucide-react';
 import { cn } from '../UI';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,6 +16,8 @@ interface RoomTabsProps {
 
 export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage, accentColor }: RoomTabsProps) => {
   const { user } = useAuth();
+  const reduceMotion = useReducedMotion() ?? false;
+  const panelTransition = reduceMotion ? { duration: 0.12, ease: [0.22, 1, 0.36, 1] as const } : springs.card;
   const [inputText, setInputText] = React.useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +53,7 @@ export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage
               onClick={() => setActiveTab(tab.id as any)}
               className={cn(
                 "flex-1 flex items-center justify-center gap-2 py-4 text-[10px] font-bold uppercase tracking-widest transition-all border-b-2 relative",
-                isActive ? "text-white border-emerald-500 bg-emerald-500/5" : "text-white/40 border-transparent"
+                isActive ? 'text-white border-primary bg-primary/5' : 'text-white/40 border-transparent'
               )}
             >
               <Icon size={14} />
@@ -65,22 +68,23 @@ export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage
       <div className="flex-1 overflow-y-auto custom-scrollbar relative">
         <AnimatePresence mode="wait">
           {activeTab === 'users' && (
-            <motion.div 
-              key="users" 
-              initial={{ opacity: 0, x: -10 }} 
-              animate={{ opacity: 1, x: 0 }} 
-              exit={{ opacity: 0, x: 10 }}
+            <motion.div
+              key="users"
+              initial={{ opacity: 0, x: reduceMotion ? 0 : -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : 10 }}
+              transition={panelTransition}
               className="p-4 space-y-3"
             >
               {users.map(u => (
                 <div key={u.id} className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5">
                   <div className="relative shrink-0">
                     <img src={u.userAvatar} className="w-10 h-10 rounded-full border border-white/10" alt={u.userName} />
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black" />
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-black" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-white/90 truncate">
-                      {u.userName} {u.isMe && <span className="text-emerald-500 ml-1">(Tu)</span>}
+                      {u.userName} {u.isMe && <span className="text-primary ml-1">(Tu)</span>}
                     </p>
                     <p className="text-[10px] text-white/50 uppercase font-bold truncate tracking-tight">{u.status} • {u.timeStr}</p>
                   </div>
@@ -90,11 +94,12 @@ export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage
           )}
 
           {activeTab === 'chat' && (
-            <motion.div 
-              key="chat" 
-              initial={{ opacity: 0, x: -10 }} 
-              animate={{ opacity: 1, x: 0 }} 
-              exit={{ opacity: 0, x: 10 }}
+            <motion.div
+              key="chat"
+              initial={{ opacity: 0, x: reduceMotion ? 0 : -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : 10 }}
+              transition={panelTransition}
               className="flex flex-col h-full"
             >
               <div className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
@@ -109,7 +114,7 @@ export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage
                          <span className="text-3xl">{m.text}</span>
                        ) : (
                          <div className={cn("p-3 rounded-2xl text-[13px] leading-relaxed", 
-                            m.userId === user?.id ? "bg-emerald-500 text-black font-medium rounded-br-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-white/10 text-white/90 rounded-bl-sm")}>
+                            m.userId === user?.id ? 'bg-primary text-black font-medium rounded-br-sm shadow-[0_0_15px_rgba(var(--hub-primary-rgb),0.3)]' : 'bg-white/10 text-white/90 rounded-bl-sm')}>
                            {m.text}
                          </div>
                        )}
@@ -131,29 +136,35 @@ export const RoomTabs = ({ activeTab, setActiveTab, users, messages, sendMessage
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Sussurrar na sala..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-4 pr-12 text-sm text-white placeholder:text-white/20 outline-none focus:bg-white/10 transition-all border-emerald-500/0 focus:border-emerald-500/30"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-4 pr-12 text-sm text-white placeholder:text-white/20 outline-none focus:bg-white/10 transition-all duration-200 ease-out border-primary/0 focus:border-primary/30"
                   />
-                  <button type="submit" disabled={!inputText.trim()} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500 text-black disabled:opacity-30 transition-all shadow-lg active:scale-95">
+                  <motion.button
+                    type="submit"
+                    disabled={!inputText.trim()}
+                    whileTap={inputText.trim() ? { scale: 0.94, transition: springs.snappy } : undefined}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-black disabled:opacity-30 transition-opacity duration-200 shadow-lg"
+                  >
                     <Send size={16} />
-                  </button>
+                  </motion.button>
                 </form>
               </div>
             </motion.div>
           )}
 
           {activeTab === 'goals' && (
-            <motion.div 
-              key="goals" 
-              initial={{ opacity: 0, x: -10 }} 
-              animate={{ opacity: 1, x: 0 }} 
-              exit={{ opacity: 0, x: 10 }}
+            <motion.div
+              key="goals"
+              initial={{ opacity: 0, x: reduceMotion ? 0 : -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : 10 }}
+              transition={panelTransition}
               className="p-8 flex flex-col items-center justify-center h-full text-center space-y-4"
             >
-              <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
                 <CheckCircle2 size={32} />
               </div>
               <h4 className="text-lg font-premium-title italic text-white/90">Evolução em Grupo</h4>
-              <p className="text-xs text-white/40 uppercase font-bold leading-relaxed tracking-wider">Metas coletivas estarão disponíveis na próxima expansão neural.</p>
+              <p className="text-xs text-white/40 uppercase font-bold leading-relaxed tracking-wider">Metas coletivas estarão disponíveis na próxima atualização.</p>
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
+import { springs } from '../../lib/animations/easings';
 import { ROOMS } from '../../data/rooms';
 import { useRoomUsers } from '../../hooks/useRoomUsers';
 import { useRoomMessages } from '../../hooks/useRoomMessages';
@@ -16,6 +17,7 @@ interface RoomInteriorProps {
 }
 
 export const RoomInterior: React.FC<RoomInteriorProps> = ({ roomId, onExit }) => {
+  const reduceMotion = useReducedMotion() ?? false;
   const roomDef = ROOMS.find(r => r.id === roomId) || ROOMS[0];
   const Scene = SCENES[roomId] || SCENES['lofi'];
   
@@ -46,43 +48,55 @@ export const RoomInterior: React.FC<RoomInteriorProps> = ({ roomId, onExit }) =>
 
       {/* 2. HEADER - Sticky & Robust */}
       <header className="fixed top-0 inset-x-0 z-50 h-16 bg-black/60 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4">
-        <button 
-          onClick={onExit} 
-          className="group flex items-center gap-2 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-95"
+        <motion.button
+          type="button"
+          onClick={onExit}
+          whileTap={{ scale: 0.95, transition: springs.snappy }}
+          className="group flex items-center gap-2 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors duration-200 ease-out"
           aria-label="Voltar"
         >
           <ChevronLeft size={20} className="text-white/70 group-hover:text-white" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-white/50 group-hover:text-white pr-2 hidden sm:block">Sair</span>
-        </button>
+        </motion.button>
 
         <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
           <h1 className="text-sm font-premium-title italic text-white drop-shadow-lg">
             {roomDef.name}
           </h1>
           <div className="flex items-center justify-center gap-1.5 mt-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.85)]" />
             <span className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em] drop-shadow">
               {connectedUsers.length} ONLINE
             </span>
           </div>
         </div>
 
-        <button 
+        <motion.button
+          type="button"
           onClick={onExit}
-          className="w-10 h-10 rounded-full bg-white/5 hover:bg-red-500/10 hover:text-red-500 border border-white/10 flex items-center justify-center transition-all active:scale-95"
+          whileTap={{ scale: 0.95, transition: springs.snappy }}
+          className="w-10 h-10 rounded-full bg-white/5 hover:bg-red-500/10 hover:text-red-500 border border-white/10 flex items-center justify-center transition-colors duration-200 ease-out"
           aria-label="Sair da sala"
         >
           <X size={18} />
-        </button>
+        </motion.button>
       </header>
 
       {/* 3. CENTER CONTENT (Timer & Quote) */}
       <main className="relative z-10 flex-1 overflow-y-auto custom-scrollbar pt-24 pb-[320px] px-6">
         <div className="flex flex-col items-center">
           {/* Room Icon Floating */}
-          <motion.div 
-            animate={{ y: [0, -12, 0], scale: [1, 1.05, 1] }} 
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          <motion.div
+            animate={
+              reduceMotion
+                ? { y: 0, scale: 1 }
+                : { y: [0, -12, 0], scale: [1, 1.05, 1] }
+            }
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { duration: 5, repeat: Infinity, ease: 'easeInOut' }
+            }
             className="mb-10 p-6 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl relative"
             style={{ color: roomDef.color.primary }}
           >
@@ -96,18 +110,20 @@ export const RoomInterior: React.FC<RoomInteriorProps> = ({ roomId, onExit }) =>
                {/* Mode Selector */}
               <div className="flex items-center justify-center gap-1 mb-6">
                  {(['foco', 'curta', 'longa'] as PomodoroMode[]).map(m => (
-                   <button 
+                   <motion.button
+                     type="button"
                      key={m}
                      onClick={() => pomodoro.changeMode(m)}
+                     whileTap={{ scale: 0.96, transition: springs.snappy }}
                      className={cn(
-                       "px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all",
-                       pomodoro.mode === m 
-                         ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]" 
-                         : "text-white/40 hover:text-white/70 bg-white/5"
+                       'px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest transition-colors duration-200 ease-out',
+                       pomodoro.mode === m
+                         ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]'
+                         : 'text-white/40 hover:text-white/70 bg-white/5'
                      )}
                    >
                      {m === 'foco' ? 'Foco' : m === 'curta' ? 'Curta' : 'Longa'}
-                   </button>
+                   </motion.button>
                  ))}
               </div>
 
@@ -115,12 +131,13 @@ export const RoomInterior: React.FC<RoomInteriorProps> = ({ roomId, onExit }) =>
                 {pomodoro.formattedTime()}
               </div>
               
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                transition={reduceMotion ? { duration: 0.12 } : springs.soft}
                 className={cn(
-                  "text-[9px] font-bold text-center uppercase tracking-[0.5em] mt-6 h-4 transition-colors duration-500",
-                  pomodoro.isActive ? "text-emerald-500" : "text-white/30"
+                  'text-[9px] font-bold text-center uppercase tracking-[0.5em] mt-6 h-4 transition-colors duration-500 ease-out',
+                  pomodoro.isActive ? 'text-primary' : 'text-white/30'
                 )}
               >
                 {pomodoro.isActive ? 'Em Sincronia' : 'Foco em Pausa'}
@@ -128,11 +145,15 @@ export const RoomInterior: React.FC<RoomInteriorProps> = ({ roomId, onExit }) =>
             </div>
 
             <div className="flex items-center justify-center gap-4">
-              <button 
-                onClick={pomodoro.toggle} 
+              <motion.button
+                type="button"
+                onClick={pomodoro.toggle}
+                whileTap={{ scale: 0.98, transition: springs.snappy }}
                 className={cn(
-                  "h-14 flex-1 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-3",
-                  pomodoro.isActive ? "bg-white/10 text-white border border-white/10" : "bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+                  'h-14 flex-1 rounded-2xl font-bold uppercase tracking-widest transition-all duration-200 ease-out flex items-center justify-center gap-3',
+                  pomodoro.isActive
+                    ? 'bg-white/10 text-white border border-white/10'
+                    : 'bg-primary text-black shadow-[0_0_30px_rgba(var(--hub-primary-rgb),0.35)]'
                 )}
               >
                 {pomodoro.isActive ? (
@@ -140,20 +161,23 @@ export const RoomInterior: React.FC<RoomInteriorProps> = ({ roomId, onExit }) =>
                 ) : (
                   <><Play size={20} fill="currentColor" /> Iniciar</>
                 )}
-              </button>
-              <button 
+              </motion.button>
+              <motion.button
+                type="button"
                 onClick={pomodoro.reset}
-                className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 active:scale-95 transition-all hover:bg-white/10"
+                whileTap={{ scale: 0.95, transition: springs.snappy }}
+                className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 transition-colors duration-200 ease-out hover:bg-white/10"
               >
                 <RotateCcw size={20} />
-              </button>
+              </motion.button>
             </div>
           </div>
 
           {/* Quote Section */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={reduceMotion ? { duration: 0.14 } : springs.card}
             className="max-w-xs px-6"
           >
             <p className="text-sm font-medium text-white/40 italic leading-relaxed tracking-tight text-center">

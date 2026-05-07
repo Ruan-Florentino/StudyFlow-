@@ -61,7 +61,7 @@ export const QuantumReading = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-2xl font-premium-title italic text-blue-400 drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
-          Leitura Quântica<span className="text-white font-normal not-italic ml-1">.</span>
+          Leitura Dinâmica<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
@@ -72,7 +72,7 @@ export const QuantumReading = ({ onBack }: { onBack: () => void }) => {
           </div>
           
           <div className="space-y-2 relative z-10">
-            <h3 className="text-xl font-bold text-blue-400">Aceleração Cognitiva</h3>
+            <h3 className="text-xl font-bold text-blue-400">Treino de Velocidade</h3>
             <p className="text-sm text-text-secondary">Cole seu texto para treinar leitura dinâmica (RSVP) ou leitura biônica. Aumente sua velocidade de absorção em até 3x.</p>
           </div>
 

@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 import { motion, HTMLMotionProps } from 'motion/react';
+import { springs } from '../../lib/animations';
 
 export interface CardProps extends Omit<HTMLMotionProps<"div">, "className"> {
   variant?: 'solid' | 'glass' | 'gradient' | 'outlined';
@@ -17,7 +18,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
   ...props
 }, ref) => {
   
-  const baseClasses = "relative rounded-3xl overflow-hidden transition-all duration-300";
+  const baseClasses = "relative rounded-3xl overflow-hidden transition-all duration-300 ease-out";
   
   const variants = {
     solid: "bg-[#141416]",
@@ -26,11 +27,14 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({
     outlined: "bg-transparent border border-white/10"
   };
 
-  const hoverClasses = hoverLift ? "hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] cursor-pointer" : "";
+  const hoverClasses = hoverLift ? "hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] cursor-pointer" : "";
 
   return (
     <motion.div
       ref={ref}
+      transition={springs.card}
+      whileHover={hoverLift ? { y: -4, scale: 1.01 } : undefined}
+      whileTap={hoverLift ? { scale: 0.99, y: -1 } : undefined}
       className={`${baseClasses} ${variants[variant]} ${hoverClasses} ${className}`}
       {...props}
     >

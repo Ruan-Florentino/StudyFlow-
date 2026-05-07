@@ -1,5 +1,6 @@
-import React, { lazy } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import React, { lazy, useEffect } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { devAgentLog } from '../../lib/devAgentLog';
 
 // Core Views
 const DashboardView = lazy(() => import('../../views/core/DashboardView').then(m => ({ default: m.default })));
@@ -19,10 +20,36 @@ const FlashcardsView = lazy(() => import('../../views/core/FlashcardsView').then
 const StatsView = lazy(() => import('../../views/core/StatsView').then(m => ({ default: m.default })));
 const NotesView = lazy(() => import('../../views/core/NotesView').then(m => ({ default: m.default })));
 
-const StudyMethods = lazy(() => import('../../views/methods').then(m => ({ default: m.StudyMethods })));
-const ExamsView = lazy(() => import('../../views/exams').then(m => ({ default: m.ExamsView })));
+const StudyMethods = lazy(() => import('../../views/methods/StudyMethods').then(m => ({ default: m.StudyMethods })));
+const ExamsView = lazy(() => import('../../views/exams/ExamsView').then(m => ({ default: m.ExamsView })));
 
-const PricingPage = lazy(() => import('../../components/PricingPage').then(m => ({ default: m.PricingPage })));
+/** Simulados: mesma view para hub, setup, prova e resultado (params em `ExamsView`). */
+function SimuladosExamView() {
+  const location = useLocation();
+  useEffect(() => {
+    devAgentLog({
+      hypothesisId: 'H9',
+      location: 'src/app/router/routes.tsx:SimuladosExamView',
+      message: 'Simulados route render',
+      data: { pathname: location.pathname, search: location.search },
+    });
+  }, [location.pathname, location.search]);
+  return (
+    <PremiumGate feature="exams">
+      <ExamsView />
+    </PremiumGate>
+  );
+}
+
+const PricingPage = lazy(() =>
+  import('../../components/PricingPage').then((m) => ({ default: m.PricingPage }))
+);
+const PremiumCheckoutPage = lazy(() =>
+  import('../../pages/premium/PremiumCheckoutPage').then((m) => ({ default: m.PremiumCheckoutPage }))
+);
+const PremiumSuccessPage = lazy(() =>
+  import('../../pages/premium/PremiumSuccessPage').then((m) => ({ default: m.PremiumSuccessPage }))
+);
 const AIHub = lazy(() => import('../../pages/AIHub').then(m => ({ default: m.AIHub })));
 const ComunidadePage = lazy(() => import('../../pages/ComunidadePage').then(m => ({ default: m.ComunidadePage })));
 const Redacao = lazy(() => import('../../components/Redacao').then(m => ({ default: m.Redacao })));
@@ -33,8 +60,6 @@ const SmartSchedule = lazy(() => import('../../components/SmartSchedule').then(m
 // Easter Eggs / Advanced methods
 const MemoryPalace = lazy(() => import('../../components/MemoryPalace').then(m => ({ default: m.MemoryPalace })));
 const SocraticDuel = lazy(() => import('../../components/SocraticDuel').then(m => ({ default: m.SocraticDuel })));
-const BrainUpload = lazy(() => import('../../components/BrainUpload').then(m => ({ default: m.BrainUpload })));
-const GodMode = lazy(() => import('../../components/GodMode').then(m => ({ default: m.GodMode })));
 const QuantumReading = lazy(() => import('../../components/QuantumReading').then(m => ({ default: m.QuantumReading })));
 const TimeDilation = lazy(() => import('../../components/TimeDilation').then(m => ({ default: m.TimeDilation })));
 const AkashicRecords = lazy(() => import('../../components/AkashicRecords').then(m => ({ default: m.AkashicRecords })));
@@ -56,15 +81,33 @@ const NeuralAlchemistView = lazy(() => import('../../components/NeuralAlchemist'
 const NeuralSyncView = lazy(() => import('../../components/NeuralSync').then(m => ({ default: m.NeuralSync })));
 const TheNexusView = lazy(() => import('../../components/TheNexus').then(m => ({ default: m.TheNexus })));
 
-const FeynmanMethod = lazy(() => import('../../views/methods').then(m => ({ default: m.FeynmanMethod })));
-const BlurtingMethod = lazy(() => import('../../views/methods').then(m => ({ default: m.BlurtingMethod })));
-const ActiveRecallScreen = lazy(() => import('../../views/methods').then(m => ({ default: m.ActiveRecallScreen })));
-const InterleavingScreen = lazy(() => import('../../views/methods').then(m => ({ default: m.InterleavingScreen })));
-const SlidesView = lazy(() => import('../../views/methods').then(m => ({ default: m.SlidesView })));
-const VideoSummarizer = lazy(() => import('../../views/methods').then(m => ({ default: m.VideoSummarizer })));
-const SkillTree = lazy(() => import('../../views/methods').then(m => ({ default: m.SkillTree })));
-const LearningPath = lazy(() => import('../../views/methods').then(m => ({ default: m.LearningPath })));
-const MindMapScreen = lazy(() => import('../../views/methods').then(m => ({ default: m.MindMapScreen })));
+const FeynmanMethod = lazy(() =>
+  import('../../views/methods/Feynman/FeynmanMethod').then(m => ({ default: m.FeynmanMethod }))
+);
+const BlurtingMethod = lazy(() =>
+  import('../../views/methods/Blurting/BlurtingMethod').then(m => ({ default: m.BlurtingMethod }))
+);
+const ActiveRecallScreen = lazy(() =>
+  import('../../views/methods/ActiveRecall/ActiveRecallScreen').then(m => ({ default: m.ActiveRecallScreen }))
+);
+const InterleavingScreen = lazy(() =>
+  import('../../views/methods/Interleaving/InterleavingScreen').then(m => ({ default: m.InterleavingScreen }))
+);
+const SlidesView = lazy(() =>
+  import('../../views/methods/Slides/SlidesView').then(m => ({ default: m.SlidesView }))
+);
+const VideoSummarizer = lazy(() =>
+  import('../../views/methods/VideoSummarizer/VideoSummarizer').then(m => ({ default: m.VideoSummarizer }))
+);
+const SkillTree = lazy(() =>
+  import('../../views/methods/SkillTree/SkillTree').then(m => ({ default: m.SkillTree }))
+);
+const LearningPath = lazy(() =>
+  import('../../views/methods/LearningPath/LearningPath').then(m => ({ default: m.LearningPath }))
+);
+const MindMapScreen = lazy(() =>
+  import('../../views/methods/MindMap/MindMapScreen').then(m => ({ default: m.MindMapScreen }))
+);
 
 // Global AI Hub
 const ATHENA_HUB = () => (
@@ -103,16 +146,6 @@ function TheNexusRoute() {
   return <TheNexusView onBack={() => navigate(-1)} />;
 }
 
-function GodModeRoute() {
-  const navigate = useNavigate();
-  return <GodMode onBack={() => navigate(-1)} />;
-}
-
-function BrainUploadRoute() {
-  const navigate = useNavigate();
-  return <BrainUpload onBack={() => navigate(-1)} />;
-}
-
 function MemoryPalaceRoute() {
   const navigate = useNavigate();
   return <MemoryPalace onBack={() => navigate(-1)} />;
@@ -132,6 +165,11 @@ function DueloSocraticoRoute() {
   );
 }
 
+function PremiumLandingRoute() {
+  const navigate = useNavigate();
+  return <PricingPage onBack={() => navigate(-1)} />;
+}
+
 export interface RouteConfig {
   path: string;
   label?: string;
@@ -142,10 +180,12 @@ export const routes: RouteConfig[] = [
   { path: '/', label: 'Dashboard', Component: DashboardView },
   { path: '/notas', label: 'Notas', Component: NotesView },
   { path: '/upgrade', label: 'Premium', Component: () => <Navigate to="/premium" replace /> },
-  { path: '/premium', label: 'Upgrade Premium', Component: PricingPage },
+  { path: '/premium', label: 'Upgrade Premium', Component: PremiumLandingRoute },
+  { path: '/premium/checkout', label: 'Checkout Premium', Component: PremiumCheckoutPage },
+  { path: '/premium/success', label: 'Premium — Sucesso', Component: PremiumSuccessPage },
   { path: '/explorar', label: 'Explorar', Component: ExploreView },
-  { path: '/foco', label: 'Focus Mode', Component: FocusMode },
-  { path: '/ai', label: 'AI Tutor', Component: ATHENA_HUB },
+  { path: '/foco', label: 'Modo Foco', Component: FocusMode },
+  { path: '/ai', label: 'Mentoria', Component: ATHENA_HUB },
   { path: '/questoes', label: 'Questões', Component: QuestionsView },
   { path: '/redacao', label: 'Redação', Component: () => <PremiumGate feature="essay"><Redacao onBack={() => {}} /></PremiumGate> },
   { path: '/perfil', label: 'Perfil', Component: ProfileView },
@@ -155,9 +195,8 @@ export const routes: RouteConfig[] = [
   { path: '/perfil/politica-de-privacidade', label: 'Política de Privacidade', Component: PoliticaPrivacidadePage },
   { path: '/perfil/sobre', label: 'Sobre', Component: SobrePage },
   { path: '/comunidade', label: 'Comunidade', Component: ComunidadePage },
-  { path: '/palacio-memoria', label: 'Palácio da Memória', Component: MemoryPalaceRoute },
-  { path: '/duelo-socratico', label: 'Duelo Socrático', Component: DueloSocraticoRoute },
-  { path: '/upload-cerebral', Component: BrainUploadRoute },
+  { path: '/palacio-memoria', label: 'Memorização Visual', Component: MemoryPalaceRoute },
+  { path: '/duelo-socratico', label: 'Debate Guiado', Component: DueloSocraticoRoute },
   { path: '/leitura-quantica', Component: QuantumReading },
   { path: '/dilatacao-tempo', Component: TimeDilation },
   { path: '/registros-akasicos', Component: AkashicRecords },
@@ -172,17 +211,20 @@ export const routes: RouteConfig[] = [
   { path: '/genese-conceitos', Component: ConceptGenesis },
   { path: '/creditos', Component: Credits },
   { path: '/analisador-documentos', Component: DocumentAnalyzerRoute },
-  { path: '/god-mode', Component: GodModeRoute },
-  { path: '/o-arquivo', label: 'O Arquivo', Component: ArchiveRoute },
-  { path: '/mente-colmeia', label: 'Mente Colmeia', Component: HiveMindRoute },
-  { path: '/forja-neural', label: 'Forja Neural', Component: NeuralForgeRoute },
-  { path: '/alquimista-neural', label: 'Alquimista Neural', Component: NeuralAlchemistRoute },
-  { path: '/sincronia-neural', label: 'Sincronia Neural', Component: NeuralSyncRoute },
-  { path: '/nexus', label: 'Nexus', Component: TheNexusRoute },
+  { path: '/o-arquivo', label: 'Biblioteca Pessoal', Component: ArchiveRoute },
+  { path: '/mente-colmeia', label: 'Estudo Colaborativo', Component: HiveMindRoute },
+  { path: '/forja-neural', label: 'Laboratório de Ideias', Component: NeuralForgeRoute },
+  { path: '/alquimista-neural', label: 'Reescrita Inteligente', Component: NeuralAlchemistRoute },
+  { path: '/sincronia-neural', label: 'Sincronia de Estudos', Component: NeuralSyncRoute },
+  { path: '/nexus', label: 'Central de Resultados', Component: TheNexusRoute },
   { path: '/ranking', label: 'Ranking', Component: Ranking },
   { path: '/estatisticas', label: 'Estatísticas', Component: StatsView },
   { path: '/relatorios', label: 'Relatórios', Component: () => <Navigate to="/estatisticas" replace /> },
   { path: '/exames', label: 'Exames', Component: () => <PremiumGate feature="exams"><ExamsView /></PremiumGate> },
+  { path: '/simulados', label: 'Simulados', Component: SimuladosExamView },
+  { path: '/simulados/:examId/run', label: 'Simulado — Prova', Component: SimuladosExamView },
+  { path: '/simulados/:examId/result', label: 'Simulado — Resultado', Component: SimuladosExamView },
+  { path: '/simulados/:examId', label: 'Simulado', Component: SimuladosExamView },
   { path: '/cards', label: 'Flashcards', Component: FlashcardsView },
   { path: '/rotina', label: 'Smart Schedule', Component: SmartSchedule },
   { path: '/metodos', label: 'Métodos de Estudo', Component: StudyMethods },

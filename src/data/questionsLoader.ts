@@ -29,3 +29,9 @@ export function loadQuestionMap(): Promise<Map<string, Question>> {
   });
   return _questionMapPromise;
 }
+
+/** Limpa cache após hot-reload ou quando o bundle de questões mudar em runtime. */
+export function invalidateQuestionsBundleCache(): void {
+  _allQuestionsPromise = null;
+  _questionMapPromise = null;
+}

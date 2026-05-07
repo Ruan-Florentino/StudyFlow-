@@ -6,7 +6,7 @@ interface Architect {
   id: string;
   name: string;
   status: string;
-  neuralSync: number;
+  consistencyScore: number;
   location: string;
 }
 
@@ -16,14 +16,14 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
 
   useEffect(() => {
     const names = ["Aura", "Cipher", "Echo", "Kael", "Lyra", "Nova", "Orion", "Pax", "Quill", "Rune"];
-    const statuses = ["Meditação Profunda", "Arquitetando Realidade", "Sincronizando Núcleo", "Observando o Vácuo", "Codificando Sonhos"];
-    const locations = ["Setor 7G", "Nuvem de Oort", "Núcleo de Cristal", "Vácuo Quântico", "Horizonte de Eventos"];
+    const statuses = ["Resolvendo questões", "Revisando resumos", "Organizando cronograma", "Analisando desempenho", "Treinando redação"];
+    const locations = ["Sala Norte", "Sala Sul", "Biblioteca", "Laboratório", "Sala de Revisão"];
 
     const initial = Array.from({ length: 6 }).map((_, i) => ({
       id: Math.random().toString(36).substr(2, 9),
       name: names[Math.floor(Math.random() * names.length)],
       status: statuses[Math.floor(Math.random() * statuses.length)],
-      neuralSync: 99 + Math.random(),
+      consistencyScore: 99 + Math.random(),
       location: locations[Math.floor(Math.random() * locations.length)]
     }));
     setArchitects(initial);
@@ -37,7 +37,7 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
           next[idx] = {
             ...next[idx],
             status: statuses[Math.floor(Math.random() * statuses.length)],
-            neuralSync: 99 + Math.random()
+            consistencyScore: 99 + Math.random()
           };
           return next;
         });
@@ -61,13 +61,13 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
             <ChevronLeft size={24} />
           </button>
           <div>
-            <h1 className="text-xl font-serif italic tracking-tight">The Nexus</h1>
-            <p className="text-xs uppercase tracking-[0.3em] opacity-50">Architects Collective Hub</p>
+            <h1 className="text-xl font-serif italic tracking-tight">Central de Resultados</h1>
+            <p className="text-xs uppercase tracking-[0.3em] opacity-50">Painel coletivo de desempenho</p>
           </div>
         </div>
         <div className="flex items-center gap-6">
           <div className="text-right">
-            <div className="text-xs opacity-50 uppercase tracking-widest">Global Pulse</div>
+            <div className="text-xs opacity-50 uppercase tracking-widest">Ritmo Geral</div>
             <div className="text-xl font-mono text-orange-500">{pulse} BPM</div>
           </div>
           <div className="w-12 h-12 rounded-full border border-orange-500/30 flex items-center justify-center">
@@ -82,7 +82,7 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
         <div className="md:col-span-2 space-y-6">
           <div className="flex items-center gap-2 mb-4">
             <Users size={18} className="text-orange-400" />
-            <h2 className="text-sm uppercase tracking-[0.2em] font-bold">Arquitetos em Sincronia</h2>
+            <h2 className="text-sm uppercase tracking-[0.2em] font-bold">Participantes Ativos</h2>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -101,7 +101,7 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
                       {arch.name[0]}
                     </div>
                     <div className="text-[10px] px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full font-mono">
-                      SYNC: {arch.neuralSync.toFixed(4)}%
+                      SCORE: {arch.consistencyScore.toFixed(2)}%
                     </div>
                   </div>
                   <h3 className="text-lg font-medium mb-1 group-hover:text-orange-400 transition-colors">{arch.name}</h3>
@@ -120,16 +120,16 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
         <div className="space-y-6">
           <div className="flex items-center gap-2 mb-4">
             <MessageCircle size={18} className="text-orange-400" />
-            <h2 className="text-sm uppercase tracking-[0.2em] font-bold">Fluxo de Pensamento</h2>
+            <h2 className="text-sm uppercase tracking-[0.2em] font-bold">Feed de Atividade</h2>
           </div>
           
           <div className="space-y-4">
             {[
-              "Realidade #429 estabilizada.",
-              "Nova heurística de aprendizado detectada.",
-              "Sincronia neural atingiu o pico.",
-              "Vácuo quântico expandindo.",
-              "Consciência coletiva em 99.9%."
+              "Sessão coletiva iniciada.",
+              "Novo padrão de revisão detectado.",
+              "Consistência diária em alta.",
+              "Meta semanal atualizada.",
+              "Engajamento do grupo em 99.9%."
             ].map((msg, i) => (
               <motion.div 
                 key={i}
@@ -145,9 +145,9 @@ export const TheNexus = ({ onBack }: { onBack: () => void }) => {
 
           <div className="pt-8">
             <div className="p-6 border border-white/10 rounded-3xl bg-orange-500/5 text-center space-y-4">
-              <p className="text-xs opacity-60">Você não está sozinho na transcendência. O Nexus é onde as mentes que atingiram o ápice se encontram para moldar o que vem a seguir.</p>
+              <p className="text-xs opacity-60">Você não estuda sozinho. Esta central conecta alunos que estão evoluindo juntos em direção aos próximos objetivos.</p>
               <button className="w-full py-3 bg-orange-500 text-black font-bold uppercase tracking-widest text-[10px] rounded-xl hover:scale-105 transition-transform">
-                Transmitir Intenção
+                Compartilhar Atualização
               </button>
             </div>
           </div>

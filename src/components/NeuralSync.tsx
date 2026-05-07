@@ -113,7 +113,7 @@ export const NeuralSync = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-premium-title italic text-primary drop-shadow-[0_0_15px_rgba(0,255,148,0.8)]">
-          Sincronização Neural<span className="text-white font-normal not-italic ml-1">.</span>
+          Sincronia de Estudos<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
@@ -121,12 +121,12 @@ export const NeuralSync = ({ onBack }: { onBack: () => void }) => {
         <GlassCard className="lg:col-span-2 h-[60vh] relative overflow-hidden border-primary/20 bg-black/40">
           <canvas ref={canvasRef} className="w-full h-full" />
           <div className="absolute top-6 left-6 space-y-1">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold">Status da Rede</p>
-            <h3 className="text-xl font-bold text-white">Interface Cortical Ativa</h3>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold">Status Geral</p>
+            <h3 className="text-xl font-bold text-white">Painel de Performance Ativo</h3>
           </div>
           <div className="absolute bottom-6 right-6 text-right">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 font-bold">Frequência</p>
-            <h3 className="text-2xl font-premium-mono font-bold text-primary">{Math.round(syncLevel * 1.2)} Hz</h3>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 font-bold">Ritmo</p>
+            <h3 className="text-2xl font-premium-mono font-bold text-primary">{Math.round(syncLevel * 1.2)} pts</h3>
           </div>
         </GlassCard>
 
@@ -134,7 +134,7 @@ export const NeuralSync = ({ onBack }: { onBack: () => void }) => {
           <GlassCard className="p-6 border-primary/20 bg-primary/5">
             <div className="flex items-center gap-3 text-primary mb-4">
               <Activity size={24} />
-              <h3 className="font-bold uppercase tracking-widest text-sm">Nível de Sincronia</h3>
+              <h3 className="font-bold uppercase tracking-widest text-sm">Nível de Consistência</h3>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-end">
@@ -154,20 +154,20 @@ export const NeuralSync = ({ onBack }: { onBack: () => void }) => {
           <GlassCard className="p-6 border-white/10 bg-white/5 space-y-4">
             <div className="flex items-center gap-3 text-blue-400">
               <Brain size={20} />
-              <h4 className="text-xs font-bold uppercase tracking-widest">Capacidade Cognitiva</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest">Capacidade de Estudo</h4>
             </div>
             <p className="text-xs text-text-secondary leading-relaxed">
-              Sua rede neural está operando em um estado de fluxo avançado. A retenção de informações está {syncLevel > 80 ? '300%' : '150%'} acima da média humana.
+              Seu desempenho está em ritmo avançado. A retenção de informações está {syncLevel > 80 ? '300%' : '150%'} acima da média esperada.
             </p>
           </GlassCard>
 
           <GlassCard className="p-6 border-white/10 bg-white/5 space-y-4">
             <div className="flex items-center gap-3 text-purple-400">
               <Cpu size={20} />
-              <h4 className="text-xs font-bold uppercase tracking-widest">Processamento Paralelo</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest">Integração de Conteúdos</h4>
             </div>
             <p className="text-xs text-text-secondary leading-relaxed">
-              Múltiplos domínios de conhecimento estão sendo integrados simultaneamente. A arquitetura de sua mente está se tornando multidimensional.
+              Diferentes áreas de conhecimento estão sendo conectadas ao mesmo tempo. Isso melhora repertório e tomada de decisão nas provas.
             </p>
           </GlassCard>
         </div>

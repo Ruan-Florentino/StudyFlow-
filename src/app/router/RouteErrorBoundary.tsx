@@ -1,4 +1,5 @@
 import React, { Component, type ReactNode } from 'react';
+import { devAgentLog } from '../../lib/devAgentLog';
 
 interface Props {
   children: ReactNode;
@@ -22,6 +23,12 @@ export class RouteErrorBoundary extends Component<Props, State> {
       /Loading chunk [\d]+ failed/.test(error.message) ||
       /Failed to fetch dynamically imported module/.test(error.message) ||
       /dynamically imported module/.test(error.message);
+    devAgentLog({
+      hypothesisId: 'H4',
+      location: 'src/app/router/RouteErrorBoundary.tsx:getDerivedStateFromError',
+      message: 'Route boundary captured error',
+      data: { message: error.message, isChunkError },
+    });
 
     if (isChunkError) {
       // Auto-recovery: reload

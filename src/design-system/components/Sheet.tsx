@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { motion, AnimatePresence, useDragControls, useReducedMotion } from 'motion/react';
 import { createPortal } from 'react-dom';
+import { springs } from '../../lib/animations';
 
 export interface SheetProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ export interface SheetProps {
 
 export const Sheet = ({ isOpen, onClose, children, title }: SheetProps) => {
   const dragControls = useDragControls();
+  const reduceMotion = useReducedMotion();
   const sheetRef = useRef<HTMLDivElement>(null);
 
   // Esc to close
@@ -32,7 +34,10 @@ export const Sheet = ({ isOpen, onClose, children, title }: SheetProps) => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
-  const handleDragEnd = (_: any, info: any) => {
+  const handleDragEnd = (
+    _: MouseEvent | TouchEvent | PointerEvent,
+    info: { velocity: { y: number }; offset: { y: number } }
+  ) => {
     // Se arrastou pra baixo com velocidade ou passou de 100px
     if (info.velocity.y > 200 || info.offset.y > 100) {
       onClose();
@@ -57,10 +62,10 @@ export const Sheet = ({ isOpen, onClose, children, title }: SheetProps) => {
           {/* Sheet */}
           <motion.div
             ref={sheetRef}
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            initial={reduceMotion ? { opacity: 0 } : { y: "100%" }}
+            animate={reduceMotion ? { opacity: 1 } : { y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { y: "100%" }}
+            transition={reduceMotion ? { duration: 0.12 } : springs.page}
             drag="y"
             dragControls={dragControls}
             dragListener={false} // Only drag by the handle

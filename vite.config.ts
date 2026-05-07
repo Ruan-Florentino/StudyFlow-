@@ -25,19 +25,22 @@ export default defineConfig(({mode}) => {
           theme_color: '#22c55e',
           background_color: '#000000',
           display: 'standalone',
-          orientation: 'portrait',
+          orientation: 'any',
           start_url: '/',
           scope: '/',
+          categories: ['education', 'productivity'],
           icons: [
             {
               src: '/icons/icon-192.png',
               sizes: '192x192',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any'
             },
             {
               src: '/icons/icon-512.png',
               sizes: '512x512',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any'
             },
             {
               src: '/icons/icon-512-maskable.png',

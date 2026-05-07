@@ -1,5 +1,6 @@
-import React from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
+import { devAgentLog } from '../../lib/devAgentLog';
 import { routes } from './routes';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { AppContent } from '../AppContent';
@@ -12,6 +13,18 @@ import { AuthWrapper } from '../AuthWrapper';
 
 // Elemento de erro funcional para o roteador
 const ErrorLoader = () => <RouteErrorBoundary><div>Erro Crítico</div></RouteErrorBoundary>;
+const NotFoundRedirect = () => {
+  const location = useLocation();
+  useEffect(() => {
+    devAgentLog({
+      hypothesisId: 'H8',
+      location: 'src/app/router/RouterConfig.tsx:NotFoundRedirect',
+      message: 'NotFound redirect triggered',
+      data: { pathname: location.pathname, search: location.search },
+    });
+  }, [location.pathname, location.search]);
+  return <Navigate to="/" replace />;
+};
 
 export const router = createBrowserRouter([
   {
@@ -26,7 +39,7 @@ export const router = createBrowserRouter([
       })),
       {
         path: '*',
-        element: <Navigate to="/" replace />,
+        element: <NotFoundRedirect />,
       }
     ]
   }

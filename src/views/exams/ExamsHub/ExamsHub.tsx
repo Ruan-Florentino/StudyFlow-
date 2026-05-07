@@ -4,8 +4,7 @@ import {
   Search, 
   Target, 
   Star, 
-  Calendar, 
-  ChevronLeft 
+  Calendar
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppNavigation } from '../../../app/router/useAppNavigation';
@@ -18,14 +17,17 @@ import {
 } from '../../../components/UI';
 import { Exam, calculateDaysLeft } from '../shared';
 
+export type ExamsHubFilterTab = 'all' | 'vestibular' | 'concurso' | 'upcoming' | 'favorites';
+
 interface ExamsHubProps {
   onSelectExam: (exam: Exam, view: 'plan' | 'simulado') => void;
+  filter: ExamsHubFilterTab;
+  onFilterChange: (next: ExamsHubFilterTab) => void;
 }
 
-export const ExamsHub = ({ onSelectExam }: ExamsHubProps) => {
+export const ExamsHub = ({ onSelectExam, filter, onFilterChange }: ExamsHubProps) => {
   const { goBack, goTo } = useAppNavigation();
   const { exams, favoriteExams, toggleFavoriteExam } = useStore();
-  const [filter, setFilter] = useState<'all' | 'vestibular' | 'concurso' | 'upcoming' | 'favorites'>('all');
   const [search, setSearch] = useState('');
 
   const filteredExams = exams
@@ -76,10 +78,10 @@ export const ExamsHub = ({ onSelectExam }: ExamsHubProps) => {
         />
         
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-          {(['all', 'vestibular', 'concurso', 'upcoming', 'favorites'] as const).map((f) => (
+          {(['all', 'vestibular', 'concurso', 'upcoming', 'favorites'] as const satisfies readonly ExamsHubFilterTab[]).map((f) => (
             <button
               key={f}
-              onClick={() => setFilter(f)}
+              onClick={() => onFilterChange(f)}
               className={clsx(
                 "px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap border",
                 filter === f ? "bg-orange-500 text-black border-orange-500" : "bg-white/5 text-text-secondary border-white/10 hover:bg-white/10"

@@ -5,9 +5,9 @@ import { GlassCard, AnimatedButton, cn } from './UI';
 import { aiService } from '../services/aiService';
 
 const PERSONAS = [
-  { id: 'architect', name: 'O Arquiteto', role: 'Lógica & Estrutura', icon: Cpu, color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/30', personaKey: 'logical' as const },
-  { id: 'oracle', name: 'O Oráculo', role: 'Intuição & Padrões', icon: Eye, color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/30', personaKey: 'creative' as const },
-  { id: 'scientist', name: 'O Cientista', role: 'Evidência & Análise', icon: Zap, color: 'text-emerald-400', bg: 'bg-emerald-500/20', border: 'border-emerald-500/30', personaKey: 'skeptic' as const },
+  { id: 'architect', name: 'Especialista em Estrutura', role: 'Lógica & Organização', icon: Cpu, color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/30', personaKey: 'logical' as const },
+  { id: 'oracle', name: 'Especialista em Estratégia', role: 'Padrões & Intuição', icon: Eye, color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/30', personaKey: 'creative' as const },
+  { id: 'scientist', name: 'Especialista em Evidências', role: 'Dados & Análise', icon: Zap, color: 'text-emerald-400', bg: 'bg-emerald-500/20', border: 'border-emerald-500/30', personaKey: 'skeptic' as const },
 ];
 
 export const HiveMind = ({ onBack }: { onBack: () => void }) => {
@@ -50,7 +50,7 @@ export const HiveMind = ({ onBack }: { onBack: () => void }) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     } catch (error) {
-      console.error("Erro na Mente Colmeia:", error);
+      console.error("Erro no Painel Colaborativo:", error);
     } finally {
       setIsProcessing(false);
       setCurrentPersona(null);
@@ -68,7 +68,7 @@ export const HiveMind = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-premium-title italic text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.8)]">
-          Mente Colmeia<span className="text-white font-normal not-italic ml-1">.</span>
+          Painel Colaborativo<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
@@ -112,7 +112,7 @@ export const HiveMind = ({ onBack }: { onBack: () => void }) => {
             <div className="flex gap-4">
               <input 
                 type="text" 
-                placeholder="Insira um conceito complexo para o conselho debater..." 
+                placeholder="Insira um tema para os especialistas analisarem..." 
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && startSync()}
@@ -124,7 +124,7 @@ export const HiveMind = ({ onBack }: { onBack: () => void }) => {
                 disabled={!topic.trim() || isProcessing}
                 className="px-8 bg-blue-600 hover:bg-blue-500 text-white rounded-xl disabled:opacity-50 font-bold tracking-widest uppercase"
               >
-                {isProcessing ? <Hexagon className="animate-spin" /> : 'Sincronizar'}
+                {isProcessing ? <Hexagon className="animate-spin" /> : 'Analisar'}
               </AnimatedButton>
             </div>
           </div>
@@ -133,7 +133,7 @@ export const HiveMind = ({ onBack }: { onBack: () => void }) => {
             {!isProcessing && discussion.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-blue-500/30 space-y-4">
                 <Hexagon size={64} className="animate-pulse" />
-                <p className="text-sm font-mono uppercase tracking-widest">Aguardando input neural...</p>
+                <p className="text-sm font-mono uppercase tracking-widest">Aguardando tema...</p>
               </div>
             )}
 

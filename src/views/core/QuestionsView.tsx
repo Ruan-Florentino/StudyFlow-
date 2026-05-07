@@ -4,10 +4,10 @@ import React, {
   useMemo,
   useRef,
   useCallback,
-  useDeferredValue,
+  useDeferredValue
 } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import Markdown from 'react-markdown';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { springs } from '../../lib/animations/easings';
 import {
   AlertCircle,
   BarChart3,
@@ -67,8 +67,15 @@ import {
 } from '../../lib/studyUtils';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { useAIUI } from '../../hooks/useAIUI';
-import { supabase } from '../../lib/supabase';
+import {
+  recordQuestionAttempt,
+  recordQuestionAttemptsBatch,
+  bumpStreakForActivity,
+  type RecordQuestionAttemptBatchItem,
+} from '../../lib/persistence';
 import { useAuth } from '../../contexts/AuthContext';
+import { computeQuestionHistorySummary } from '../../lib/questionHistory';
+import { toast } from '../../store/useToastStore';
 
 // ═══════════════════════════════════════════════════════════
 // FATIA 1/5 — Estado, effects, handlers e helpers
@@ -77,10 +84,20 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const QuestionsView = () => {
   const { questions: ALL_QUESTIONS, loading: qLoading, error: qError } = useAllQuestions();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { goBack, goTo } = useAppNavigation();
   const { openChat } = useAIUI();
-  const { addXP, addToHistory, toggleFavorite, favorites, history, reviewLater, toggleReviewLater, updateMastery, navFilters, clearNavFilters } = useStore();
+  const {
+    toggleFavorite,
+    favorites,
+    history,
+    viewedAtByQuestionId,
+    reviewLater,
+    toggleReviewLater,
+    navFilters,
+    clearNavFilters,
+  } = useStore();
+  const reduceMotion = useReducedMotion() ?? false;
   const [view, setView] = useState<'bank' | 'training' | 'exam' | 'result' | 'exam-setup' | 'review' | 'external-banks' | 'ai-setup'>('bank');
   const [aiTopic, setAiTopic] = useState('');
   const [aiCount, setAiCount] = useState(10);
@@ -90,6 +107,9 @@ const QuestionsView = () => {
   const [filterYear, setFilterYear] = useState('');
   const [filterSource, setFilterSource] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'wrong' | 'unanswered'>('all');
+  const [historyDisplayFilter, setHistoryDisplayFilter] = useState<
+    'all' | 'onlyWrongLatest' | 'hideAlwaysCorrect' | 'onlyNew'
+  >('all');
   const [searchQuery, setSearchQuery] = useState(navFilters.search || '');
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   
@@ -99,7 +119,10 @@ const QuestionsView = () => {
     if (navFilters.topic) setFilterTopic(navFilters.topic);
     if (navFilters.search) setSearchQuery(navFilters.search);
     if (navFilters.difficulty) setFilterDifficulty(navFilters.difficulty);
-    
+    if (navFilters.filterStatus === 'wrong' || navFilters.filterStatus === 'unanswered' || navFilters.filterStatus === 'all') {
+      setFilterStatus(navFilters.filterStatus);
+    }
+
     // Clear filters after applying to local state
     if (Object.keys(navFilters).length > 0) {
       clearNavFilters();
@@ -116,6 +139,7 @@ const QuestionsView = () => {
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const deferredShowOnlyFavorites = useDeferredValue(showOnlyFavorites);
   const deferredShowOnlyReviewLater = useDeferredValue(showOnlyReviewLater);
+  const deferredHistoryDisplayFilter = useDeferredValue(historyDisplayFilter);
 
   useEffect(() => {
     return () => {
@@ -142,85 +166,45 @@ const QuestionsView = () => {
   
   const [xpGains, setXpGains] = useState<{ id: number, amount: number }[]>([]);
 
-  const syncXP = async (amount: number) => {
-    if (loading) return;
-    if (!user?.id) return;
-
-    try {
-      // Get current user data
-      const { data: userData, error: fetchError } = await supabase
-        .from('users')
-        .select('xp, level')
-        .eq('id', user.id)
-        .single();
-      
-      if (fetchError) throw fetchError;
-
-      const currentXp = userData?.xp ?? 0;
-      const newXp = currentXp + amount;
-      const newLevel = Math.floor(newXp / 1000) + 1;
-      
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ 
-          xp: newXp, 
-          level: newLevel 
-        })
-        .eq('id', user.id);
-
-      if (updateError) throw updateError;
-      
-      setXpGains(prev => [...prev, { id: Date.now(), amount }]);
-    } catch (e) {
-      console.error("Failed to sync XP", e);
-    }
-  };
-
-  const syncHistory = async (entry: any) => {
-    if (loading) return;
-    if (!user?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('history')
-        .upsert({
-          user_id: user.id,
-          question_id: entry.questionId,
-          content: entry,
-          created_at: new Date().toISOString()
-        }, { onConflict: 'user_id,question_id' });
-
-      if (error) throw error;
-    } catch (e) {
-      console.error("Failed to sync history", e);
-    }
-  };
-
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(20);
-  }, [deferredFilterSubject, deferredFilterTopic, deferredFilterDifficulty, deferredFilterYear, deferredFilterSource, deferredSearchQuery, deferredShowOnlyFavorites, deferredShowOnlyReviewLater, deferredFilterStatus]);
+  }, [deferredFilterSubject, deferredFilterTopic, deferredFilterDifficulty, deferredFilterYear, deferredFilterSource, deferredSearchQuery, deferredShowOnlyFavorites, deferredShowOnlyReviewLater, deferredFilterStatus, deferredHistoryDisplayFilter]);
 
-  // Result calculation effect
+  // Result calculation + persistência (Fase 2)
   useEffect(() => {
     if (view !== 'result' || saved) return;
     let c = 0;
     examQuestions.forEach((q, i) => {
-      if (!q) return;
-      const isCorrect = userAnswers[i] === q.resposta;
-      if (isCorrect) c++;
-      addToHistory({
-        questionId: q.id,
-        userAnswer: userAnswers[i],
-        isCorrect,
-        timestamp: new Date().toISOString()
-      });
-      updateMastery(q.materia, isCorrect ? 100 : 0);
+      if (!q || userAnswers[i] === undefined) return;
+      if (userAnswers[i] === q.resposta) c++;
     });
     setCorrect(c);
-    if (c > 0) addXP(c * 10);
     setSaved(true);
-  }, [view, examQuestions, userAnswers, saved, addToHistory, addXP, updateMastery]);
+
+    void (async () => {
+      const uid = user?.id ?? null;
+      const items: RecordQuestionAttemptBatchItem[] = [];
+      for (let i = 0; i < examQuestions.length; i++) {
+        const q = examQuestions[i];
+        if (!q || userAnswers[i] === undefined) continue;
+        const isCorrect = userAnswers[i] === q.resposta;
+        items.push({
+          question: q,
+          userAnswer: userAnswers[i]!,
+          isCorrect,
+        });
+      }
+      await recordQuestionAttemptsBatch(uid, items, {
+        xpAwardTotal: c * 10,
+        skipStreak: true,
+      });
+      await bumpStreakForActivity(uid);
+      if (c > 0) {
+        setXpGains((prev) => [...prev, { id: Date.now(), amount: c * 10 }]);
+      }
+    })();
+  }, [view, examQuestions, userAnswers, saved, user?.id]);
 
   // Pre-calculate wrong question IDs for faster filtering
   const questionStatusMap = useMemo(() => {
@@ -246,17 +230,60 @@ const QuestionsView = () => {
       const matchesSearch = !deferredSearchQuery || (q.pergunta || '').toLowerCase().includes(deferredSearchQuery.toLowerCase());
       const matchesFavorite = !deferredShowOnlyFavorites || favorites.includes(q.id);
       const matchesReviewLater = !deferredShowOnlyReviewLater || reviewLater.includes(q.id);
-      
+
+      const summary = computeQuestionHistorySummary(
+        q.id,
+        history,
+        viewedAtByQuestionId
+      );
+
       let matchesStatus = true;
       if (deferredFilterStatus === 'wrong') {
-        matchesStatus = questionStatusMap.get(q.id) === false;
+        matchesStatus =
+          summary.status === 'wrong' || summary.status === 'review';
       } else if (deferredFilterStatus === 'unanswered') {
-        matchesStatus = !questionStatusMap.has(q.id);
+        matchesStatus = summary.totalAttempts === 0;
       }
 
-      return matchesSubject && matchesTopic && matchesDifficulty && matchesSearch && matchesFavorite && matchesReviewLater && matchesYear && matchesSource && matchesStatus;
+      let matchesHistorySlice = true;
+      if (deferredHistoryDisplayFilter === 'onlyWrongLatest') {
+        matchesHistorySlice =
+          summary.status === 'wrong' || summary.status === 'review';
+      } else if (deferredHistoryDisplayFilter === 'hideAlwaysCorrect') {
+        matchesHistorySlice = summary.status !== 'correct';
+      } else if (deferredHistoryDisplayFilter === 'onlyNew') {
+        matchesHistorySlice = summary.status === 'new';
+      }
+
+      return (
+        matchesSubject &&
+        matchesTopic &&
+        matchesDifficulty &&
+        matchesSearch &&
+        matchesFavorite &&
+        matchesReviewLater &&
+        matchesYear &&
+        matchesSource &&
+        matchesStatus &&
+        matchesHistorySlice
+      );
     });
-  }, [deferredFilterSubject, deferredFilterTopic, deferredFilterDifficulty, deferredFilterYear, deferredFilterSource, deferredSearchQuery, deferredShowOnlyFavorites, favorites, deferredShowOnlyReviewLater, reviewLater, deferredFilterStatus, questionStatusMap]);
+  }, [
+    deferredFilterSubject,
+    deferredFilterTopic,
+    deferredFilterDifficulty,
+    deferredFilterYear,
+    deferredFilterSource,
+    deferredSearchQuery,
+    deferredShowOnlyFavorites,
+    favorites,
+    deferredShowOnlyReviewLater,
+    reviewLater,
+    deferredFilterStatus,
+    deferredHistoryDisplayFilter,
+    history,
+    viewedAtByQuestionId,
+  ]);
 
   const errorQuestions = useMemo(() => {
     if (!ALL_QUESTIONS) return [];
@@ -318,17 +345,15 @@ const QuestionsView = () => {
 
     const q = examQuestions[currentIdx];
     const isCorrect = selectedOption === q.resposta;
-    const entry = {
-      questionId: q.id,
+    void recordQuestionAttempt({
+      userId: user?.id ?? null,
+      question: q,
       userAnswer: selectedOption,
       isCorrect,
-      timestamp: new Date().toISOString()
-    };
-    addToHistory(entry);
-    syncHistory(entry);
+      xpAward: isCorrect ? 20 : 0,
+    });
     if (isCorrect) {
-      addXP(20);
-      syncXP(20);
+      setXpGains((prev) => [...prev, { id: Date.now(), amount: 20 }]);
       setCorrect(c => c + 1);
       playSuccessSound();
       triggerConfetti();
@@ -425,19 +450,30 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
             onBack={() => goTo('/')}
             rightContent={
               <div className="flex gap-2">
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.05, transition: springs.soft }}
+                  whileTap={{ scale: 0.95, transition: springs.snappy }}
                   onClick={() => setView('external-banks')}
-                  className="px-4 py-2 bg-primary/10 text-primary rounded-2xl text-[10px] font-premium-mono font-bold border border-primary/20 flex items-center gap-2 uppercase tracking-wider"
+                  className="px-4 py-2 bg-primary/10 text-primary rounded-2xl text-[11px] font-premium-mono font-bold border border-primary/20 flex items-center gap-2 uppercase tracking-[0.08em] min-h-11 active:scale-[0.98] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   <ExternalLink size={14} /> Outros Bancos
                 </motion.button>
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setView('review')}
-                  className="px-4 py-2 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-premium-mono font-bold border border-red-500/20 flex items-center gap-2 uppercase tracking-wider"
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.05, transition: springs.soft }}
+                  whileTap={{ scale: 0.95, transition: springs.snappy }}
+                  onClick={() => {
+                    if (errorQuestions.length === 0) {
+                      toast.info(
+                        'Revisar erros',
+                        'Nenhuma questão com última tentativa errada. Responda o banco primeiro para acumular erros aqui.'
+                      );
+                      return;
+                    }
+                    startTraining(errorQuestions);
+                  }}
+                  className="px-4 py-2 bg-red-500/10 text-red-500 rounded-2xl text-[11px] font-premium-mono font-bold border border-red-500/20 flex items-center gap-2 uppercase tracking-[0.08em] min-h-11 active:scale-[0.98] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   <AlertCircle size={14} /> Revisar Erros ({errorQuestions.length})
                 </motion.button>
@@ -454,7 +490,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               >
                 <p className="text-[10px] font-premium-mono font-bold text-primary mb-1">{exam}</p>
                 <p className="text-lg font-premium-title">{count.toLocaleString()}</p>
-                <p className="text-[8px] text-text-secondary uppercase font-bold tracking-tighter">Questões</p>
+                <p className="text-[9px] text-text-secondary uppercase font-bold tracking-[0.08em]">Questões</p>
               </GlassCard>
             ))}
           </div>
@@ -467,7 +503,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Pesquisar questões por termo ou código..."
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:border-primary/50 outline-none transition-all placeholder:text-text-secondary/50 text-sm font-medium"
+                className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 focus:border-primary/50 outline-none transition-all placeholder:text-white/60 text-sm font-medium"
               />
             </div>
           </div>
@@ -477,15 +513,16 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                className={`p-3.5 rounded-2xl border transition-all ${showOnlyFavorites ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(0,255,148,0.4)]' : 'bg-white/5 border-white/10 text-text-secondary hover:border-white/20'}`}
+                className={`p-3.5 rounded-2xl border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${showOnlyFavorites ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(0,255,148,0.4)]' : 'bg-white/10 border-white/20 text-text-secondary hover:border-white/30'}`}
                 title="Favoritas"
               >
                 <Star size={20} fill={showOnlyFavorites ? "currentColor" : "none"} />
               </motion.button>
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                type="button"
+                whileTap={{ scale: 0.9, transition: springs.snappy }}
                 onClick={() => setShowOnlyReviewLater(!showOnlyReviewLater)}
-                className={`p-3.5 rounded-2xl border transition-all ${showOnlyReviewLater ? 'bg-orange-500 text-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' : 'bg-white/5 border-white/10 text-text-secondary hover:border-white/20'}`}
+                className={`p-3.5 rounded-2xl border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${showOnlyReviewLater ? 'bg-orange-500 text-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' : 'bg-white/10 border-white/20 text-text-secondary hover:border-white/30'}`}
                 title="Revisar Depois"
               >
                 <Bookmark size={20} fill={showOnlyReviewLater ? "currentColor" : "none"} />
@@ -499,7 +536,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
                       setFilterSubject(filterSubject === s ? '' : s);
                       setFilterTopic('');
                     }}
-                    className={`px-5 py-2.5 rounded-2xl border whitespace-nowrap text-[11px] font-premium-mono font-bold transition-all uppercase tracking-wider ${filterSubject === s ? 'bg-primary text-black border-primary shadow-[0_0_10px_rgba(0,255,148,0.3)]' : 'bg-white/5 border-white/10 text-text-secondary hover:border-white/20'}`}
+                    className={`px-5 py-2.5 rounded-2xl border whitespace-nowrap text-[11px] font-premium-mono font-bold transition-all uppercase tracking-wider min-h-11 active:scale-[0.98] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${filterSubject === s ? 'bg-primary text-black border-primary shadow-[0_0_10px_rgba(0,255,148,0.3)]' : 'bg-white/10 border-white/20 text-text-secondary hover:border-white/30'}`}
                   >
                     {s}
                   </motion.button>
@@ -511,7 +548,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               <select 
                 value={filterDifficulty} 
                 onChange={(e) => setFilterDifficulty(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[120px] text-center"
+                className="bg-white/10 border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[120px] min-h-11 text-center"
               >
                 <option value="" className="bg-black">Dificuldade</option>
                 <option value="Easy" className="bg-black">Fácil</option>
@@ -521,7 +558,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               <select 
                 value={filterYear} 
                 onChange={(e) => setFilterYear(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[100px] text-center"
+                className="bg-white/10 border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[100px] min-h-11 text-center"
               >
                 <option value="" className="bg-black">Ano</option>
                 {Array.from({ length: 26 }, (_, i) => 2025 - i).map(y => (
@@ -531,7 +568,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               <select 
                 value={filterSource} 
                 onChange={(e) => setFilterSource(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[120px] text-center"
+                className="bg-white/10 border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[120px] min-h-11 text-center"
               >
                 <option value="" className="bg-black">Prova</option>
                 {Object.keys(EXAM_STATS).map(s => (
@@ -541,25 +578,45 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               <select 
                 value={filterStatus} 
                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[120px] text-center"
+                className="bg-white/10 border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[120px] min-h-11 text-center"
               >
                 <option value="all" className="bg-black">Todos Status</option>
                 <option value="wrong" className="bg-black">Só Erros</option>
                 <option value="unanswered" className="bg-black">Não Respondidas</option>
               </select>
+              <select
+                value={historyDisplayFilter}
+                onChange={(e) =>
+                  setHistoryDisplayFilter(
+                    e.target.value as
+                      | 'all'
+                      | 'onlyWrongLatest'
+                      | 'hideAlwaysCorrect'
+                      | 'onlyNew'
+                  )
+                }
+                className="bg-white/10 border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] font-premium-mono font-bold outline-none focus:border-primary/50 uppercase tracking-widest appearance-none min-w-[140px] min-h-11 text-center"
+                aria-label="Filtro por histórico de estudo"
+              >
+                <option value="all" className="bg-black">Histórico: todos</option>
+                <option value="onlyWrongLatest" className="bg-black">Só última errada</option>
+                <option value="hideAlwaysCorrect" className="bg-black">Esconder só acertos</option>
+                <option value="onlyNew" className="bg-black">Só novas</option>
+              </select>
             </div>
 
             {filterSubject && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
+              <motion.div
+                initial={{ opacity: 0, y: reduceMotion ? 0 : -10 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={reduceMotion ? { duration: 0.12 } : springs.card}
                 className="flex gap-2 overflow-x-auto no-scrollbar pb-2"
               >
                 {TOPICS[filterSubject]?.map(t => (
                   <button
                     key={t}
                     onClick={() => setFilterTopic(filterTopic === t ? '' : t)}
-                    className={`px-4 py-2 rounded-xl border whitespace-nowrap text-[10px] font-bold uppercase tracking-tighter transition-all ${filterTopic === t ? 'bg-white/20 border-white/30 text-white' : 'bg-white/5 border-white/10 text-text-secondary hover:border-white/20'}`}
+                    className={`px-4 py-2 rounded-xl border whitespace-nowrap text-[10px] font-bold uppercase tracking-tighter transition-all min-h-11 active:scale-[0.98] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${filterTopic === t ? 'bg-white/20 border-white/30 text-white' : 'bg-white/10 border-white/20 text-text-secondary hover:border-white/30'}`}
                   >
                     {t}
                   </button>
@@ -572,7 +629,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
         <div className="grid grid-cols-2 gap-3">
           <AnimatedButton 
             onClick={() => startTraining(filteredQuestions)} 
-            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] flex flex-col items-center justify-center gap-2" 
+            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] flex flex-col items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black" 
             glow
           >
             <Play size={18} />
@@ -581,7 +638,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
           <AnimatedButton 
             onClick={() => setView('exam-setup')} 
             variant="secondary" 
-            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-white/10 flex flex-col items-center justify-center gap-2"
+            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-white/10 flex flex-col items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             <Timer size={18} />
             Modo Prova Real
@@ -593,7 +650,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               startTraining(hardQs.length > 0 ? hardQs : filteredQuestions);
             }} 
             variant="secondary" 
-            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10 flex flex-col items-center justify-center gap-2"
+            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10 flex flex-col items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             <Flame size={18} />
             Só Difíceis
@@ -605,7 +662,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
               startTraining(enemQs.length > 0 ? enemQs : filteredQuestions);
             }} 
             variant="secondary" 
-            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-blue-500/20 text-blue-500 bg-blue-500/5 hover:bg-blue-500/10 flex flex-col items-center justify-center gap-2"
+            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-blue-500/20 text-blue-500 bg-blue-500/5 hover:bg-blue-500/10 flex flex-col items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             <Target size={18} />
             Foco ENEM
@@ -613,27 +670,31 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
           <AnimatedButton 
             onClick={() => setView('ai-setup')} 
             variant="secondary" 
-            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-purple-500/20 text-purple-500 bg-purple-500/5 hover:bg-purple-500/10 flex flex-col items-center justify-center gap-2"
+            className="flex-1 py-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em] border-purple-500/20 text-purple-500 bg-purple-500/5 hover:bg-purple-500/10 flex flex-col items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             glow
           >
             <Sparkles size={18} />
-            Simulador IA
+            Simulador Personalizado
           </AnimatedButton>
         </div>
 
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-1 h-4 bg-primary rounded-full" />
-            <h3 className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Questões Encontradas</h3>
+            <h3 className="text-[11px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.22em]">Questões Encontradas</h3>
           </div>
           
           <div className="grid grid-cols-1 gap-4">
             {filteredQuestions.slice(0, visibleCount).map((q, idx) => (
               <motion.div
                 key={q.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: reduceMotion ? 0 : 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: (idx % 20) * 0.05 }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0.1, delay: (idx % 20) * 0.03 }
+                    : { ...springs.card, delay: (idx % 20) * 0.05 }
+                }
               >
                 <InlineQuestionCard q={q} />
               </motion.div>
@@ -641,10 +702,11 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
             
             {visibleCount < filteredQuestions.length && (
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                type="button"
+                whileHover={{ scale: 1.02, transition: springs.soft }}
+                whileTap={{ scale: 0.98, transition: springs.snappy }}
                 onClick={() => setVisibleCount(prev => prev + 20)}
-                className="w-full py-4 mt-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-premium-mono font-bold uppercase tracking-widest text-text-secondary hover:text-white hover:bg-white/10 transition-all"
+                className="w-full py-4 mt-4 bg-white/10 border border-white/20 rounded-2xl text-xs font-premium-mono font-bold uppercase tracking-widest text-text-secondary hover:text-white hover:bg-white/15 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 Carregar Mais ({filteredQuestions.length - visibleCount} restantes)
               </motion.button>
@@ -669,7 +731,7 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
     setGeneratingAI(true);
     try {
       const prompt = `Gere ${aiCount} questões inéditas no estilo ENEM sobre o tema: ${aiTopic}.
-Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...", "...", "...", "...", "..."], "resposta": 0, "materia": "...", "assunto": "...", "ano": 2025, "difficulty": "Medium", "prova": "Athena IA"}]`;
+Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...", "...", "...", "...", "..."], "resposta": 0, "materia": "...", "assunto": "...", "ano": 2025, "difficulty": "Medium", "prova": "StudyFlow Personalizado"}]`;
 
       const response = await athenaClient.chat({
         messages: [
@@ -695,23 +757,22 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
     }
   };
 
-  // ⚠️ FATIA 3 EM PROGRESSO. Falta: training, exam, review
   if (view === 'ai-setup') {
     return (
       <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
         <Header 
-          title="Gerar com IA"
-          subtitle="Inteligência Artificial"
+          title="Gerar Questões"
+          subtitle="Personalização"
           icon={Sparkles}
           color="primary"
           onBack={() => setView('bank')}
           rightContent={
             <button 
               onClick={() => openChat('Gerador de Questões')}
-              className="p-2 rounded-xl bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,148,0.15)]"
+              className="p-2 rounded-xl bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,148,0.15)] min-h-11 min-w-11 active:scale-[0.96] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <Bot size={16} />
-              <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Athena Tutor</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] hidden sm:inline">Mentoria</span>
             </button>
           }
         />
@@ -723,12 +784,12 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
             </div>
             <div>
               <h3 className="font-bold text-white">Questões Personalizadas</h3>
-              <p className="text-xs text-text-secondary">Gere questões sob medida com IA</p>
+              <p className="text-xs text-text-secondary">Gere questões sob medida</p>
             </div>
           </div>
 
           <div className="space-y-3">
-            <label className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-widest">
+            <label className="text-[11px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.08em]">
               Tema ou Assunto
             </label>
             <input
@@ -736,12 +797,12 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
               value={aiTopic}
               onChange={(e) => setAiTopic(e.target.value)}
               placeholder="Ex: Direito Constitucional, Princípios Fundamentais..."
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-text-secondary/50 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-white/60 focus:outline-none focus:border-primary/50 focus:bg-white/15 transition-all"
             />
           </div>
 
           <div className="space-y-3">
-            <label className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-widest">
+            <label className="text-[11px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.08em]">
               Quantidade de Questões
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -752,7 +813,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
                   className={`py-3 rounded-xl border text-sm font-bold transition-all ${
                     aiCount === num
                       ? 'bg-primary/20 border-primary text-primary'
-                      : 'bg-white/5 border-white/10 text-text-secondary hover:border-white/20'
+                      : 'bg-white/10 border-white/20 text-text-secondary hover:border-white/30'
                   }`}
                 >
                   {num}
@@ -770,8 +831,12 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
             {loadingAI ? (
               <>
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                  animate={reduceMotion ? { rotate: 0 } : { rotate: 360 }}
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { repeat: Infinity, duration: 1, ease: 'linear' }
+                  }
                 >
                   <Brain size={18} />
                 </motion.div>
@@ -814,7 +879,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
           </div>
 
           <div className="space-y-3">
-            <label className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-widest">
+            <label className="text-[11px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.08em]">
               Duração da Prova
             </label>
             <div className="grid grid-cols-5 gap-2">
@@ -825,19 +890,19 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
                   className={`py-3 rounded-xl border text-sm font-bold transition-all ${
                     examDuration === min
                       ? 'bg-orange-500/20 border-orange-500 text-orange-400'
-                      : 'bg-white/5 border-white/10 text-text-secondary hover:border-white/20'
+                      : 'bg-white/10 border-white/20 text-text-secondary hover:border-white/30'
                   }`}
                 >
                   {min}m
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-text-secondary/70 text-center">
+            <p className="text-[10px] text-text-secondary/90 text-center">
               Você terá <span className="text-orange-400 font-bold">{examDuration} minutos</span> para resolver
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
+          <div className="p-4 rounded-xl bg-white/10 border border-white/20 space-y-2">
             <div className="flex items-center gap-2 text-xs text-text-secondary">
               <Zap size={12} className="text-orange-400" />
               <span>Cronômetro regressivo ativo</span>
@@ -899,7 +964,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
             <button
               key={idx}
               onClick={() => window.open(bank.url, '_blank', 'noopener,noreferrer')}
-              className="w-full text-left p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all group"
+              className="w-full text-left p-5 rounded-2xl bg-white/10 border border-white/20 hover:border-cyan-500/40 hover:bg-cyan-500/10 transition-all group"
             >
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/40 transition-all">
@@ -994,17 +1059,17 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white/10 border border-white/20">
               <Timer size={16} className="text-cyan-400 flex-shrink-0" />
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-text-secondary">Tempo</p>
+                <p className="text-[11px] uppercase tracking-[0.08em] text-text-secondary">Tempo</p>
                 <p className="text-sm font-bold font-premium-mono text-white">{timeStr}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white/10 border border-white/20">
               <Zap size={16} className="text-yellow-400 flex-shrink-0" />
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-text-secondary">XP ganho</p>
+                <p className="text-[11px] uppercase tracking-[0.08em] text-text-secondary">XP ganho</p>
                 <p className="text-sm font-bold font-premium-mono text-white">+{xpEarned}</p>
               </div>
             </div>

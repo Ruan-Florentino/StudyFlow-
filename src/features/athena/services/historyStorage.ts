@@ -1,15 +1,21 @@
 import { ChatSession } from '../types/chat.types';
 
-const STORAGE_KEY = 'athena_chat_history';
+export const ATHENA_CHAT_HISTORY_KEY = 'athena_chat_history';
 
 export const historyStorage = {
   saveSessions: (sessions: ChatSession[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    localStorage.setItem(ATHENA_CHAT_HISTORY_KEY, JSON.stringify(sessions));
   },
 
   getSessions: (): ChatSession[] => {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    const data = localStorage.getItem(ATHENA_CHAT_HISTORY_KEY);
+    if (!data) return [];
+    try {
+      const parsed = JSON.parse(data) as ChatSession[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   },
 
   addMessage: (sessionId: string, message: any) => {

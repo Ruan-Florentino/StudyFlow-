@@ -5,7 +5,7 @@ import { GlassCard, AnimatedButton, cn } from './UI';
 import { useStore } from '../store';
 
 const SUBJECTS = [
-  'Física Quântica', 'Direito Constitucional', 'Neurociência Aplicada', 
+  'Física Avançada', 'Direito Constitucional', 'Neurociência Aplicada', 
   'Engenharia Aeroespacial', 'Filosofia Antiga', 'Inteligência Artificial',
   'Mandarim Fluente', 'Kung Fu (Estilo Garça)', 'Matemática Avançada'
 ];
@@ -86,8 +86,8 @@ export const MatrixDownload = ({ onBack }: { onBack: () => void }) => {
         <AnimatedButton onClick={onBack} variant="secondary" className="p-2 rounded-full border-green-500/30 text-green-400 hover:bg-green-500/10">
           <ChevronLeft size={20} />
         </AnimatedButton>
-        <h2 className="text-3xl font-premium-title italic text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]">
-          Download Direto<span className="text-white font-normal not-italic ml-1">.</span>
+          <h2 className="text-3xl font-premium-title italic text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]">
+          Síntese Rápida<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
@@ -97,7 +97,7 @@ export const MatrixDownload = ({ onBack }: { onBack: () => void }) => {
             <div className="text-center space-y-2">
               <Cpu size={48} className="mx-auto text-green-500 mb-4" />
               <h3 className="text-xl font-bold text-white font-mono uppercase tracking-widest">Selecione o Pacote</h3>
-              <p className="text-sm text-green-400/70 font-mono">Conecte-se à interface neural para transferência direta.</p>
+              <p className="text-sm text-green-400/70 font-mono">Gere um resumo rápido do conteúdo selecionado.</p>
             </div>
             
             <select 
@@ -109,7 +109,7 @@ export const MatrixDownload = ({ onBack }: { onBack: () => void }) => {
             </select>
 
             <AnimatedButton onClick={startDownload} className="w-full py-4 bg-green-600 hover:bg-green-500 text-black font-bold font-mono tracking-widest uppercase shadow-[0_0_20px_rgba(34,197,94,0.4)]">
-              <Download size={20} className="mr-2" /> Iniciar Transferência
+              <Download size={20} className="mr-2" /> Iniciar Síntese
             </AnimatedButton>
           </GlassCard>
         )}
@@ -127,7 +127,7 @@ export const MatrixDownload = ({ onBack }: { onBack: () => void }) => {
               />
             </div>
             <p className="text-center text-xs text-green-500/50 font-mono animate-pulse">
-              Sobrescrevendo vias neurais... Por favor, não desconecte.
+              Processando conteúdo... Por favor, aguarde.
             </p>
           </div>
         )}
@@ -137,11 +137,11 @@ export const MatrixDownload = ({ onBack }: { onBack: () => void }) => {
             <GlassCard className="p-8 border-green-500/50 bg-green-900/20 backdrop-blur-md w-full max-w-md text-center space-y-6">
               <CheckCircle2 size={64} className="mx-auto text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]" />
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white font-mono uppercase tracking-widest">Download Concluído</h3>
-                <p className="text-green-400 font-mono">Eu sei {selectedSubject}.</p>
+                <h3 className="text-2xl font-bold text-white font-mono uppercase tracking-widest">Síntese Concluída</h3>
+                <p className="text-green-400 font-mono">Resumo pronto de {selectedSubject}.</p>
               </div>
               <AnimatedButton onClick={() => setIsComplete(false)} variant="secondary" className="w-full py-4 border-green-500/50 text-green-400 font-mono uppercase tracking-widest">
-                Novo Download
+                Nova Síntese
               </AnimatedButton>
             </GlassCard>
           </motion.div>

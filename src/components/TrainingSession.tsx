@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import Markdown from 'react-markdown';
-import { supabase } from '../lib/supabase';
+import React, { Suspense, lazy, useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { easings, springs } from '../lib/animations/easings';
 import { useAuth } from '../contexts/AuthContext';
+import { recordQuestionAttempt } from '../lib/persistence';
 import { 
   Sparkles, 
   Brain, 
@@ -20,8 +20,15 @@ import {
 } from 'lucide-react';
 import { useStore, Question } from '../store';
 import { GlassCard, AnimatedButton, Header } from './UI';
+import { QuestionStatusBadge } from './QuestionStatusBadge';
 import { aiService } from '../services/aiService';
 import { playSuccessSound, triggerConfetti } from '../lib/studyUtils';
+
+const MarkdownContent = lazy(() =>
+  import('./shared/MarkdownContent').then((module) => ({
+    default: module.MarkdownContent,
+  }))
+);
 
 interface TrainingSessionProps {
   questions: Question[];
@@ -30,8 +37,9 @@ interface TrainingSessionProps {
 }
 
 const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionProps) => {
-  const { user, loading } = useAuth();
-  const { addXP, addToHistory, toggleFavorite, favorites, reviewLater, toggleReviewLater, updateMastery } = useStore();
+  const { user } = useAuth();
+  const { toggleFavorite, favorites, reviewLater, toggleReviewLater, recordQuestionView } =
+    useStore();
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -41,7 +49,8 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
   const [loadingAI, setLoadingAI] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
-  
+  const reduceMotion = useReducedMotion() ?? false;
+
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
   
@@ -52,6 +61,11 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
       if (autoNextTimeoutRef.current) clearTimeout(autoNextTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentQuestion) return;
+    recordQuestionView(currentQuestion.id);
+  }, [currentIndex, currentQuestion?.id, recordQuestionView]);
 
   const handleAnswer = (idx: number) => {
     if (confirmed) return;
@@ -77,54 +91,14 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
       }, 3000);
     }
 
-    const entry = {
-      questionId: currentQuestion.id,
+    await recordQuestionAttempt({
+      userId: user?.id ?? null,
+      question: currentQuestion,
       userAnswer: selectedOption,
       isCorrect,
-      timestamp: new Date().toISOString()
-    };
-    
-    addToHistory(entry);
-    updateMastery(currentQuestion.materia, isCorrect ? 100 : 0);
-    
-    if (isCorrect) {
-      addXP(20);
-    }
-    // Sync with backend
-    try {
-      if (!loading && user?.id) {
-        await supabase
-          .from('history')
-          .insert({
-            user_id: user.id,
-            question_id: currentQuestion.id,
-            user_answer: selectedOption,
-            is_correct: isCorrect,
-            timestamp: entry.timestamp
-          });
-        
-        if (isCorrect) {
-          const { data: profile } = await supabase
-            .from('users')
-            .select('xp')
-            .eq('id', user.id)
-            .single();
-          
-          if (profile) {
-            const newXp = (profile.xp || 0) + 20;
-            const newLevel = Math.floor(newXp / 1000) + 1;
-            
-            await supabase
-              .from('users')
-              .update({ xp: newXp, level: newLevel })
-              .eq('id', user.id);
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Failed to sync from TrainingSession", e);
-    }
-    
+      xpAward: isCorrect ? 20 : 0,
+    });
+
     setShowExplanation(true);
   };
 
@@ -230,6 +204,7 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
               <span className="px-2 py-0.5 bg-purple-500/10 text-purple-500 text-[8px] font-premium-mono font-bold rounded uppercase tracking-widest border border-purple-500/20">
                 {currentQuestion.materia}
               </span>
+              <QuestionStatusBadge questionId={currentQuestion.id} compact />
             </div>
             <div className="flex gap-2">
               <button 
@@ -274,7 +249,8 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
               return (
                 <motion.button
                   key={i}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: reduceMotion ? 1 : 0.98 }}
+                  transition={reduceMotion ? { duration: 0.12, ease: easings.smoothOut } : springs.snappy}
                   onClick={() => handleAnswer(i)}
                   className={`w-full p-5 rounded-2xl border text-left transition-all flex items-start gap-4 group ${style}`}
                 >
@@ -313,9 +289,10 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
         <AnimatePresence>
           {confirmed && showExplanation && (
             <motion.div 
-              initial={{ opacity: 0, y: 30 }} 
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 30 }} 
               animate={{ opacity: 1, y: 0 }} 
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -20 }}
+              transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
               className="space-y-5"
             >
               <GlassCard className={`p-6 border-${selectedOption === currentQuestion.resposta ? 'primary' : 'red-500'}/20 bg-white/5`}>
@@ -345,7 +322,7 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
                     variant="secondary" 
                     className="flex-1 border-primary/20 bg-primary/5 text-primary text-[10px] py-1 h-10 font-bold uppercase tracking-wider"
                   >
-                    {loadingAI ? <Loader2 size={16} className="animate-spin" /> : <><Brain size={14} className="mr-2" /> Explicar com IA</>}
+                    {loadingAI ? <Loader2 size={16} className="animate-spin" /> : <><Brain size={14} className="mr-2" /> Explicar melhor</>}
                   </AnimatedButton>
                   
                   {selectedOption !== currentQuestion.resposta && (
@@ -363,8 +340,9 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
 
               {aiExplanation && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
                   className="relative"
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-purple-500/30 rounded-[2.5rem] blur-xl opacity-50" />
@@ -373,18 +351,20 @@ const TrainingSession = ({ questions, onComplete, onCancel }: TrainingSessionPro
                        <Sparkles size={120} className="text-primary" />
                     </div>
                     <div className="flex items-center gap-3 mb-6">
-                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center p-px shadow-[0_0_15px_rgba(0,255,148,0.4)]">
+                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center p-px shadow-[0_0_15px_rgba(var(--hub-primary-rgb),0.4)]">
                           <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
                              <Brain size={20} className="text-primary" />
                           </div>
                        </div>
                        <div>
-                          <h4 className="text-xs font-premium-mono font-bold text-primary uppercase tracking-[0.2em]">Cértex AI Insight</h4>
-                          <h3 className="text-lg font-premium-title italic tracking-tight">Análise Neural</h3>
+                          <h4 className="text-xs font-premium-mono font-bold text-primary uppercase tracking-[0.2em]">Insight de Estudo</h4>
+                          <h3 className="text-lg font-premium-title italic tracking-tight">Análise Guiada</h3>
                        </div>
                     </div>
                     <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-strong:text-primary">
-                       <Markdown>{aiExplanation}</Markdown>
+                      <Suspense fallback={<div className="text-white/90 whitespace-pre-wrap">{aiExplanation}</div>}>
+                        <MarkdownContent content={aiExplanation} />
+                      </Suspense>
                     </div>
                   </GlassCard>
                 </motion.div>

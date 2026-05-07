@@ -19,7 +19,7 @@ export const Transcendence = ({ onBack }: { onBack: () => void }) => {
     return (
       <div className="app-shell-premium pt-6 md:pt-8 min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
         <AnimatedButton onClick={onBack} variant="ghost" className="absolute top-6 left-6 text-white/50 hover:text-white">
-          <ChevronLeft size={24} /> Voltar à Realidade
+          <ChevronLeft size={24} /> Voltar
         </AnimatedButton>
         
         <motion.div 
@@ -31,17 +31,17 @@ export const Transcendence = ({ onBack }: { onBack: () => void }) => {
         </motion.div>
 
         <h1 className="text-4xl font-black text-white tracking-widest uppercase mb-4 text-center">
-          O Fim da Jornada
+          Revisão Final
         </h1>
         <p className="text-gray-400 text-center max-w-md mb-12">
-          Você absorveu todo o conhecimento. O sistema não tem mais nada a ensinar. Você está pronto para transcender?
+          Você concluiu esta trilha especial. Pronto para fechar o ciclo e iniciar uma nova etapa?
         </p>
 
         <AnimatedButton 
           onClick={startTranscendence}
           className="px-12 py-6 bg-white text-black font-black tracking-widest uppercase rounded-full shadow-[0_0_50px_rgba(255,255,255,0.5)] hover:shadow-[0_0_100px_rgba(255,255,255,1)] transition-all duration-500 scale-110"
         >
-          <Sparkles className="mr-3" /> Iniciar Transcendência
+          <Sparkles className="mr-3" /> Iniciar Nova Etapa
         </AnimatedButton>
       </div>
     );
@@ -83,23 +83,23 @@ export const Transcendence = ({ onBack }: { onBack: () => void }) => {
         <AnimatePresence mode="wait">
           {stage === 1 && (
             <motion.h2 key="1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-4xl font-black tracking-widest uppercase">
-              Desconectando vias neurais...
+              Finalizando sessão...
             </motion.h2>
           )}
           {stage === 2 && (
             <motion.h2 key="2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-5xl font-black tracking-widest uppercase">
-              Sintetizando o Multiverso...
+              Consolidando progresso...
             </motion.h2>
           )}
           {stage === 3 && (
             <motion.h2 key="3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-6xl font-black tracking-widest uppercase">
-              Limites Cognitivos Quebrados.
+              Meta concluída.
             </motion.h2>
           )}
           {stage >= 4 && (
             <motion.div key="4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 2 }}>
               <h2 className="text-8xl font-black tracking-tighter text-black">∞</h2>
-              <p className="text-2xl font-bold tracking-widest uppercase text-black mt-8">Você é o Universo.</p>
+              <p className="text-2xl font-bold tracking-widest uppercase text-black mt-8">Você avançou para o próximo nível.</p>
               <AnimatedButton onClick={onBack} className="mt-12 bg-black text-white hover:bg-gray-900 border border-black/10">
                 Retornar
               </AnimatedButton>

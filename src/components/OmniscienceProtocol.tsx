@@ -15,7 +15,7 @@ export const OmniscienceProtocol = ({ onBack }: { onBack: () => void }) => {
     setResults(null);
 
     try {
-      const prompt = `Atue como um analista de dados educacionais onisciente. O usuário quer saber o que vai cair na prova: "${targetExam}".
+      const prompt = `Atue como um analista de dados educacionais. O usuário quer saber o que vai cair na prova: "${targetExam}".
       Gere uma lista de 5 tópicos altamente prováveis de serem cobrados, baseando-se no histórico dessa prova (ou provas similares).
       Retorne APENAS um JSON estruturado como um array de objetos, onde cada objeto tem:
       - topic: string (nome do assunto)
@@ -32,14 +32,14 @@ export const OmniscienceProtocol = ({ onBack }: { onBack: () => void }) => {
       } catch (e) {
         // Fallback if AI doesn't return perfect JSON
         setResults([
-          { topic: 'Erro na Matriz Neural', probability: 0, impact: 'Crítico' },
+          { topic: 'Não foi possível gerar previsão', probability: 0, impact: 'Crítico' },
           { topic: 'Tente ser mais específico', probability: 0, impact: 'Alto' }
         ]);
       }
     } catch (error) {
-      console.error("Omniscience error:", error);
+      console.error("Prediction error:", error);
       setResults([
-        { topic: 'Falha de Conexão Akáshica', probability: 0, impact: 'Crítico' }
+        { topic: 'Falha de conexão com o serviço', probability: 0, impact: 'Crítico' }
       ]);
     } finally {
       setIsScanning(false);
@@ -70,7 +70,7 @@ export const OmniscienceProtocol = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-premium-title italic text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]">
-          Protocolo Onisciência<span className="text-white font-normal not-italic ml-1">.</span>
+          Painel de Previsão<span className="text-white font-normal not-italic ml-1">.</span>
         </h2>
       </header>
 
@@ -78,8 +78,8 @@ export const OmniscienceProtocol = ({ onBack }: { onBack: () => void }) => {
         <GlassCard className="p-8 border-amber-500/30 bg-black/80 backdrop-blur-md space-y-6">
           <div className="text-center space-y-2">
             <Eye size={48} className="mx-auto text-amber-500 mb-4" />
-            <h3 className="text-xl font-bold text-white font-mono uppercase tracking-widest">Previsão Quântica de Provas</h3>
-            <p className="text-sm text-amber-400/70 font-mono">Insira o alvo. A IA calculará a matriz de probabilidade exata do que vai cair.</p>
+            <h3 className="text-xl font-bold text-white font-mono uppercase tracking-widest">Previsão de Provas</h3>
+            <p className="text-sm text-amber-400/70 font-mono">Insira o alvo para gerar os tópicos mais prováveis de cobrança.</p>
           </div>
           
           <div className="flex gap-4">
@@ -99,13 +99,13 @@ export const OmniscienceProtocol = ({ onBack }: { onBack: () => void }) => {
         {isScanning && (
           <div className="text-center space-y-4">
             <Crosshair size={64} className="mx-auto text-amber-500 animate-pulse" />
-            <p className="text-amber-400 font-mono uppercase tracking-widest animate-pulse">Analisando 14.582.304 futuros possíveis...</p>
+            <p className="text-amber-400 font-mono uppercase tracking-widest animate-pulse">Analisando histórico e padrões de cobrança...</p>
           </div>
         )}
 
         {results && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <h4 className="text-amber-500 font-mono uppercase tracking-widest text-center mb-6">Matriz de Probabilidade: {targetExam}</h4>
+            <h4 className="text-amber-500 font-mono uppercase tracking-widest text-center mb-6">Probabilidades para: {targetExam}</h4>
             {results.map((res, i) => (
               <GlassCard key={i} className="p-4 border-amber-500/20 bg-amber-950/20 flex items-center justify-between">
                 <div>

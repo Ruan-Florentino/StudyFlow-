@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { easings, springs } from '../lib/animations/easings';
 import { RotateCw, Check, X, HelpCircle, Zap, Volume2, Loader2, Star } from 'lucide-react';
 import { Badge } from './UI';
 import { aiService } from '../services/aiService';
@@ -34,6 +35,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({
   const [showPaywall, setShowPaywall] = useState(false);
   const { dailyFlashcardsUsed, incrementFlashcardUsage } = useStore();
   const { isPremium } = usePlan();
+  const reduceMotion = useReducedMotion() ?? false;
 
   const formatInterval = (days: number) => {
     if (days === 0) return '< 1d';
@@ -92,7 +94,8 @@ export const Flashcard: React.FC<FlashcardProps> = ({
       <motion.div 
         className="relative w-full aspect-[3/4] cursor-pointer"
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 24 }}
         onClick={() => setIsFlipped(!isFlipped)}
         style={{ transformStyle: 'preserve-3d' }}
       >
@@ -141,79 +144,40 @@ export const Flashcard: React.FC<FlashcardProps> = ({
       <AnimatePresence>
         {isFlipped && showControls && onDifficulty && (
           <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 24, scale: reduceMotion ? 1 : 0.95 }} 
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : 10, scale: reduceMotion ? 1 : 0.97 }}
+            transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
             className="grid grid-cols-4 gap-2 mt-6"
           >
-            <button 
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                if (!isPremium && dailyFlashcardsUsed >= LIMIT) {
-                  setShowPaywall(true);
-                  return;
-                }
-                incrementFlashcardUsage();
-                onDifficulty('again'); 
-                setIsFlipped(false); 
-              }} 
-              className="flex flex-col items-center gap-1 p-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 hover:bg-red-500/20 transition-colors group"
-            >
-              <X size={16} className="group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-[10px]">De novo</span>
-              <span className="text-[8px] uppercase font-bold opacity-60">{"< 1d"}</span>
-            </button>
-            <button 
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                if (!isPremium && dailyFlashcardsUsed >= LIMIT) {
-                  setShowPaywall(true);
-                  return;
-                }
-                incrementFlashcardUsage();
-                onDifficulty('hard'); 
-                setIsFlipped(false); 
-              }} 
-              className="flex flex-col items-center gap-1 p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-500 hover:bg-orange-500/20 transition-colors group"
-            >
-              <HelpCircle size={16} className="group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-[10px]">Difícil</span>
-              <span className="text-[8px] uppercase font-bold opacity-60">{formatInterval(nextHard)}</span>
-            </button>
-            <button 
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                if (!isPremium && dailyFlashcardsUsed >= LIMIT) {
-                  setShowPaywall(true);
-                  return;
-                }
-                incrementFlashcardUsage();
-                onDifficulty('good'); 
-                setIsFlipped(false); 
-              }} 
-              className="flex flex-col items-center gap-1 p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-blue-500 hover:bg-blue-500/20 transition-colors group"
-            >
-              <Check size={16} className="group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-[10px]">Bom</span>
-              <span className="text-[8px] uppercase font-bold opacity-60">{formatInterval(nextGood)}</span>
-            </button>
-            <button 
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                if (!isPremium && dailyFlashcardsUsed >= LIMIT) {
-                  setShowPaywall(true);
-                  return;
-                }
-                incrementFlashcardUsage();
-                onDifficulty('easy'); 
-                setIsFlipped(false); 
-              }} 
-              className="flex flex-col items-center gap-1 p-3 bg-primary/10 border border-primary/20 rounded-2xl text-primary hover:bg-primary/20 transition-colors group"
-            >
-              <Zap size={16} className="group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-[10px]">Fácil</span>
-              <span className="text-[8px] uppercase font-bold opacity-60">{formatInterval(nextEasy)}</span>
-            </button>
+            {([
+              { diff: 'again', label: 'De novo', interval: '< 1d', icon: X, bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-500', hover: 'hover:bg-red-500/20' },
+              { diff: 'hard', label: 'Difícil', interval: formatInterval(nextHard), icon: HelpCircle, bg: 'bg-orange-500/10', border: 'border-orange-500/20', text: 'text-orange-500', hover: 'hover:bg-orange-500/20' },
+              { diff: 'good', label: 'Bom', interval: formatInterval(nextGood), icon: Check, bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-500', hover: 'hover:bg-blue-500/20' },
+              { diff: 'easy', label: 'Fácil', interval: formatInterval(nextEasy), icon: Zap, bg: 'bg-primary/10', border: 'border-primary/20', text: 'text-primary', hover: 'hover:bg-primary/20' },
+            ] as const).map(({ diff, label, interval, icon: Icon, bg, border, text, hover }) => (
+              <motion.button
+                key={diff}
+                whileHover={reduceMotion ? undefined : { y: -3, scale: 1.04 }}
+                whileTap={{ scale: reduceMotion ? 1 : 0.93 }}
+                transition={reduceMotion ? { duration: 0.12, ease: easings.smoothOut } : springs.snappy}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isPremium && dailyFlashcardsUsed >= LIMIT) {
+                    setShowPaywall(true);
+                    return;
+                  }
+                  incrementFlashcardUsage();
+                  onDifficulty(diff);
+                  setIsFlipped(false);
+                }}
+                className={`flex flex-col items-center gap-1 p-3 ${bg} border ${border} rounded-2xl ${text} ${hover} transition-colors`}
+              >
+                <Icon size={16} />
+                <span className="font-bold text-[10px]">{label}</span>
+                <span className="text-[8px] uppercase font-bold opacity-60">{interval}</span>
+              </motion.button>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { loadAllQuestions } from '../data/questionsLoader';
+import { loadAllQuestionsWithImported } from '../lib/mergeImportedQuestions';
+import { useImportedQuestionsStore } from '../store/useImportedQuestionsStore';
+import { useAITrailsStore } from '../store/useAITrailsStore';
 import { SUBJECTS, RECOMMENDED_TRAILS, POPULAR_NOW } from '../data/explore';
 
 export interface SearchResult {
@@ -12,6 +14,8 @@ export interface SearchResult {
 }
 
 export function useSearch(query: string) {
+  const importedQuestions = useImportedQuestionsStore((s) => s.importedQuestions);
+  const aiTrails = useAITrailsStore((s) => s.aiTrails);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -45,21 +49,23 @@ export function useSearch(query: string) {
       });
 
       // Trilhas recomendadas
-      RECOMMENDED_TRAILS.forEach((t) => {
+      const allTrails = [...RECOMMENDED_TRAILS, ...aiTrails];
+      allTrails.forEach((t) => {
         const hay = `${t.title} ${t.description} ${t.topics.join(' ')}`.toLowerCase();
         if (hay.includes(q)) {
+          const isAi = t.id.startsWith('ai_trail_');
           searchResults.push({
             id: `trail-${t.id}`,
             type: 'trail',
             title: t.title,
-            subtitle: 'Trilha recomendada',
+            subtitle: isAi ? 'Trilha IA' : 'Trilha recomendada',
             data: t,
           });
         }
       });
 
       // Questions (Limit to top results)
-      const ALL_QUESTIONS = await loadAllQuestions();
+      const ALL_QUESTIONS = await loadAllQuestionsWithImported();
       if (!mounted) return;
       
       const matchedQuestions = ALL_QUESTIONS.filter(quest => 
@@ -87,7 +93,7 @@ export function useSearch(query: string) {
       mounted = false;
       clearTimeout(timeoutId);
     };
-  }, [query]);
+  }, [query, importedQuestions, aiTrails]);
 
   return { results, isSearching };
 }

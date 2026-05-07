@@ -1,44 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Outlet } from 'react-router-dom';
-import { useStore } from '../store';
-import { AppShell } from './shell';
-import { Onboarding } from '../components/Onboarding';
+import { useUIStore } from '../store/useUIStore';
+import { useUserStore } from '../store/useUserStore';
+import { AppShell, AnimatedPageOutlet } from './shell';
 import { initAudioUnlocker } from '../lib/studyUtils';
+import { devAgentLog } from '../lib/devAgentLog';
+
+const Onboarding = lazy(() =>
+  import('../components/Onboarding').then((module) => ({ default: module.Onboarding }))
+);
 
 /**
  * AppContent (Layout)
- * Componente principal que coordena o layout (Shell) e as telas (Outlet).
+ * Componente principal que coordena o layout (Shell) e as telas (`AnimatedPageOutlet`).
  * Gerencia efeitos globais e estado do AppShell (Command Palette).
  */
 
 export function AppContent() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { hasCompletedOnboarding, checkStreak, themeColor, setName, completeOnboarding } = useStore();
+  const hasCompletedOnboarding = useUIStore((state) => state.hasCompletedOnboarding);
+  const themeColor = useUIStore((state) => state.themeColor);
+  const completeOnboarding = useUIStore((state) => state.completeOnboarding);
+  const checkStreak = useUserStore((state) => state.checkStreak);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isUserInteracted, setIsUserInteracted] = useState(false);
 
-  // Sync with backend on mount
   useEffect(() => {
-    if (loading) return;
-    if (!user?.id) return;
-
-    const sync = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('name')
-          .eq('id', user.id)
-          .single();
-        
-        if (!error && data?.name) setName(data.name);
-      } catch (e) {
-        console.error("Failed to sync with backend", e);
-      }
-    };
-    sync();
-  }, [setName, user?.id, loading]);
+    devAgentLog({
+      hypothesisId: 'H2',
+      location: 'src/app/AppContent.tsx',
+      message: 'AppContent route context',
+      data: {
+        pathname: location.pathname,
+        search: location.search,
+        hasCompletedOnboarding,
+        userLoading: loading,
+        hasUser: Boolean(user),
+      },
+    });
+  }, [location.pathname, location.search, hasCompletedOnboarding, loading, user]);
 
   // Global Interaction & Audio
   useEffect(() => {
@@ -60,7 +63,14 @@ export function AppContent() {
   if (!hasCompletedOnboarding) {
     return (
       <div className="min-h-screen bg-black flex justify-center selection:bg-primary selection:text-black">
-        <Onboarding onComplete={() => completeOnboarding()} />
+        <Suspense fallback={<div className="text-white/60 text-sm font-mono pt-20">Carregando onboarding...</div>}>
+          <Onboarding
+            onComplete={(initialPath) => {
+              completeOnboarding();
+              navigate(initialPath, { replace: true });
+            }}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -71,7 +81,7 @@ export function AppContent() {
       setIsCommandPaletteOpen={setIsCommandPaletteOpen}
       isUserInteracted={isUserInteracted}
     >
-      <Outlet />
+      <AnimatedPageOutlet />
     </AppShell>
   );
 }

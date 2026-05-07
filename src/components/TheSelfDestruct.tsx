@@ -10,10 +10,9 @@ export const TheSelfDestruct = () => {
       return () => clearTimeout(timer);
     } else {
       setDestroyed(true);
-      // Literally wipe the DOM body to make it unrecoverable without a refresh
+      // Não manipular document.body.innerHTML (XSS / quebra de extensões); overlay cobre a UI.
       setTimeout(() => {
-        document.body.innerHTML = '';
-        document.body.style.backgroundColor = 'black';
+        document.documentElement.style.backgroundColor = 'black';
       }, 500);
     }
   }, [countdown]);

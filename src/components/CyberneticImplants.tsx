@@ -5,10 +5,10 @@ import { GlassCard, AnimatedButton, cn } from './UI';
 import { useStore } from '../store';
 
 const IMPLANTS = [
-  { id: 'cortex', name: 'Overclock Pré-Frontal', desc: 'Aumenta a capacidade de foco profundo em 300%.', reqLevel: 2, icon: Cpu, color: 'text-pink-500', bg: 'bg-pink-500/20', pos: 'top-10 left-1/2 -translate-x-1/2' },
-  { id: 'hippocampus', name: 'Expansão do Hipocampo', desc: 'Retenção de memória de longo prazo aprimorada.', reqLevel: 5, icon: Activity, color: 'text-cyan-500', bg: 'bg-cyan-500/20', pos: 'top-1/3 left-10' },
-  { id: 'dopamine', name: 'Sintetizador de Dopamina', desc: 'Motivação infinita sob demanda.', reqLevel: 10, icon: Zap, color: 'text-yellow-500', bg: 'bg-yellow-500/20', pos: 'top-1/3 right-10' },
-  { id: 'neural_link', name: 'Interface Neural Direta', desc: 'Conexão direta com a nuvem de conhecimento.', reqLevel: 20, icon: Network, color: 'text-purple-500', bg: 'bg-purple-500/20', pos: 'bottom-10 left-1/2 -translate-x-1/2' },
+  { id: 'cortex', name: 'Foco Profundo', desc: 'Aumenta a capacidade de concentração em sessões longas.', reqLevel: 2, icon: Cpu, color: 'text-pink-500', bg: 'bg-pink-500/20', pos: 'top-10 left-1/2 -translate-x-1/2' },
+  { id: 'hippocampus', name: 'Memória de Longo Prazo', desc: 'Melhora a retenção de conteúdo em revisões espaçadas.', reqLevel: 5, icon: Activity, color: 'text-cyan-500', bg: 'bg-cyan-500/20', pos: 'top-1/3 left-10' },
+  { id: 'dopamine', name: 'Rotina Motivacional', desc: 'Ajuda a manter constância durante a semana.', reqLevel: 10, icon: Zap, color: 'text-yellow-500', bg: 'bg-yellow-500/20', pos: 'top-1/3 right-10' },
+  { id: 'neural_link', name: 'Conexão de Conteúdo', desc: 'Integra diferentes temas para estudo interdisciplinar.', reqLevel: 20, icon: Network, color: 'text-purple-500', bg: 'bg-purple-500/20', pos: 'bottom-10 left-1/2 -translate-x-1/2' },
 ];
 
 export const CyberneticImplants = ({ onBack }: { onBack: () => void }) => {
@@ -24,7 +24,7 @@ export const CyberneticImplants = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-black uppercase tracking-widest text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.8)]">
-          Implantes Cibernéticos
+          Ferramentas Avançadas
         </h2>
       </header>
 

@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { Suspense, lazy, useState, useMemo } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { easings, springs } from '../lib/animations/easings';
 import { 
   CheckCircle2, 
   XCircle, 
@@ -17,8 +18,14 @@ import {
 } from 'lucide-react';
 import { Question } from '../store';
 import { GlassCard, AnimatedButton, Header } from './UI';
+import { QuestionStatusBadge } from './QuestionStatusBadge';
 import { aiService } from '../services/aiService';
-import Markdown from 'react-markdown';
+
+const MarkdownContent = lazy(() =>
+  import('./shared/MarkdownContent').then((module) => ({
+    default: module.MarkdownContent,
+  }))
+);
 
 interface ExamReviewProps {
   questions: Question[];
@@ -31,12 +38,14 @@ const ExamReview = ({ questions, userAnswers, timeSpent, onBack }: ExamReviewPro
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [aiExplanation, setAiExplanation] = useState<Record<number, string>>({});
   const [loadingAI, setLoadingAI] = useState<Record<number, boolean>>({});
+  const reduceMotion = useReducedMotion() ?? false;
 
   const correctCount = useMemo(() => {
     return questions.filter((q, i) => userAnswers[i] === q.resposta).length;
   }, [questions, userAnswers]);
 
-  const scorePct = Math.round((correctCount / questions.length) * 100);
+  const scorePct =
+    questions.length === 0 ? 0 : Math.round((correctCount / questions.length) * 100);
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
     const secs = s % 60;
@@ -133,8 +142,9 @@ const ExamReview = ({ questions, userAnswers, timeSpent, onBack }: ExamReviewPro
                     <span className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-text-secondary shrink-0 group-hover:border-white/20">
                       {idx + 1}
                     </span>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 flex flex-wrap items-center gap-2">
                        <p className="text-sm font-medium text-white/90 truncate max-w-[200px] sm:max-w-md lg:max-w-2xl">{q.pergunta}</p>
+                       <QuestionStatusBadge questionId={q.id} compact />
                     </div>
                  </div>
                  
@@ -158,6 +168,11 @@ const ExamReview = ({ questions, userAnswers, timeSpent, onBack }: ExamReviewPro
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0.15, ease: easings.smoothOut }
+                        : { duration: 0.32, ease: easings.smoothOut }
+                    }
                     className="border-t border-white/5 bg-white/[0.02]"
                   >
                      <div className="p-6 space-y-6">
@@ -221,11 +236,14 @@ const ExamReview = ({ questions, userAnswers, timeSpent, onBack }: ExamReviewPro
                            <AnimatePresence>
                               {aiExplanation[idx] && (
                                 <motion.div 
-                                  initial={{ opacity: 0, y: 10 }}
+                                  initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
                                   animate={{ opacity: 1, y: 0 }}
+                                  transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
                                   className="p-5 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 text-sm text-text-secondary leading-relaxed markdown-body"
                                 >
-                                   <Markdown>{aiExplanation[idx]}</Markdown>
+                                  <Suspense fallback={<div className="text-white/90 whitespace-pre-wrap">{aiExplanation[idx]}</div>}>
+                                    <MarkdownContent content={aiExplanation[idx]} />
+                                  </Suspense>
                                 </motion.div>
                               )}
                            </AnimatePresence>

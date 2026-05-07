@@ -1,6 +1,6 @@
 export const ATHENA_CONFIG = {
-  NAME: 'ATHENA',
-  TAGLINE: 'Sua tutora pessoal para o ENEM',
+  NAME: 'ATHENA V3',
+  TAGLINE: 'Sua tutora para o ENEM — DeepSeek V3',
   ICON: '🦉',
   COLORS: {
     PRIMARY: '#10b981', // emerald-500

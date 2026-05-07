@@ -1,0 +1,9 @@
+# Configuração Supabase CLI (deploy de migrations + Edge Functions).
+# https://supabase.com/docs/guides/cli/config
+
+[functions.mp-webhook]
+# Mercado Pago chama a URL sem JWT do Supabase — desativar verificação.
+verify_jwt = false
+
+[functions.create-mp-preference]
+verify_jwt = true

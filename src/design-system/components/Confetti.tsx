@@ -12,8 +12,8 @@ export const Confetti = ({ trigger, duration = 3000 }: { trigger: number, durati
         // A simple lightweight particle system instead of heavy canvas libraries
         const container = document.getElementById('confetti-container');
         if (!container) return;
-        
-        container.innerHTML = '';
+
+        container.replaceChildren();
         
         const colors = ['#00E88F', '#F59E0B', '#8B5CF6', '#F43F5E', '#06B6D4'];
         

@@ -62,7 +62,7 @@ export const AkashicRecords = ({ onBack }: { onBack: () => void }) => {
               top: Math.random() * 100 + '%',
               left: Math.random() * 100 + '%',
               opacity: Math.random(),
-              animation: `twinkle ${Math.random() * 5 + 3}s infinite alternate`
+              animation: `akashic-twinkle ${Math.random() * 5 + 3}s infinite alternate`
             }}
           />
         ))}
@@ -74,7 +74,7 @@ export const AkashicRecords = ({ onBack }: { onBack: () => void }) => {
             <ChevronLeft size={20} />
           </AnimatedButton>
           <h2 className="text-3xl font-premium-title italic text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
-            Registros Akáshicos<span className="text-white font-normal not-italic ml-1">.</span>
+            Mapa de Conhecimento<span className="text-white font-normal not-italic ml-1">.</span>
           </h2>
         </div>
         
@@ -83,7 +83,7 @@ export const AkashicRecords = ({ onBack }: { onBack: () => void }) => {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-500/50" />
             <input 
               type="text" 
-              placeholder="Buscar no multiverso..." 
+              placeholder="Buscar no mapa de temas..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSemanticSearch()}
@@ -201,12 +201,6 @@ export const AkashicRecords = ({ onBack }: { onBack: () => void }) => {
         )}
       </AnimatePresence>
 
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes twinkle {
-          0% { opacity: 0.2; transform: scale(0.8); }
-          100% { opacity: 1; transform: scale(1.2); }
-        }
-      `}} />
     </div>
   );
 };

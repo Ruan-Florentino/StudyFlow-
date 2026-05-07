@@ -17,11 +17,11 @@ export const NeuralSculptor = ({ onBack }: { onBack: () => void }) => {
           </button>
           <div className="flex items-center gap-2">
             <Cpu size={16} className="text-blue-400" />
-            <span className="text-xs uppercase tracking-[0.2em] font-bold">Neural Sculptor v1.0</span>
+            <span className="text-xs uppercase tracking-[0.2em] font-bold">Ajuste de Perfil v1.0</span>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-xs opacity-50 uppercase tracking-widest">
-          <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Link: Stable</div>
+          <div className="flex items-center gap-4 text-xs opacity-50 uppercase tracking-widest">
+          <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Status: Ativo</div>
           <span>|</span>
           <span>BPM: 72</span>
         </div>
@@ -33,14 +33,14 @@ export const NeuralSculptor = ({ onBack }: { onBack: () => void }) => {
           <section className="space-y-8">
             <div className="flex items-center gap-2 opacity-50">
               <Settings2 size={14} />
-              <h3 className="text-[10px] uppercase tracking-widest font-bold">Synaptic Parameters</h3>
+              <h3 className="text-[10px] uppercase tracking-widest font-bold">Parâmetros de Estudo</h3>
             </div>
 
             <div className="space-y-10">
               {[
-                { label: 'Synaptic Strength', val: synapticStrength, set: setSynapticStrength, color: 'text-blue-400' },
-                { label: 'Neuroplasticity', val: neuroplasticity, set: setNeuroplasticity, color: 'text-purple-400' },
-                { label: 'Dopamine Levels', val: dopamine, set: setDopamine, color: 'text-yellow-400' }
+                { label: 'Nível de Foco', val: synapticStrength, set: setSynapticStrength, color: 'text-blue-400' },
+                { label: 'Flexibilidade Mental', val: neuroplasticity, set: setNeuroplasticity, color: 'text-purple-400' },
+                { label: 'Motivação', val: dopamine, set: setDopamine, color: 'text-yellow-400' }
               ].map(param => (
                 <div key={param.label} className="space-y-3">
                   <div className="flex justify-between text-[10px] uppercase font-bold">
@@ -70,10 +70,10 @@ export const NeuralSculptor = ({ onBack }: { onBack: () => void }) => {
           <section className="pt-8 border-t border-white/5 space-y-4">
             <button className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-black font-bold uppercase tracking-widest text-[10px] rounded transition-colors flex items-center justify-center gap-2">
               <Zap size={14} />
-              Commit Neural Changes
+              Salvar Ajustes
             </button>
             <p className="text-[9px] opacity-30 text-center leading-relaxed">
-              AVISO: A reconfiguração neural pode causar desorientação temporária. <br /> Proceda com cautela.
+              AVISO: os ajustes de intensidade podem alterar seu ritmo de estudo. <br /> Faça mudanças graduais.
             </p>
           </section>
         </div>
@@ -126,12 +126,12 @@ export const NeuralSculptor = ({ onBack }: { onBack: () => void }) => {
 
           <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end">
             <div className="space-y-1">
-              <div className="text-[10px] uppercase opacity-30 tracking-widest">Neural Sync</div>
+              <div className="text-[10px] uppercase opacity-30 tracking-widest">Consistência</div>
               <div className="text-2xl font-bold">{(synapticStrength * 0.6 + neuroplasticity * 0.4).toFixed(1)}%</div>
             </div>
             <div className="text-right space-y-1">
               <div className="text-[10px] uppercase opacity-30 tracking-widest">Status</div>
-              <div className="text-xs font-bold text-green-400">OPTIMIZED</div>
+              <div className="text-xs font-bold text-green-400">OTIMIZADO</div>
             </div>
           </div>
         </div>

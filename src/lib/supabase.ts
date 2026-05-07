@@ -118,6 +118,7 @@ export interface Database {
           last_study_date: string | null;
           daily_goal_minutes: number;
           coins: number;
+          longest_streak?: number;
           created_at: string;
         };
         Insert: {
@@ -133,6 +134,7 @@ export interface Database {
           last_study_date?: string | null;
           daily_goal_minutes?: number;
           coins?: number;
+          longest_streak?: number;
           created_at?: string;
         };
         Update: {
@@ -148,6 +150,83 @@ export interface Database {
           last_study_date?: string | null;
           daily_goal_minutes?: number;
           coins?: number;
+          longest_streak?: number;
+          created_at?: string;
+        };
+      };
+      user_question_attempts: {
+        Row: {
+          id: string;
+          user_id: string;
+          question_id: string;
+          answer_given: number;
+          is_correct: boolean;
+          time_spent_seconds: number;
+          attempted_at: string;
+          subject: string | null;
+          topic: string | null;
+          exam_source: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          question_id: string;
+          answer_given: number;
+          is_correct: boolean;
+          time_spent_seconds?: number;
+          attempted_at?: string;
+          subject?: string | null;
+          topic?: string | null;
+          exam_source?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          question_id?: string;
+          answer_given?: number;
+          is_correct?: boolean;
+          time_spent_seconds?: number;
+          attempted_at?: string;
+          subject?: string | null;
+          topic?: string | null;
+          exam_source?: string | null;
+          created_at?: string;
+        };
+      };
+      user_study_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          started_at: string;
+          ended_at: string;
+          duration_seconds: number;
+          activity_type: string;
+          subject: string | null;
+          topic: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          started_at: string;
+          ended_at: string;
+          duration_seconds: number;
+          activity_type: string;
+          subject?: string | null;
+          topic?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          started_at?: string;
+          ended_at?: string;
+          duration_seconds?: number;
+          activity_type?: string;
+          subject?: string | null;
+          topic?: string | null;
           created_at?: string;
         };
       };

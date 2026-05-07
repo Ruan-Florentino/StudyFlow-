@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
+import { easings, springs } from '../lib/animations/easings';
+import { statisticsCopy } from '../lib/productDisclosure';
 import {
   AreaChart, Area,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
@@ -41,17 +43,31 @@ const generateMockDailyXP = (totalXP: number) => {
 
 interface Props { onBack: () => void; }
 
+/** Campos opcionais legados no hub (série diária / stats por matéria). */
+type StoreDisclosureFields = { dailyXP?: unknown; subjectStats?: unknown };
+
 export const Statistics: React.FC<Props> = ({ onBack }) => {
+  const reduceMotion = useReducedMotion() ?? false;
   const store = useStore();
   const { 
     xp = 0, level = 1, streak = 0, longestStreak = 0,
     totalStudyMinutes = 0
   } = store as any;
   
-  const dailyXP = (store as any).dailyXP?.length > 0 
-    ? (store as any).dailyXP 
+  const extendedStore = store as StoreDisclosureFields;
+  const dailyXpRaw = extendedStore.dailyXP;
+  const xpSeriesIsReal = Array.isArray(dailyXpRaw) && dailyXpRaw.length > 0;
+  const subjectStatsRaw = extendedStore.subjectStats;
+  const subjectStatsIsReal =
+    subjectStatsRaw !== undefined &&
+    subjectStatsRaw !== null &&
+    typeof subjectStatsRaw === 'object' &&
+    Object.keys(subjectStatsRaw as Record<string, unknown>).length > 0;
+
+  const dailyXP = xpSeriesIsReal
+    ? (dailyXpRaw as { date: string; xp: number; minutes?: number }[])
     : generateMockDailyXP(xp);
-  
+
   const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('7d');
   
   // Filtro de período
@@ -67,7 +83,7 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
   const bestDay = filteredData.reduce((max: any, d: any) => d.xp > max.xp ? d : max, filteredData[0] || { xp: 0, date: '' });
   
   // Dados de matérias (mock se não tiver)
-  const subjectData = Object.entries((store as any).subjectStats || {
+  const subjectData = Object.entries((extendedStore.subjectStats as Record<string, { minutes?: number }> | undefined) || {
     'Matemática': { minutes: Math.floor(totalStudyMinutes * 0.25) },
     'Português': { minutes: Math.floor(totalStudyMinutes * 0.20) },
     'Física': { minutes: Math.floor(totalStudyMinutes * 0.15) },
@@ -109,10 +125,10 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
 
   const heatmapColor = (intensity: number) => {
     if (intensity === 0) return 'rgba(255,255,255,0.04)';
-    if (intensity === 1) return 'rgba(0,232,143,0.25)';
-    if (intensity === 2) return 'rgba(0,232,143,0.45)';
-    if (intensity === 3) return 'rgba(0,232,143,0.7)';
-    return 'rgba(0,232,143,1)';
+    if (intensity === 1) return 'rgba(var(--hub-primary-rgb),0.25)';
+    if (intensity === 2) return 'rgba(var(--hub-primary-rgb),0.45)';
+    if (intensity === 3) return 'rgba(var(--hub-primary-rgb),0.7)';
+    return 'rgba(var(--hub-primary-rgb),1)';
   };
 
   return (
@@ -135,15 +151,30 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        
+        <div
+          className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2.5 space-y-1.5"
+          role="note"
+          aria-label={statisticsCopy.noteTitle}
+        >
+          <p className="text-[10px] font-bold uppercase tracking-widest text-primary/90">{statisticsCopy.noteTitle}</p>
+          <p className="text-[10px] leading-relaxed text-white/70">{statisticsCopy.realCore}</p>
+          <p className="text-[10px] leading-relaxed text-white/70">
+            {xpSeriesIsReal ? statisticsCopy.xpSeriesReal : statisticsCopy.xpSeriesSynthetic}
+          </p>
+          <p className="text-[10px] leading-relaxed text-white/70">
+            {subjectStatsIsReal ? statisticsCopy.subjectReal : statisticsCopy.subjectSynthetic}
+          </p>
+        </div>
+
         {/* ═══ HERO: XP + NÍVEL EM DESTAQUE ═══ */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
           className="relative overflow-hidden rounded-3xl p-5 border border-primary/20"
           style={{ 
-            background: 'linear-gradient(135deg, rgba(0,232,143,0.15), rgba(0,232,143,0.03))',
-            boxShadow: '0 0 40px rgba(0,232,143,0.15)'
+            background: 'linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.15), rgba(var(--hub-primary-rgb),0.03))',
+            boxShadow: '0 0 40px rgba(var(--hub-primary-rgb),0.15)'
           }}
         >
           <div className="absolute -top-8 -right-8 opacity-10">
@@ -155,7 +186,7 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
             <div className="flex items-end gap-2 mt-1">
               <motion.span 
                 className="font-anton text-5xl text-white"
-                style={{ textShadow: '0 0 20px rgba(0,232,143,0.5)' }}
+                style={{ textShadow: '0 0 20px rgba(var(--hub-primary-rgb),0.5)' }}
               >
                 {formatNumber(xp)}
               </motion.span>
@@ -256,7 +287,7 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
               <Tooltip 
                 contentStyle={{ 
                   background: 'rgba(10,10,10,0.95)', 
-                  border: '1px solid rgba(0,232,143,0.3)',
+                  border: '1px solid rgba(var(--hub-primary-rgb),0.3)',
                   borderRadius: '12px',
                   fontSize: '12px',
                 }}
@@ -285,14 +316,18 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
             {heatmapData.map((d: any, i: number) => (
               <motion.div
                 key={d.date}
-                initial={{ scale: 0, opacity: 0 }}
+                initial={{ scale: reduceMotion ? 1 : 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: i * 0.01 }}
-                whileHover={{ scale: 1.2 }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0.1, delay: i * 0.005, ease: easings.smoothOut }
+                    : { delay: i * 0.01, ...springs.snappy }
+                }
+                whileHover={reduceMotion ? undefined : { scale: 1.2 }}
                 className="aspect-square rounded-md border border-white/5"
                 style={{ 
                   background: heatmapColor(d.intensity),
-                  boxShadow: d.intensity === 4 ? '0 0 8px rgba(0,232,143,0.5)' : 'none',
+                  boxShadow: d.intensity === 4 ? '0 0 8px rgba(var(--hub-primary-rgb),0.5)' : 'none',
                 }}
                 title={`${d.date}: ${d.value} XP`}
               />
@@ -338,7 +373,11 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
-                      transition={{ delay: i * 0.1, duration: 0.8, ease: 'easeOut' }}
+                      transition={
+                        reduceMotion
+                          ? { delay: i * 0.03, duration: 0.15, ease: easings.smoothOut }
+                          : { delay: i * 0.1, duration: 0.8, ease: 'easeOut' }
+                      }
                       className="h-full rounded-full"
                       style={{ background: color, boxShadow: `0 0 8px ${color}80` }}
                     />
@@ -452,11 +491,19 @@ export const Statistics: React.FC<Props> = ({ onBack }) => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
           className="relative overflow-hidden rounded-3xl p-4 border border-purple-500/20"
           style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(168,85,247,0.02))' }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}>
+            <motion.div
+              animate={reduceMotion ? { rotate: 0 } : { rotate: 360 }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { duration: 8, repeat: Infinity, ease: 'linear' }
+              }
+            >
               <Sparkles size={16} className="text-purple-400" />
             </motion.div>
             <h3 className="text-sm font-bold text-white">Insights</h3>
@@ -495,9 +542,11 @@ interface StatCardProps {
   animate?: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon: Icon, color, label, value, suffix, subtitle, animate }) => (
+const StatCard: React.FC<StatCardProps> = ({ icon: Icon, color, label, value, suffix, subtitle, animate }) => {
+  const reduceMotion = useReducedMotion() ?? false;
+  return (
   <motion.div
-    whileHover={{ scale: 1.02 }}
+    whileHover={reduceMotion ? undefined : { scale: 1.02 }}
     className="relative overflow-hidden rounded-2xl p-3.5 border"
     style={{
       background: `linear-gradient(135deg, ${color}15, ${color}03)`,
@@ -507,7 +556,10 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, color, label, value, su
   >
     <div className="flex items-center justify-between mb-2">
       <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color }}>{label}</span>
-      <motion.div animate={animate ? { y: [0, -2, 0] } : {}} transition={{ duration: 1.2, repeat: Infinity }}>
+      <motion.div
+        animate={animate && !reduceMotion ? { y: [0, -2, 0] } : {}}
+        transition={animate && !reduceMotion ? { duration: 1.2, repeat: Infinity } : { duration: 0 }}
+      >
         <Icon size={14} style={{ color, filter: `drop-shadow(0 0 6px ${color})` }} />
       </motion.div>
     </div>
@@ -517,7 +569,8 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, color, label, value, su
     </div>
     {subtitle && <span className="text-[9px] text-white/40 block mt-0.5">{subtitle}</span>}
   </motion.div>
-);
+  );
+};
 
 const MiniStatBlock: React.FC<{ icon: any; color: string; title: string; stats: { label: string; value: string }[] }> = 
   ({ icon: Icon, color, title, stats }) => (

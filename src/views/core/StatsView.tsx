@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
+import { springs } from '../../lib/animations/easings';
 import { 
   BarChart3, 
   Zap, 
@@ -41,8 +42,11 @@ import { GlassCard, cn, Header } from '../../components/UI';
 
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { Heatmap } from '../../components/Heatmap';
+import { statsViewCopy } from '../../lib/productDisclosure';
 
 const Reports = () => {
+  const reduceMotion = useReducedMotion() ?? false;
+  const barTransition = reduceMotion ? { duration: 0.12 } : springs.soft;
   const { history, xp, streak, themeColor, trackFeature } = useStore();
   const { questionMap: QUESTION_MAP, loading: qLoading, error: qError } = useQuestionMap();
   const { goBack } = useAppNavigation();
@@ -175,13 +179,22 @@ const Reports = () => {
         onBack={goBack}
         rightContent={
           <div className="flex gap-2">
-            <div className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20 flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,232,143,0.2)]">
+            <div className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20 flex items-center gap-1.5 shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.2)]">
               <Zap size={12} className="text-primary" fill="currentColor" />
               <span className="text-[10px] font-premium-mono font-bold text-primary">{xp} XP</span>
             </div>
           </div>
         }
       />
+
+      <div
+        className="mb-4 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2.5"
+        role="note"
+        aria-label={statsViewCopy.noteTitle}
+      >
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary/90 mb-1">{statsViewCopy.noteTitle}</p>
+        <p className="text-[10px] leading-relaxed text-text-secondary">{statsViewCopy.noteBody}</p>
+      </div>
 
       {/* Top Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
@@ -194,10 +207,11 @@ const Reports = () => {
           </div>
           <p className="text-3xl font-premium-title">{accuracy}%</p>
           <div className="mt-2 h-1 bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${accuracy}%` }}
-              className="h-full bg-primary shadow-[0_0_10px_rgba(0,255,148,0.5)]"
+              transition={barTransition}
+              className="h-full bg-primary shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.45)]"
             />
           </div>
         </GlassCard>
@@ -453,9 +467,10 @@ const Reports = () => {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <motion.span 
-                initial={{ opacity: 0, scale: 0.5 }}
+              <motion.span
+                initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
+                transition={reduceMotion ? { duration: 0.12 } : springs.card}
                 className="text-4xl font-premium-title text-primary"
               >
                 {accuracy}%
@@ -545,11 +560,15 @@ const Reports = () => {
                   </div>
                 </div>
                 <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/10 relative">
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${data.percent}%` }}
-                    transition={{ duration: 1, delay: i * 0.1 }}
-                    className="h-full bg-gradient-to-r from-primary/50 to-primary shadow-[0_0_10px_rgba(0,255,148,0.3)] rounded-full"
+                    transition={
+                      reduceMotion
+                        ? { duration: 0.12, delay: i * 0.04 }
+                        : { ...springs.soft, delay: i * 0.1 }
+                    }
+                    className="h-full bg-gradient-to-r from-primary/50 to-primary shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.28)] rounded-full"
                   />
                 </div>
               </div>
@@ -579,10 +598,14 @@ const Reports = () => {
                   </div>
                 </div>
                 <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/10 relative">
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${data.percent}%` }}
-                    transition={{ duration: 1, delay: i * 0.1 }}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0.12, delay: i * 0.04 }
+                        : { ...springs.soft, delay: i * 0.1 }
+                    }
                     className="h-full bg-gradient-to-r from-blue-500/50 to-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)] rounded-full"
                   />
                 </div>

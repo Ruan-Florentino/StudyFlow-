@@ -6,9 +6,9 @@ import { useStore } from '../store';
 
 export const NeuralTerminal = ({ onBack }: { onBack: () => void }) => {
   const [history, setHistory] = useState<string[]>([
-    'StudyOS v9.9.9 Neural Interface',
-    'Establishing direct cortical connection...',
-    'Connection established. Type "help" for commands.'
+    'StudyOS v2.0 Learning Console',
+    'Carregando ambiente de estudo...',
+    'Pronto. Digite "help" para ver os comandos.'
   ]);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -28,26 +28,26 @@ export const NeuralTerminal = ({ onBack }: { onBack: () => void }) => {
         let response = '';
         switch (cmd) {
           case 'help':
-            response = 'Available commands: status, hack_focus, inject_dopamine, clear, sudo_learn';
+            response = 'Comandos disponíveis: status, boost_focus, energize, clear, quick_points';
             break;
           case 'status':
-            response = 'Neural sync: 99.9%. Cognitive load: Optimal. Flow state: Active.';
+            response = 'Foco: alto. Carga cognitiva: equilibrada. Sessão ativa.';
             break;
-          case 'hack_focus':
-            response = 'Bypassing prefrontal cortex limits... Focus increased by 400%.';
+          case 'boost_focus':
+            response = 'Ativando rotina de foco... concentração reforçada.';
             break;
-          case 'inject_dopamine':
-            response = 'Synthesizing digital dopamine... Motivation levels critical. You are unstoppable.';
+          case 'energize':
+            response = 'Aplicando reforço motivacional. Continue no ritmo.';
             break;
-          case 'sudo_learn':
-            response = 'Executing root learning protocol. +1000 XP granted.';
+          case 'quick_points':
+            response = 'Bônus aplicado. +1000 XP concedidos.';
             addXP(1000);
             break;
           case 'clear':
             setHistory([]);
             return;
           default:
-            response = `Command not recognized: ${cmd}. Type "help" for available commands.`;
+            response = `Comando não reconhecido: ${cmd}. Digite "help" para ver as opções.`;
         }
         setHistory(prev => [...prev, response]);
       }, 500);
@@ -61,7 +61,7 @@ export const NeuralTerminal = ({ onBack }: { onBack: () => void }) => {
           <ChevronLeft size={20} />
         </AnimatedButton>
         <h2 className="text-3xl font-bold text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.8)]">
-          Terminal Neural
+          Console de Estudos
         </h2>
       </header>
 
@@ -78,7 +78,7 @@ export const NeuralTerminal = ({ onBack }: { onBack: () => void }) => {
         </div>
 
         <div className="mt-4 flex items-center gap-2 text-emerald-400 relative z-10 border-t border-emerald-500/30 pt-4">
-          <span>root@brain:~#</span>
+          <span>study@console:~$</span>
           <input
             type="text"
             value={input}
