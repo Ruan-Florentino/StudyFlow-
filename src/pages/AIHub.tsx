@@ -11,24 +11,24 @@ import { aiPremiumCopy } from '../lib/productDisclosure';
 export function AIHub() {
   const { isPremium } = useUserAccess();
   return (
-    <div className="relative mx-auto w-full min-h-[calc(100vh-6rem)] max-w-7xl px-4 md:px-8 pt-6 md:pt-8 h-[calc(100vh-6rem)] flex flex-col">
+    <div className="relative mx-auto flex w-full max-w-7xl min-h-0 flex-col px-3 sm:px-4 md:px-8 pt-4 md:pt-8 max-md:min-h-[calc(100svh-6.5rem-env(safe-area-inset-top,0px))] max-md:overflow-x-hidden md:h-[calc(100vh-6rem)] md:min-h-[calc(100vh-6rem)]">
       <AuroraBackground intensity="subtle" />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
       {/* Header Section */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 flex items-center justify-between"
+        className="mb-4 flex items-center justify-between gap-3 md:mb-8"
       >
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-lg shadow-emerald-500/5 neon-edge-subtle">
-            <span className="text-3xl">{ATHENA_CONFIG.ICON}</span>
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 shadow-lg shadow-emerald-500/5 neon-edge-subtle sm:h-12 sm:w-12">
+            <span className="text-2xl sm:text-3xl">{ATHENA_CONFIG.ICON}</span>
           </div>
-          <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-black tracking-tight text-white sm:text-2xl">
               Intelligence <span className="neon-text-soft">Hub</span>
             </h1>
-            <p className="text-xs text-white/40 font-medium uppercase tracking-widest">ATHENA V3 · DeepSeek</p>
+            <p className="truncate text-[10px] font-medium uppercase tracking-widest text-white/40 sm:text-xs">ATHENA V3 · DeepSeek</p>
           </div>
         </div>
 
@@ -70,6 +70,7 @@ export function AIHub() {
         <AthenaChat 
           context="hub"
           showSidebar={true}
+          defaultSidebarOpen={false}
         />
       </div>
 
@@ -78,7 +79,7 @@ export function AIHub() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4"
+        className="mt-4 hidden grid-cols-1 gap-4 md:mt-6 md:grid md:grid-cols-3"
       >
         <div className="p-4 glass-premium rounded-2xl flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">

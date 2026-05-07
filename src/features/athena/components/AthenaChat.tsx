@@ -16,8 +16,9 @@ interface AthenaChatProps {
   greeting?: string;
   placeholder?: string;
   systemPrompt?: string;
+  /** Quando true, exibe histórico de conversas (toggle + painel). */
   showSidebar?: boolean;
-  /** Abre a sidebar de sessões por padrão (útil em telas de histórico embutido). */
+  /** Abre o painel de histórico já expandido (ex.: desktop). No hub, prefira false no mobile. */
   defaultSidebarOpen?: boolean;
   /** Chat reduzido para a home (sem sidebar, layout mais baixo). */
   compact?: boolean;
@@ -30,13 +31,13 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
   greeting, 
   placeholder,
   systemPrompt,
-  showSidebar: forceSidebar = false,
+  showSidebar: sidebarEnabled = false,
   defaultSidebarOpen = false,
   compact = false,
   sidebarInCompact = false,
 }) => {
   const [selectedModel, setSelectedModel] = useState<AIModel>(DEFAULT_MODEL);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(forceSidebar || defaultSidebarOpen);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(defaultSidebarOpen);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion() ?? false;
 
@@ -82,18 +83,29 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
       className={
         compact
           ? 'flex h-full min-h-0 w-full bg-slate-950/40 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-xl relative'
-          : 'flex h-full w-full bg-slate-950/50 rounded-3xl overflow-hidden border border-white/5 backdrop-blur-3xl shadow-2xl relative'
+          : 'flex h-full min-h-0 w-full bg-slate-950/50 rounded-3xl overflow-hidden border border-white/5 backdrop-blur-3xl shadow-2xl relative'
       }
     >
       <AnimatePresence>
-        {allowSidebar && isSidebarOpen && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 280, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={sidebarTransition}
-            className="h-full border-r border-white/5 bg-black/20 flex flex-col overflow-hidden shrink-0"
-          >
+        {sidebarEnabled && allowSidebar && isSidebarOpen && (
+          <>
+            <motion.button
+              type="button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden fixed inset-0 z-[55] bg-black/60 border-0 p-0 cursor-pointer"
+              aria-label="Fechar histórico de conversas"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 280, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={sidebarTransition}
+              className="h-full max-md:fixed max-md:left-0 max-md:top-0 max-md:z-[60] max-md:h-[100dvh] max-md:max-h-[100dvh] md:relative border-r border-white/5 bg-black/90 md:bg-black/20 backdrop-blur-md flex flex-col overflow-hidden shrink-0 max-md:shadow-2xl"
+            >
             <div className="p-4 border-b border-white/5 flex items-center justify-between gap-2">
               <h3 className="text-xs font-bold uppercase tracking-widest text-white/40 flex items-center gap-2 min-w-0">
                 <History size={14} />
@@ -155,6 +167,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
               )}
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -164,38 +177,39 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
         <header
           className={
             compact
-              ? 'p-2.5 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md shrink-0'
-              : 'p-4 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md'
+              ? 'p-2.5 border-b border-white/5 flex flex-wrap items-center justify-between gap-2 bg-white/5 backdrop-blur-md shrink-0'
+              : 'p-3 sm:p-4 border-b border-white/5 flex flex-wrap items-center justify-between gap-2 bg-white/5 backdrop-blur-md shrink-0'
           }
         >
-          <div className="flex items-center gap-3">
-            {allowSidebar && (
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            {sidebarEnabled && allowSidebar && (
             <button 
               type="button"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/40"
+              className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/40 shrink-0"
               title={isSidebarOpen ? 'Ocultar histórico de conversas' : 'Ver histórico de conversas'}
             >
               <Sidebar size={18} />
             </button>
             )}
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className={compact ? 'text-lg' : 'text-xl'}>{ATHENA_CONFIG.ICON}</span>
-                <span className={compact ? 'text-xs font-bold tracking-tight text-white' : 'text-sm font-bold tracking-tight text-white'}>{ATHENA_CONFIG.NAME}</span>
-                <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-bold rounded uppercase tracking-widest border border-emerald-500/20">
+            <div className="flex min-w-0 flex-col">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+                <span className={`shrink-0 ${compact ? 'text-lg' : 'text-lg sm:text-xl'}`}>{ATHENA_CONFIG.ICON}</span>
+                <span className={`min-w-0 truncate ${compact ? 'text-xs font-bold tracking-tight text-white' : 'text-xs sm:text-sm font-bold tracking-tight text-white'}`}>{ATHENA_CONFIG.NAME}</span>
+                <span className="inline-flex shrink-0 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-bold rounded uppercase tracking-widest border border-emerald-500/20">
                   Online
                 </span>
               </div>
               {!compact && (
-              <span className="text-[10px] text-white/30 font-medium">{ATHENA_CONFIG.TAGLINE}</span>
+              <span className="hidden sm:block text-[10px] text-white/30 font-medium truncate">{ATHENA_CONFIG.TAGLINE}</span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <ModelSelector selectedModel={selectedModel} onSelect={setSelectedModel} />
             <button 
+              type="button"
               onClick={clearChat}
               className="p-2.5 hover:bg-red-500/10 hover:text-red-500 rounded-xl transition-all text-white/20"
               title="Limpar Chat"
@@ -316,7 +330,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
         </div>
 
         {/* Input Area */}
-        <div className={compact ? 'p-3 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent shrink-0' : 'p-6 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent'}>
+        <div className={compact ? 'p-3 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent shrink-0' : 'p-3 sm:p-6 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent shrink-0'}>
           <ChatInput onSend={(c) => sendMessage(c, selectedModel)} disabled={loading} placeholder={placeholder} />
           <div className={`flex justify-between items-center px-2 ${compact ? 'mt-2' : 'mt-4'}`}>
             <div className="flex items-center gap-2 text-[9px] text-white/20 font-bold uppercase tracking-widest">

@@ -20,7 +20,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onS
   }
   return (
     <motion.div
-      className="relative group"
+      className="relative group shrink-0"
       whileTap={{ scale: 0.98, transition: springs.snappy }}
     >
       <select
@@ -29,7 +29,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onS
           const model = ATHENA_MODELS.find(m => m.id === e.target.value);
           if (model) onSelect(model);
         }}
-        className="appearance-none bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-2 text-xs font-bold text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200 ease-out outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/30"
+        className="max-w-[10.5rem] sm:max-w-none appearance-none bg-white/5 border border-white/10 rounded-xl pl-9 pr-8 sm:pl-10 sm:pr-10 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200 ease-out outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/30 truncate"
       >
         {ATHENA_MODELS.map(model => (
           <option key={model.id} value={model.id} className="bg-slate-900">
@@ -37,10 +37,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onS
           </option>
         ))}
       </select>
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-primary">
+      <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none text-primary sm:left-3">
         <Cpu size={14} />
       </div>
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-white/20 sm:right-3">
         <ChevronDown size={14} />
       </div>
     </motion.div>
