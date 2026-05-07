@@ -43,4 +43,5 @@ Referência completa: `docs/release-checklist.md` e `docs/release-incident-runbo
 Templates de comunicação: `docs/release-status-template.md`.
 Sequência recomendada: `docs/release-communication-sequence.md`.
 Modo solo: `docs/release-solo-mode.md`.
+Cheatsheet de comandos: `docs/release-commands-cheatsheet.md`.
 
