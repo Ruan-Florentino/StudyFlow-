@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { springs } from '../../lib/animations/easings';
 import { Send, Loader2, MessageCircle } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface Message {
@@ -12,6 +12,39 @@ interface Message {
   content: string;
   color: string;
   created_at: string;
+}
+
+function stableMessageId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function normalizeRoomMessage(row: unknown, fallbackColor: string): Message | null {
+  if (!row || typeof row !== 'object') return null;
+  const record = row as Record<string, unknown>;
+  const idRaw = record.id;
+  const id = idRaw != null && String(idRaw).length > 0 ? String(idRaw) : stableMessageId();
+  const userId = record.user_id != null ? String(record.user_id) : '';
+  const userName =
+    typeof record.user_name === 'string' && record.user_name.trim().length > 0
+      ? record.user_name
+      : 'Estudante';
+  const content =
+    typeof record.content === 'string' ? record.content : String(record.content ?? '');
+  const msgColor =
+    typeof record.color === 'string' && record.color.length > 0 ? record.color : fallbackColor;
+  const created =
+    typeof record.created_at === 'string' ? record.created_at : new Date().toISOString();
+  return {
+    id,
+    user_id: userId,
+    user_name: userName,
+    content,
+    color: msgColor,
+    created_at: created,
+  };
 }
 
 interface RoomChatProps {
@@ -28,6 +61,11 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('room_messages')
@@ -37,46 +75,72 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
         .limit(50);
 
       if (error) throw error;
-      setMessages(data || []);
+      const rows = Array.isArray(data) ? data : [];
+      setMessages(
+        rows
+          .map((row) => normalizeRoomMessage(row, color))
+          .filter((m): m is Message => m != null)
+      );
     } catch {
       setMessages([]);
     } finally {
       setLoading(false);
     }
-  }, [roomId]);
+  }, [roomId, color]);
 
   useEffect(() => {
     if (!roomId) return;
     setLoading(true);
 
-    const channel = supabase
-      .channel(`room:${roomId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'room_messages',
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          const row = payload.new;
-          if (!row || typeof row !== 'object') return;
-          setMessages((prev) => [...prev, row as Message]);
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          setLoading(false);
-        }
-      });
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    try {
+      channel = supabase
+        .channel(`room:${roomId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'room_messages',
+            filter: `room_id=eq.${roomId}`,
+          },
+          (payload) => {
+            const next = normalizeRoomMessage(payload.new, color);
+            if (!next) return;
+            setMessages((prev) => {
+              if (prev.some((p) => p.id === next.id)) return prev;
+              return [...prev, next];
+            });
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            setLoading(false);
+          }
+        });
+    } catch {
+      setLoading(false);
+      channel = null;
+    }
 
     void fetchMessages();
 
     return () => {
-      void supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          void supabase.removeChannel(channel);
+        } catch {
+          /* noop */
+        }
+      }
     };
-  }, [roomId, fetchMessages]);
+  }, [roomId, color, fetchMessages]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -84,7 +148,8 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
   
   const sendMessage = async () => {
     if (!input.trim() || !user) return;
-    
+    if (!isSupabaseConfigured) return;
+
     const content = input;
     setInput('');
 
@@ -98,9 +163,8 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
       });
       
       if (error) throw error;
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Optional: show error to user
+    } catch {
+      setInput(content);
     }
   };
   
@@ -111,12 +175,11 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
   };
   
   return (
-    <div 
-      className="rounded-3xl flex flex-col relative overflow-hidden border border-[rgba(var(--hub-primary-rgb),0.2)]"
+    <div
+      className="relative flex h-[clamp(16rem,38svh,22rem)] min-h-[16rem] flex-col overflow-hidden rounded-3xl border border-[rgba(var(--hub-primary-rgb),0.2)] md:h-80"
       style={{
         background: `linear-gradient(180deg, rgba(var(--hub-primary-rgb),0.06), rgba(255,255,255,0.02))`,
         backdropFilter: 'blur(20px)',
-        height: '320px',
         boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.35)`,
       }}
     >
@@ -162,7 +225,7 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
             >
               <div className="flex items-baseline gap-2">
                 <span
-                  className="text-[10px] font-bold uppercase"
+                  className="max-w-[min(100%,12rem)] break-words text-[10px] font-bold uppercase"
                   style={{ color: msg.color || color }}
                 >
                   {msg.user_name ?? 'Estudante'}

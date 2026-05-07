@@ -20,10 +20,10 @@ export function SalaPage({ roomId, onLeave }: { roomId: string; onLeave: () => v
   const reduceMotion = useReducedMotion() ?? false;
 
   return (
-    <div className="relative z-10 w-full min-h-0 bg-background text-white pb-24">
+    <div className="relative z-10 w-full bg-background pb-24 text-white">
       {/* Grade sutil + brilho (marca + toque da matéria) */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.05]"
+        className="pointer-events-none absolute inset-0 opacity-[0.05]"
         style={{
           backgroundImage: `
             linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
@@ -77,7 +77,7 @@ export function SalaPage({ roomId, onLeave }: { roomId: string; onLeave: () => v
               </span>
               <div className="min-w-0">
                 <h1
-                  className="text-lg font-bold font-display truncate"
+                  className="font-display break-words text-lg font-bold leading-snug"
                   style={{
                     color: subject.color,
                     textShadow: `0 0 24px rgba(${subject.glow},0.45)`,

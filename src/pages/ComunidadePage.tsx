@@ -12,7 +12,6 @@ import {
 import { useStore } from '../store';
 import { SalaPage } from './SalaPage';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAppNavigation } from '../app/router/useAppNavigation';
 
 export type SalaSubjectCategory = 'exatas' | 'natureza' | 'humanas' | 'linguagens' | 'criativo';
@@ -149,7 +148,6 @@ const CATEGORY_FILTERS: Array<{ id: SalaSubjectCategory | 'all'; label: string }
 
 export function ComunidadePage() {
   const { goBack } = useAppNavigation();
-  const navigate = useNavigate();
   const joinRoom = useStore((state) => state.joinRoom);
   const activeRoom = useStore((state) => state.studyRooms?.activeRoom ?? null);
   const [query, setQuery] = useState('');
@@ -157,11 +155,7 @@ export function ComunidadePage() {
   const reduceMotion = useReducedMotion() ?? false;
 
   const handleBack = () => {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      goBack();
-    } else {
-      navigate('/', { replace: false });
-    }
+    goBack();
   };
 
   const filteredSubjects = useMemo(() => {
@@ -216,9 +210,9 @@ export function ComunidadePage() {
               <ArrowLeft size={20} className="text-[var(--color-primary)]" />
             </motion.button>
             <div className="min-w-0">
-              <h1 className="font-premium-title italic text-xl uppercase tracking-tight truncate">
+              <h1 className="font-premium-title italic text-xl uppercase leading-tight tracking-tight text-white">
                 Salas de estudo
-                <span className="text-primary not-italic ml-0.5">.</span>
+                <span className="ml-0.5 text-primary not-italic">.</span>
               </h1>
               <p className="text-[10px] font-premium-mono tracking-widest text-white/40 uppercase">
                 Som · presença · chat
@@ -320,7 +314,7 @@ export function ComunidadePage() {
                   type="button"
                   onClick={() => setCategory(c.id)}
                   whileTap={{ scale: 0.96, transition: springs.snappy }}
-                  className={`shrink-0 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all duration-200 ease-out ${
+                  className={`shrink-0 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide border transition-all duration-200 ease-out md:px-3 md:py-2 md:text-[10px] md:tracking-wider ${
                     active
                       ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] border-[var(--color-primary)]/35 shadow-[0_0_16px_rgba(var(--hub-primary-rgb),0.15)]'
                       : 'bg-white/[0.04] text-white/45 border-white/10 hover:text-white/75 hover:bg-white/[0.07]'
@@ -342,8 +336,8 @@ export function ComunidadePage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pb-8">
-            <AnimatePresence mode="popLayout">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3 pb-8">
+            <AnimatePresence>
               {filteredSubjects.map((subject, i) => (
                 <motion.button
                   key={subject.id}
@@ -355,10 +349,10 @@ export function ComunidadePage() {
                       ? { duration: 0.12, delay: i * 0.02, ease: [0.22, 1, 0.36, 1] }
                       : { ...springs.card, delay: i * 0.02 }
                   }
-                  whileTap={{ scale: 0.96, transition: springs.snappy }}
+                  whileTap={{ scale: 0.98, transition: springs.snappy }}
                   type="button"
                   onClick={() => joinRoom(subject.id)}
-                  className="aspect-square rounded-3xl p-4 relative overflow-hidden flex flex-col items-center justify-center gap-2 group text-left"
+                  className="group relative flex min-h-[5.25rem] w-full flex-shrink-0 flex-row items-center gap-4 overflow-hidden rounded-3xl p-4 text-left sm:min-h-0 sm:aspect-square sm:flex-col sm:items-center sm:justify-center sm:gap-2 sm:p-4"
                   style={{
                     background: `linear-gradient(145deg, 
                       rgba(${subject.glow},0.2) 0%, 
@@ -368,23 +362,25 @@ export function ComunidadePage() {
                   }}
                 >
                   <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                     style={{
                       background: `radial-gradient(circle at 50% 30%, rgba(${subject.glow},0.35) 0%, transparent 55%)`,
                     }}
                   />
-                  <span className="relative text-[9px] font-bold uppercase tracking-wider text-white/40 self-start w-full truncate">
-                    {subject.categoryLabel}
-                  </span>
-                  <div className="relative text-4xl mb-0.5 transform group-hover:scale-110 transition-transform duration-300">
-                    {subject.icon}
+                  <div className="relative flex shrink-0 items-center justify-center text-4xl sm:mb-0.5 sm:transform sm:transition-transform sm:duration-300 sm:group-hover:scale-110">
+                    <span aria-hidden>{subject.icon}</span>
                   </div>
-                  <h3 className="relative font-bold text-sm text-center truncate max-w-full text-white/95">
-                    {subject.name}
-                  </h3>
-                  <div className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 border border-white/10">
+                  <div className="relative flex min-w-0 flex-1 flex-col justify-center gap-1.5 text-left sm:items-center sm:text-center">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-white/45 sm:w-full sm:text-center">
+                      {subject.categoryLabel}
+                    </span>
+                    <h3 className="text-base font-bold leading-snug text-white/95 sm:text-center sm:text-sm">
+                      <span className="block break-words">{subject.name}</span>
+                    </h3>
+                  </div>
+                  <div className="relative ml-auto flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2.5 py-1 sm:ml-0">
                     <span
-                      className="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.85)]"
+                      className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.85)]"
                       style={{ backgroundColor: 'var(--hub-primary)' }}
                     />
                     <span className="text-[10px] font-bold text-white/55">Aberta</span>

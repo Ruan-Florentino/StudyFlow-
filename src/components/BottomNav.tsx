@@ -18,13 +18,13 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'home', label: 'INICIO', labelCompact: 'INÍCIO', icon: Home, path: '/' },
-  { id: 'explore', label: 'EXPLORAR', labelCompact: 'EXPL.', icon: Compass, path: '/explorar' },
-  { id: 'ai', label: 'MENTORIA', labelCompact: 'IA', icon: Sparkles, path: '/ai' },
-  { id: 'questions', label: 'QUESTOES', labelCompact: 'QÕES', icon: Target, path: '/questoes', badge: true },
-  { id: 'redacao', label: 'REDACAO', labelCompact: 'RED.', icon: PenLine, path: '/redacao' },
-  { id: 'comunidade', label: 'COMUNIDADE', labelCompact: 'COM.', icon: Users, path: '/comunidade' },
-  { id: 'profile', label: 'PERFIL', labelCompact: 'EU', icon: User, path: '/perfil' },
+  { id: 'home', label: 'INÍCIO', labelCompact: 'INÍCIO', icon: Home, path: '/' },
+  { id: 'explore', label: 'EXPLORAR', labelCompact: 'EXPLORAR', icon: Compass, path: '/explorar' },
+  { id: 'ai', label: 'MENTORIA', labelCompact: 'MENTORIA', icon: Sparkles, path: '/ai' },
+  { id: 'questions', label: 'QUESTÕES', labelCompact: 'QUESTÕES', icon: Target, path: '/questoes', badge: true },
+  { id: 'redacao', label: 'REDAÇÃO', labelCompact: 'REDAÇÃO', icon: PenLine, path: '/redacao' },
+  { id: 'comunidade', label: 'COMUNIDADE', labelCompact: 'COMUNIDADE', icon: Users, path: '/comunidade' },
+  { id: 'profile', label: 'PERFIL', labelCompact: 'PERFIL', icon: User, path: '/perfil' },
 ];
 
 function triggerHaptic() {
@@ -56,7 +56,7 @@ export function BottomNav() {
                 onTouchStart={() => preloadRoute(item.path)}
                 title={item.label}
                 aria-label={item.label}
-                className="relative flex h-full min-w-[3.65rem] shrink-0 snap-center items-center justify-center no-underline md:min-w-0 md:flex-1 md:snap-none"
+                className="relative flex h-full min-w-[3.85rem] shrink-0 snap-center items-center justify-center no-underline md:min-w-0 md:flex-1 md:snap-none"
               >
                 <motion.div
                   whileTap={{ scale: 0.94, transition: springs.snappy }}
@@ -95,7 +95,7 @@ export function BottomNav() {
                     {item.label}
                   </span>
                   <span
-                    className={`relative z-10 md:hidden whitespace-nowrap text-[8.5px] font-bold uppercase tracking-[0.04em] ${
+                    className={`relative z-10 md:hidden text-center text-[8px] font-bold uppercase leading-[1.15] tracking-tight ${
                       isActive
                         ? 'text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)]'
                         : 'text-white/62'
