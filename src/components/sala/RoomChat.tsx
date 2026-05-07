@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { springs } from '../../lib/animations/easings';
 import { Send, Loader2, MessageCircle } from 'lucide-react';
@@ -26,35 +26,8 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    if (!roomId) return;
-    
-    fetchMessages();
-    
-    // Subscribe to new messages
-    const channel = supabase
-      .channel(`room:${roomId}`)
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'room_messages',
-        filter: `room_id=eq.${roomId}`
-      }, (payload) => {
-        setMessages(prev => [...prev, payload.new as Message]);
-      })
-      .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [roomId]);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages]);
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('room_messages')
@@ -62,15 +35,52 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
         .eq('room_id', roomId)
         .order('created_at', { ascending: true })
         .limit(50);
-      
+
       if (error) throw error;
       setMessages(data || []);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
+    } catch {
+      setMessages([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId) return;
+    setLoading(true);
+
+    const channel = supabase
+      .channel(`room:${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'room_messages',
+          filter: `room_id=eq.${roomId}`,
+        },
+        (payload) => {
+          const row = payload.new;
+          if (!row || typeof row !== 'object') return;
+          setMessages((prev) => [...prev, row as Message]);
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          setLoading(false);
+        }
+      });
+
+    void fetchMessages();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [roomId, fetchMessages]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages]);
   
   const sendMessage = async () => {
     if (!input.trim() || !user) return;
@@ -96,6 +106,7 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
   
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '—';
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
@@ -150,18 +161,18 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
               className="flex flex-col gap-1"
             >
               <div className="flex items-baseline gap-2">
-                <span 
+                <span
                   className="text-[10px] font-bold uppercase"
                   style={{ color: msg.color || color }}
                 >
-                  {msg.user_name}
+                  {msg.user_name ?? 'Estudante'}
                 </span>
                 <span className="text-[8px] text-white/20">
                   {formatTime(msg.created_at)}
                 </span>
               </div>
               <p className="text-sm text-white/80 leading-relaxed bg-white/5 p-2 rounded-xl rounded-tl-none border border-white/5">
-                {msg.content}
+                {msg.content ?? ''}
               </p>
             </motion.div>
           ))

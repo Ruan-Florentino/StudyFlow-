@@ -128,7 +128,6 @@
 
   /** Área de scroll principal: gesto vertical estável; menos “rubber band” no PWA */
   #app-main-scroll {
-    touch-action: pan-y;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
   }

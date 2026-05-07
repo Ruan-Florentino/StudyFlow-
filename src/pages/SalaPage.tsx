@@ -20,7 +20,7 @@ export function SalaPage({ roomId, onLeave }: { roomId: string; onLeave: () => v
   const reduceMotion = useReducedMotion() ?? false;
 
   return (
-    <div className="absolute inset-0 z-30 bg-background text-white pb-24 overflow-y-auto custom-scrollbar">
+    <div className="relative z-10 w-full min-h-0 bg-background text-white pb-24">
       {/* Grade sutil + brilho (marca + toque da matéria) */}
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.05]"

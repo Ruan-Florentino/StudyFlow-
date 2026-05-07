@@ -12,6 +12,7 @@ import {
 import { useStore } from '../store';
 import { SalaPage } from './SalaPage';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppNavigation } from '../app/router/useAppNavigation';
 
 export type SalaSubjectCategory = 'exatas' | 'natureza' | 'humanas' | 'linguagens' | 'criativo';
@@ -148,11 +149,20 @@ const CATEGORY_FILTERS: Array<{ id: SalaSubjectCategory | 'all'; label: string }
 
 export function ComunidadePage() {
   const { goBack } = useAppNavigation();
+  const navigate = useNavigate();
   const joinRoom = useStore((state) => state.joinRoom);
-  const activeRoom = useStore((state) => state.studyRooms?.activeRoom);
+  const activeRoom = useStore((state) => state.studyRooms?.activeRoom ?? null);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<SalaSubjectCategory | 'all'>('all');
   const reduceMotion = useReducedMotion() ?? false;
+
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      goBack();
+    } else {
+      navigate('/', { replace: false });
+    }
+  };
 
   const filteredSubjects = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -199,7 +209,7 @@ export function ComunidadePage() {
             <motion.button
               type="button"
               whileTap={{ scale: 0.94, transition: springs.snappy }}
-              onClick={goBack}
+              onClick={handleBack}
               className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-white/[0.06] border border-white/10 hover:bg-white/10 transition-colors"
               aria-label="Voltar"
             >
@@ -332,12 +342,11 @@ export function ComunidadePage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pb-20">
+          <div className="grid grid-cols-2 gap-3 pb-8">
             <AnimatePresence mode="popLayout">
               {filteredSubjects.map((subject, i) => (
                 <motion.button
                   key={subject.id}
-                  layout
                   initial={{ opacity: 0, scale: 0.94 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.94 }}

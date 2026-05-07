@@ -8,20 +8,23 @@ import { preloadRoute } from '../app/router/preload';
 
 type NavItem = {
   id: 'home' | 'explore' | 'ai' | 'questions' | 'redacao' | 'comunidade' | 'profile';
+  /** Rótulo completo (desktop / tablets largos) */
   label: string;
+  /** Rótulo curto para caber em telas estreitas sem encavalamento */
+  labelCompact: string;
   icon: typeof Home;
   path: string;
   badge?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'home', label: 'INICIO', icon: Home, path: '/' },
-  { id: 'explore', label: 'EXPLORAR', icon: Compass, path: '/explorar' },
-  { id: 'ai', label: 'MENTORIA', icon: Sparkles, path: '/ai' },
-  { id: 'questions', label: 'QUESTOES', icon: Target, path: '/questoes', badge: true },
-  { id: 'redacao', label: 'REDACAO', icon: PenLine, path: '/redacao' },
-  { id: 'comunidade', label: 'COMUNIDADE', icon: Users, path: '/comunidade' },
-  { id: 'profile', label: 'PERFIL', icon: User, path: '/perfil' },
+  { id: 'home', label: 'INICIO', labelCompact: 'INÍCIO', icon: Home, path: '/' },
+  { id: 'explore', label: 'EXPLORAR', labelCompact: 'EXPL.', icon: Compass, path: '/explorar' },
+  { id: 'ai', label: 'MENTORIA', labelCompact: 'IA', icon: Sparkles, path: '/ai' },
+  { id: 'questions', label: 'QUESTOES', labelCompact: 'QÕES', icon: Target, path: '/questoes', badge: true },
+  { id: 'redacao', label: 'REDACAO', labelCompact: 'RED.', icon: PenLine, path: '/redacao' },
+  { id: 'comunidade', label: 'COMUNIDADE', labelCompact: 'COM.', icon: Users, path: '/comunidade' },
+  { id: 'profile', label: 'PERFIL', labelCompact: 'EU', icon: User, path: '/perfil' },
 ];
 
 function triggerHaptic() {
@@ -30,17 +33,17 @@ function triggerHaptic() {
 
 export function BottomNav() {
   const { currentTab } = useAppNavigation();
-  const { studyRooms } = useStore();
+  const activeRoomId = useStore((s) => s.studyRooms?.activeRoom ?? null);
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
       style={{
-        transform: currentTab === 'comunidade' && studyRooms.activeRoom ? 'translateY(120%)' : 'translateY(0)',
+        transform: currentTab === 'comunidade' && activeRoomId ? 'translateY(120%)' : 'translateY(0)',
       }}
     >
-      <div className="bottom-nav-dock mx-auto max-w-xl rounded-3xl p-1.5">
-        <div className="relative flex h-[3.75rem] items-center justify-around gap-0.5">
+      <div className="bottom-nav-dock mx-auto max-w-xl rounded-3xl p-1.5 overflow-hidden">
+        <div className="relative flex h-[3.75rem] gap-1 overflow-x-auto overflow-y-hidden px-0.5 snap-x snap-mandatory no-scrollbar md:items-center md:justify-around md:gap-0.5 md:overflow-visible md:snap-none">
           {NAV_ITEMS.map((item) => {
             const isActive = currentTab === item.id;
             return (
@@ -51,11 +54,13 @@ export function BottomNav() {
                 onMouseEnter={() => preloadRoute(item.path)}
                 onFocus={() => preloadRoute(item.path)}
                 onTouchStart={() => preloadRoute(item.path)}
-                className="relative flex h-full flex-1 items-center justify-center no-underline"
+                title={item.label}
+                aria-label={item.label}
+                className="relative flex h-full min-w-[3.65rem] shrink-0 snap-center items-center justify-center no-underline md:min-w-0 md:flex-1 md:snap-none"
               >
                 <motion.div
                   whileTap={{ scale: 0.94, transition: springs.snappy }}
-                  className="relative flex min-h-[3.35rem] w-[92%] flex-col items-center justify-center gap-0.5 rounded-2xl px-0.5"
+                  className="relative flex min-h-[3.35rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-2xl px-0.5"
                 >
                   {isActive && (
                     <motion.div
@@ -81,13 +86,22 @@ export function BottomNav() {
                   </div>
 
                   <span
-                    className={`relative z-10 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] ${
+                    className={`relative z-10 hidden md:block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] ${
                       isActive
                         ? 'text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)]'
                         : 'text-white/62'
                     }`}
                   >
                     {item.label}
+                  </span>
+                  <span
+                    className={`relative z-10 md:hidden whitespace-nowrap text-[8.5px] font-bold uppercase tracking-[0.04em] ${
+                      isActive
+                        ? 'text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)]'
+                        : 'text-white/62'
+                    }`}
+                  >
+                    {item.labelCompact}
                   </span>
                 </motion.div>
               </NavLink>
