@@ -77,10 +77,10 @@ export function AppShell({
   }, [activeYoutubeId, PlayerComponent]);
 
   return (
-    <div className="min-h-screen bg-background flex justify-center selection:bg-primary/30 selection:text-white">
+    <div className="app-shell-viewport bg-background flex justify-center selection:bg-primary/30 selection:text-white">
       <div 
         id="root-wrapper"
-        className="w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto min-h-screen relative bg-background overflow-hidden border border-white/10 liquid-glass"
+        className="w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto relative bg-background overflow-hidden border border-white/10 liquid-glass max-md:flex max-md:flex-col max-md:min-h-[100svh] max-md:h-[100svh] max-md:max-h-[100svh] md:min-h-screen md:h-auto md:max-h-none pt-[env(safe-area-inset-top,0px)]"
         style={{ boxShadow: '0 24px 70px rgba(0, 0, 0, 0.55)' }}
       >
         <Suspense fallback={null}>
@@ -133,7 +133,7 @@ export function AppShell({
 
         <main
           id="app-main-scroll"
-          className="h-full overflow-y-auto no-scrollbar pb-32"
+          className="min-h-0 flex-1 overflow-y-auto no-scrollbar pb-[var(--app-main-scroll-pad-bottom)]"
         >
           {children}
         </main>

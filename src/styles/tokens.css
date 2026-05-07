@@ -97,6 +97,9 @@
   --ease-anticipate: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --ease-icon: var(--ease-smooth-out);
   --ease-icon-loop: var(--ease-smooth-in-out);
+
+  /* ——— Shell mobile / PWA (safe-area + scroll pad acima da tab bar) ——— */
+  --app-main-scroll-pad-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Auroras orgânicas (blobs com blur no JSX) */

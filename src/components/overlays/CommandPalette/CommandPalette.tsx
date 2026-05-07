@@ -79,7 +79,7 @@ export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProp
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[max(15vh,calc(0.5rem+env(safe-area-inset-top,0px)))] pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-[env(safe-area-inset-bottom,0px)]">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

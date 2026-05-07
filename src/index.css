@@ -61,8 +61,36 @@
 }
 
 @layer base {
+  /**
+   * Altura tipo app nativo: evita buraco em iOS (100vh) e respeita barra do browser (svh/dvh).
+   */
+  .app-shell-viewport {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: 100svh;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: 100svh;
+  }
+
   body {
     @apply bg-background text-text-primary font-sans antialiased overflow-x-hidden;
+  }
+
+  /**
+   * iOS: inputs com fonte menor que 16px disparam zoom ao focar — mantém legível sem pulo de viewport.
+   */
+  @media (max-width: 767px) {
+    :where(input, textarea, select) {
+      font-size: max(1rem, 16px);
+    }
   }
 
   ::selection {
@@ -96,6 +124,13 @@
       0 0 0 2px var(--hub-bg-base),
       0 0 0 4px rgba(var(--hub-primary-rgb), 0.92),
       0 0 22px rgba(var(--hub-primary-rgb), 0.22);
+  }
+
+  /** Área de scroll principal: gesto vertical estável; menos “rubber band” no PWA */
+  #app-main-scroll {
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

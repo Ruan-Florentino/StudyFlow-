@@ -62,7 +62,7 @@ export function AppContent() {
 
   if (!hasCompletedOnboarding) {
     return (
-      <div className="min-h-screen bg-black flex justify-center selection:bg-primary selection:text-black">
+      <div className="relative app-shell-viewport w-full bg-black flex justify-center selection:bg-primary selection:text-black">
         <Suspense fallback={<div className="text-white/60 text-sm font-mono pt-20">Carregando onboarding...</div>}>
           <Onboarding
             onComplete={(initialPath) => {

@@ -34,7 +34,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
+      className="fixed bottom-0 left-0 right-0 z-50 pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
       style={{
         transform: currentTab === 'comunidade' && studyRooms.activeRoom ? 'translateY(120%)' : 'translateY(0)',
       }}

@@ -31,7 +31,7 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
   const difficultiesList = ['Matemática', 'Português', 'Redação', 'História', 'Geografia', 'Biologia', 'Física', 'Química', 'Inglês'];
 
   return (
-    <div className="absolute inset-0 z-50 bg-background flex flex-col">
+    <div className="absolute inset-0 z-50 bg-background flex flex-col pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]">
       {/* Progress Bar */}
       <div className="h-1 bg-white/10 w-full relative">
         <motion.div 

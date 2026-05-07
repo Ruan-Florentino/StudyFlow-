@@ -34,7 +34,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
   if (blockingAuth) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+      <div className="app-shell-viewport bg-black flex items-center justify-center text-white pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
         <div className="animate-pulse">Autenticando...</div>
       </div>
     );
@@ -44,7 +44,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     return (
       <Suspense
         fallback={
-          <div className="min-h-screen bg-black flex items-center justify-center text-white/70">
+          <div className="app-shell-viewport bg-black flex items-center justify-center text-white/70 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
             Carregando login...
           </div>
         }
