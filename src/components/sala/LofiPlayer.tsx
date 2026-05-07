@@ -41,6 +41,10 @@ function salaWriteStored(subjectId: string, stationId: string): void {
   }
 }
 
+function isSafariSafeStation(stationId: string): boolean {
+  return stationId.startsWith('local-');
+}
+
 interface LofiPlayerProps {
   subjectId: string;
   color: string;
@@ -56,7 +60,7 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
   const [showLibrary, setShowLibrary] = useState(false);
   const [selectedId, setSelectedId] = useState<string>(() => {
     const saved = salaReadStored(subjectId);
-    if (saved && stationById(saved)) return saved;
+    if (saved && isSafariSafeStation(saved) && stationById(saved)) return saved;
     return SALA_AUDIO_STATIONS[defaultStationIndexForSubject(subjectId)].id;
   });
 
@@ -73,7 +77,7 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
 
   useEffect(() => {
     const saved = salaReadStored(subjectId);
-    if (saved && stationById(saved)) {
+    if (saved && isSafariSafeStation(saved) && stationById(saved)) {
       setSelectedId(saved);
     } else {
       setSelectedId(SALA_AUDIO_STATIONS[defaultStationIndexForSubject(subjectId)].id);
@@ -95,7 +99,10 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
       void el
         .play()
         .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false));
+        .catch((err) => {
+          console.warn('[sala-audio] play() falhou', activeStation.url, err);
+          setIsPlaying(false);
+        });
     }
   }, [activeStation.url]);
 
@@ -106,16 +113,35 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
   }, [volume, isMuted]);
 
   const togglePlay = async () => {
-    if (!audioRef.current) return;
+    const el = audioRef.current;
+    if (!el) return;
     try {
       if (isPlaying) {
-        audioRef.current.pause();
+        el.pause();
         setIsPlaying(false);
-      } else {
-        await audioRef.current.play();
-        setIsPlaying(true);
+        return;
       }
-    } catch {
+      if (!el.src || el.src === window.location.href) {
+        el.src = activeStation.url;
+        el.load();
+      }
+      await el.play();
+      setIsPlaying(true);
+    } catch (err) {
+      console.warn('[sala-audio] togglePlay falhou', activeStation.url, err);
+      const fallbackStation = SALA_AUDIO_STATIONS[defaultStationIndexForSubject(subjectId)];
+      if (selectedId !== fallbackStation.id) {
+        setSelectedId(fallbackStation.id);
+        el.src = fallbackStation.url;
+        el.load();
+        try {
+          await el.play();
+          setIsPlaying(true);
+          return;
+        } catch (fallbackErr) {
+          console.warn('[sala-audio] fallback falhou', fallbackStation.url, fallbackErr);
+        }
+      }
       setIsPlaying(false);
     }
   };
@@ -154,7 +180,12 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
 
   return (
     <>
-      <audio ref={audioRef} preload="none" />
+      <audio
+        ref={audioRef}
+        preload="metadata"
+        crossOrigin="anonymous"
+        onError={(e) => console.warn('[sala-audio] erro no <audio>', activeStation.url, e)}
+      />
 
       <motion.div
         initial={{ opacity: 0, y: reduceMotion ? 0 : -10 }}

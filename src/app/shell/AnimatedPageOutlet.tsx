@@ -25,8 +25,16 @@ function subscribeMobileOutlet(callback: () => void) {
     // #endregion
     callback();
   };
-  mq.addEventListener('change', onChange);
-  return () => mq.removeEventListener('change', onChange);
+  if ('addEventListener' in mq) {
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }
+  const legacyMq = mq as MediaQueryList & {
+    addListener: (listener: () => void) => void;
+    removeListener: (listener: () => void) => void;
+  };
+  legacyMq.addListener(onChange);
+  return () => legacyMq.removeListener(onChange);
 }
 
 function getMobileOutletSnapshot() {

@@ -21,7 +21,51 @@ export const SALA_STATION_MOOD_LABEL: Record<SalaStationMood, string> = {
   jazz: 'Jazz & lounge',
 };
 
+const LOCAL_SALA_STATION_COUNT = 6;
+
 export const SALA_AUDIO_STATIONS: SalaAudioStation[] = [
+  {
+    id: 'local-lofi-chuva',
+    label: 'Lofi Chuva',
+    mood: 'lofi',
+    tagline: 'Stream confiável com CORS aberto',
+    url: 'https://ice6.somafm.com/groovesalad-128-mp3',
+  },
+  {
+    id: 'local-biblioteca',
+    label: 'Biblioteca Antiga',
+    mood: 'ambiente',
+    tagline: 'Ambiente estável para foco',
+    url: 'https://ice6.somafm.com/lush-128-mp3',
+  },
+  {
+    id: 'local-floresta',
+    label: 'Floresta Viva',
+    mood: 'ambiente',
+    tagline: 'Pads etéreos para natureza interior',
+    url: 'https://ice6.somafm.com/deepspaceone-128-mp3',
+  },
+  {
+    id: 'local-cyberpunk',
+    label: 'Cyberpunk Café',
+    mood: 'ritmo',
+    tagline: 'Synth para sessões longas',
+    url: 'https://ice6.somafm.com/defcon-128-mp3',
+  },
+  {
+    id: 'local-lareira',
+    label: 'Lareira de Inverno',
+    mood: 'ambiente',
+    tagline: 'Texturas etéreas para leitura leve',
+    url: 'https://ice6.somafm.com/groovesalad-128-mp3',
+  },
+  {
+    id: 'local-cosmico',
+    label: 'Vazio Cósmico',
+    mood: 'ambiente',
+    tagline: 'Ambiente espacial para foco profundo',
+    url: 'https://ice6.somafm.com/deepspaceone-128-mp3',
+  },
   {
     id: 'zeno-desk',
     label: 'Lofi Desk',
@@ -125,7 +169,7 @@ export function salaStationsByMood(): Record<SalaStationMood, SalaAudioStation[]
 export function defaultStationIndexForSubject(subjectId: string): number {
   let h = 0;
   for (let i = 0; i < subjectId.length; i++) {
-    h = (h + subjectId.charCodeAt(i) * (i + 1)) % SALA_AUDIO_STATIONS.length;
+    h = (h + subjectId.charCodeAt(i) * (i + 1)) % LOCAL_SALA_STATION_COUNT;
   }
   return h;
 }

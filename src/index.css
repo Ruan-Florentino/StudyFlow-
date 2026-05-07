@@ -66,18 +66,42 @@
    */
   .app-shell-viewport {
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     min-height: 100svh;
   }
 
   html {
+    min-height: -webkit-fill-available;
     -webkit-tap-highlight-color: transparent;
   }
 
   #root {
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     min-height: 100svh;
+  }
+
+  @supports (height: 100dvh) {
+    .app-shell-viewport,
+    #root {
+      min-height: 100dvh;
+    }
+  }
+
+  @media (max-width: 767px) {
+    #root-wrapper,
+    .mobile-dvh-panel {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      min-height: 100svh;
+    }
+
+    @supports (height: 100dvh) {
+      #root-wrapper,
+      .mobile-dvh-panel {
+        min-height: 100dvh;
+      }
+    }
   }
 
   body {

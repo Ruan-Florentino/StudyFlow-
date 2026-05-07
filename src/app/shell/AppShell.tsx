@@ -1,6 +1,18 @@
-import React, { ReactNode, Suspense, lazy, useEffect, useState } from 'react';
+import React, { ReactNode, Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { useSessionStore } from '../../store/useSessionStore';
 import { debugSessionIngest } from '../../lib/debugSessionIngest';
+
+const ROOM_AUDIO_SRC: Record<string, string> = {
+  library: 'https://ice6.somafm.com/lush-128-mp3',
+  biblioteca: 'https://ice6.somafm.com/lush-128-mp3',
+  cafe: 'https://ice6.somafm.com/defcon-128-mp3',
+  cyberpunk: 'https://ice6.somafm.com/defcon-128-mp3',
+  forest: 'https://ice6.somafm.com/deepspaceone-128-mp3',
+  floresta: 'https://ice6.somafm.com/deepspaceone-128-mp3',
+  lofi: 'https://ice6.somafm.com/groovesalad-128-mp3',
+  lareira: 'https://ice6.somafm.com/groovesalad-128-mp3',
+  cosmico: 'https://ice6.somafm.com/deepspaceone-128-mp3',
+};
 
 const CommandPalette = lazy(() =>
   import('../../components/overlays/CommandPalette/CommandPalette').then((module) => ({
@@ -62,9 +74,14 @@ export function AppShell({
     ? studyRooms.rooms.find((room) => room.id === studyRooms.activeRoom)
     : null;
   const activeYoutubeId = activeRoom?.youtubeId ?? null;
+  const nativeRoomAudioSrc = studyRooms.activeRoom
+    ? ROOM_AUDIO_SRC[studyRooms.activeRoom] ?? null
+    : null;
+  const nativeAudioRef = useRef<HTMLAudioElement | null>(null);
   const [PlayerComponent, setPlayerComponent] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
 
   useEffect(() => {
+    if (nativeRoomAudioSrc) return;
     if (!activeYoutubeId) return;
     if (PlayerComponent) return;
     let mounted = true;
@@ -75,7 +92,29 @@ export function AppShell({
     return () => {
       mounted = false;
     };
-  }, [activeYoutubeId, PlayerComponent]);
+  }, [activeYoutubeId, nativeRoomAudioSrc, PlayerComponent]);
+
+  useEffect(() => {
+    const audio = nativeAudioRef.current;
+    if (!audio || !nativeRoomAudioSrc) return;
+    audio.volume = (studyRooms.audioVolume ?? 50) / 100;
+    if (!studyRooms.audioPlaying || !isUserInteracted) {
+      audio.pause();
+      return;
+    }
+    if (audio.getAttribute('src') !== nativeRoomAudioSrc) {
+      audio.src = nativeRoomAudioSrc;
+      audio.load();
+    }
+    void audio.play().catch(() => {
+      audio.pause();
+    });
+  }, [
+    isUserInteracted,
+    nativeRoomAudioSrc,
+    studyRooms.audioPlaying,
+    studyRooms.audioVolume,
+  ]);
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -142,7 +181,10 @@ export function AppShell({
           className="pointer-events-none fixed bottom-0 right-0 z-0 h-[2px] w-[2px] overflow-hidden opacity-[0.02]"
           aria-hidden
         >
-          {activeYoutubeId && (() => {
+          {nativeRoomAudioSrc && (
+            <audio ref={nativeAudioRef} loop preload="auto" src={nativeRoomAudioSrc} />
+          )}
+          {!nativeRoomAudioSrc && activeYoutubeId && (() => {
             const Player = PlayerComponent;
             if (!Player) return null;
             return (

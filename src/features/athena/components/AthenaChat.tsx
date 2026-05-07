@@ -104,7 +104,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={sidebarTransition}
-              className="h-full max-md:fixed max-md:left-0 max-md:top-0 max-md:z-[60] max-md:h-[100dvh] max-md:max-h-[100dvh] md:relative border-r border-white/5 bg-black/90 md:bg-black/20 backdrop-blur-md flex flex-col overflow-hidden shrink-0 max-md:shadow-2xl"
+              className="mobile-dvh-panel h-full max-md:fixed max-md:left-0 max-md:top-0 max-md:z-[60] max-md:max-h-screen md:relative border-r border-white/5 bg-black/90 md:bg-black/20 backdrop-blur-md flex flex-col overflow-hidden shrink-0 max-md:shadow-2xl"
             >
             <div className="p-4 border-b border-white/5 flex items-center justify-between gap-2">
               <h3 className="text-xs font-bold uppercase tracking-widest text-white/40 flex items-center gap-2 min-w-0">
