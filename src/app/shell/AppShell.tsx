@@ -1,5 +1,6 @@
 import React, { ReactNode, Suspense, lazy, useEffect, useState } from 'react';
 import { useSessionStore } from '../../store/useSessionStore';
+import { debugSessionIngest } from '../../lib/debugSessionIngest';
 
 const CommandPalette = lazy(() =>
   import('../../components/overlays/CommandPalette/CommandPalette').then((module) => ({
@@ -76,11 +77,48 @@ export function AppShell({
     };
   }, [activeYoutubeId, PlayerComponent]);
 
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    let lastReportedHeight = 0;
+    const report = () => {
+      const h = Math.round(vv.height * 100) / 100;
+      if (
+        lastReportedHeight !== 0 &&
+        Math.abs(h - lastReportedHeight) < 8
+      ) {
+        return;
+      }
+      lastReportedHeight = h;
+      // #region agent log
+      debugSessionIngest({
+        hypothesisId: 'H3',
+        location: 'AppShell:visualViewport',
+        message: 'viewport resize/jump',
+        data: {
+          vvHeight: h,
+          vvOffsetTop: vv.offsetTop,
+          vvScale: vv.scale,
+          windowInnerHeight: window.innerHeight,
+        },
+      });
+      // #endregion
+    };
+    vv.addEventListener('resize', report);
+    vv.addEventListener('scroll', report);
+    report();
+    return () => {
+      vv.removeEventListener('resize', report);
+      vv.removeEventListener('scroll', report);
+    };
+  }, []);
+
   return (
     <div className="app-shell-viewport bg-background flex justify-center selection:bg-primary/30 selection:text-white">
       <div 
         id="root-wrapper"
-        className="w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto relative bg-background overflow-hidden border border-white/10 liquid-glass max-md:flex max-md:flex-col max-md:min-h-[100svh] max-md:h-[100svh] max-md:max-h-[100svh] md:min-h-screen md:h-auto md:max-h-none pt-[env(safe-area-inset-top,0px)]"
+        className="w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto relative bg-background overflow-x-hidden border border-white/10 liquid-glass max-md:flex max-md:flex-col max-md:min-h-[100dvh] md:min-h-screen md:h-auto md:max-h-none pt-[env(safe-area-inset-top,0px)]"
         style={{ boxShadow: '0 24px 70px rgba(0, 0, 0, 0.55)' }}
       >
         <Suspense fallback={null}>

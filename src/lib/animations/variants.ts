@@ -70,13 +70,20 @@ export const defaultTransition = tweens.normal;
 export const pageShellTransition = springs.page;
 
 /**
- * Shell de rota (`AnimatedPageOutlet`) — animação simétrica.
- * Evita slide horizontal ligado a POP/PUSH (exiting node não recebe o navType novo).
+ * Shell de rota — sem scale (evita flicker GPU, sobretudo no mobile).
+ * Y reduzido; transição em tween aplicada no outlet (mobile mais curta).
  */
 export const pageShell = {
-  initial: { opacity: 0, y: 11, scale: 0.997 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -9, scale: 0.997 },
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -5 },
+} as const;
+
+/** Troca de rota em viewports estreitas — só opacidade */
+export const pageShellTouch = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 } as const;
 
 /** Troca de rota com prefers-reduced-motion */

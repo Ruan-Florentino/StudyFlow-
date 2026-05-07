@@ -246,6 +246,18 @@
     }
   }
 
+  @media (max-width: 767px) {
+    .animate-aurora-1 {
+      animation-duration: 22s;
+    }
+    .animate-aurora-2 {
+      animation-duration: 28s;
+    }
+    .animate-aurora-3 {
+      animation-duration: 34s;
+    }
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

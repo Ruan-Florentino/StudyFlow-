@@ -11,7 +11,7 @@ import { aiPremiumCopy } from '../lib/productDisclosure';
 export function AIHub() {
   const { isPremium } = useUserAccess();
   return (
-    <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col min-h-0 min-w-0 overflow-x-hidden overflow-y-hidden px-3 sm:px-4 md:overflow-y-visible md:px-8 md:pt-8 pt-4">
+    <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col min-h-0 min-w-0 overflow-x-hidden px-3 sm:px-4 md:px-8 md:pt-8 pt-4">
       <AuroraBackground intensity="subtle" />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
       {/* Header Section */}

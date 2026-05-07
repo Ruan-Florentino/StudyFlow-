@@ -1,13 +1,41 @@
-import { useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
   pageShell,
   pageShellReduced,
-  pageShellTransition,
+  pageShellTouch,
 } from '../../lib/animations/variants';
 import { tweens } from '../../lib/animations/easings';
 import { devAgentLog } from '../../lib/devAgentLog';
+import { debugSessionIngest } from '../../lib/debugSessionIngest';
+
+const MOBILE_OUTLET_MQ = '(max-width: 767px)';
+
+function subscribeMobileOutlet(callback: () => void) {
+  const mq = window.matchMedia(MOBILE_OUTLET_MQ);
+  const onChange = () => {
+    // #region agent log
+    debugSessionIngest({
+      hypothesisId: 'H1',
+      location: 'AnimatedPageOutlet:matchMedia',
+      message: 'narrow breakpoint changed',
+      data: { matches: mq.matches },
+    });
+    // #endregion
+    callback();
+  };
+  mq.addEventListener('change', onChange);
+  return () => mq.removeEventListener('change', onChange);
+}
+
+function getMobileOutletSnapshot() {
+  return window.matchMedia(MOBILE_OUTLET_MQ).matches;
+}
+
+function getMobileOutletServerSnapshot() {
+  return false;
+}
 
 /**
  * Outlet com transição entre rotas (Fase 5).
@@ -16,7 +44,40 @@ import { devAgentLog } from '../../lib/devAgentLog';
 export function AnimatedPageOutlet() {
   const location = useLocation();
   const reduceMotion = useReducedMotion();
+  const isNarrowViewport = useSyncExternalStore(
+    subscribeMobileOutlet,
+    getMobileOutletSnapshot,
+    getMobileOutletServerSnapshot
+  );
   const pageKey = `${location.pathname}${location.search}`;
+
+  useEffect(() => {
+    // #region agent log
+    debugSessionIngest({
+      hypothesisId: 'H1',
+      location: 'AnimatedPageOutlet:branch',
+      message: 'motion branch snapshot',
+      data: {
+        pathname: location.pathname,
+        search: location.search,
+        pageKey,
+        isNarrowViewport,
+        reduceMotion: Boolean(reduceMotion),
+        variantMode: reduceMotion
+          ? 'reduced'
+          : isNarrowViewport
+            ? 'touch'
+            : 'desktop',
+      },
+    });
+    // #endregion
+  }, [
+    pageKey,
+    isNarrowViewport,
+    reduceMotion,
+    location.pathname,
+    location.search,
+  ]);
 
   useLayoutEffect(() => {
     devAgentLog({
@@ -36,17 +97,39 @@ export function AnimatedPageOutlet() {
       message: 'Scroll reset effect fired',
       data: { pageKey, targetFound: Boolean(document.getElementById('app-main-scroll')) },
     });
-    document.getElementById('app-main-scroll')?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    const main = document.getElementById('app-main-scroll');
+    requestAnimationFrame(() => {
+      main?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      // #region agent log
+      debugSessionIngest({
+        hypothesisId: 'H2',
+        location: 'AnimatedPageOutlet:rAF-scroll',
+        message: 'after scrollTo',
+        data: {
+          pageKey,
+          scrollTop: main?.scrollTop ?? null,
+        },
+      });
+      // #endregion
+    });
   }, [pageKey, reduceMotion]);
 
-  const variants = reduceMotion ? pageShellReduced : pageShell;
-  const transition = reduceMotion ? tweens.micro : pageShellTransition;
+  const variants = reduceMotion
+    ? pageShellReduced
+    : isNarrowViewport
+      ? pageShellTouch
+      : pageShell;
+  const transition = reduceMotion
+    ? tweens.micro
+    : isNarrowViewport
+      ? tweens.micro
+      : tweens.fast;
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pageKey}
-        className="flex w-full min-w-0 flex-1 flex-col"
+        className="flex w-full min-w-0 flex-col max-md:flex-1"
         variants={variants}
         initial="initial"
         animate="animate"
