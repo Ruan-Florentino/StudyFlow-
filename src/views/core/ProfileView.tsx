@@ -50,6 +50,52 @@ import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { useUserAccess } from '../../hooks/useUserAccess';
 import { calendarDayLocal, sessionMatchesLocalChartDay } from '../../lib/persistence';
 
+const PROFILE_IMAGE_MIME_ALLOW = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+  'image/avif',
+]);
+
+const EXT_TO_PROFILE_MIME: Readonly<Record<string, true>> = {
+  jpg: true,
+  jpeg: true,
+  png: true,
+  webp: true,
+  gif: true,
+  heic: true,
+  heif: true,
+  avif: true,
+};
+
+const MIME_TO_EXT: Readonly<Record<string, string>> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'image/avif': 'avif',
+};
+
+function isProfileImageAllowed(file: File): boolean {
+  if (file.type && PROFILE_IMAGE_MIME_ALLOW.has(file.type)) return true;
+  const seg = file.name.split('.');
+  const ext = seg.length > 1 ? seg.pop()?.toLowerCase() ?? '' : '';
+  return Boolean(ext && EXT_TO_PROFILE_MIME[ext]);
+}
+
+function extensionForProfileUpload(file: File): string {
+  const seg = file.name.split('.');
+  const fromName = seg.length > 1 ? seg.pop()?.toLowerCase() ?? '' : '';
+  if (fromName && EXT_TO_PROFILE_MIME[fromName]) return fromName;
+  if (file.type && MIME_TO_EXT[file.type]) return MIME_TO_EXT[file.type];
+  return 'jpg';
+}
+
 const ProfileView = () => {
   const { goBack, goTo } = useAppNavigation();
   const { user } = useAuth();
@@ -130,22 +176,24 @@ const ProfileView = () => {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
 
-    const maxBytes = 5 * 1024 * 1024;
+    const maxBytes = 10 * 1024 * 1024;
     if (file.size > maxBytes) {
-      toast.error('Erro', 'Imagem muito grande (máx. 5 MB).');
+      toast.error('Erro', 'Imagem muito grande (máx. 10 MB).');
       e.target.value = '';
       return;
     }
-    const okTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!okTypes.includes(file.type)) {
-      toast.error('Erro', 'Use JPG, PNG, WebP ou GIF.');
+    if (!isProfileImageAllowed(file)) {
+      toast.error(
+        'Erro',
+        'Formato não suportado. Use JPG, PNG, WebP, GIF, HEIC ou AVIF.'
+      );
       e.target.value = '';
       return;
     }
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = extensionForProfileUpload(file);
       const fileName = `${type}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
@@ -275,8 +323,8 @@ const ProfileView = () => {
         )}
 
         {isEditing && (
-          <label className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity z-10">
-            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'cover')} disabled={uploading} />
+          <label className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/40 opacity-100 transition-opacity md:opacity-0 md:hover:opacity-100">
+            <input type="file" className="hidden" accept="image/*,.heic,.heif,.avif" onChange={(e) => handleUpload(e, 'cover')} disabled={uploading} />
             <div className="flex flex-col items-center gap-2">
               <Upload size={24} className="text-white" />
               <span className="text-white text-[10px] font-bold uppercase">Mudar Capa</span>
@@ -295,8 +343,8 @@ const ProfileView = () => {
               />
             </div>
             {isEditing && (
-              <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'profile')} disabled={uploading} />
+              <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/40 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+                <input type="file" className="hidden" accept="image/*,.heic,.heif,.avif" onChange={(e) => handleUpload(e, 'profile')} disabled={uploading} />
                 <Camera size={20} className="text-white" />
               </label>
             )}
