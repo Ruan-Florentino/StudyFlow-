@@ -25,6 +25,22 @@ import {
 
 const STORAGE_PREFIX = 'studyflow:sala-audio:';
 
+function salaReadStored(subjectId: string): string | null {
+  try {
+    return sessionStorage.getItem(`${STORAGE_PREFIX}${subjectId}`);
+  } catch {
+    return null;
+  }
+}
+
+function salaWriteStored(subjectId: string, stationId: string): void {
+  try {
+    sessionStorage.setItem(`${STORAGE_PREFIX}${subjectId}`, stationId);
+  } catch {
+    /* Safari modo privado / quota */
+  }
+}
+
 interface LofiPlayerProps {
   subjectId: string;
   color: string;
@@ -39,10 +55,7 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
   const [showVolume, setShowVolume] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [selectedId, setSelectedId] = useState<string>(() => {
-    const saved =
-      typeof sessionStorage !== 'undefined'
-        ? sessionStorage.getItem(`${STORAGE_PREFIX}${subjectId}`)
-        : null;
+    const saved = salaReadStored(subjectId);
     if (saved && stationById(saved)) return saved;
     return SALA_AUDIO_STATIONS[defaultStationIndexForSubject(subjectId)].id;
   });
@@ -59,7 +72,7 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
   }, [isPlaying]);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem(`${STORAGE_PREFIX}${subjectId}`);
+    const saved = salaReadStored(subjectId);
     if (saved && stationById(saved)) {
       setSelectedId(saved);
     } else {
@@ -68,7 +81,7 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
   }, [subjectId]);
 
   useEffect(() => {
-    sessionStorage.setItem(`${STORAGE_PREFIX}${subjectId}`, selectedId);
+    salaWriteStored(subjectId, selectedId);
   }, [subjectId, selectedId]);
 
   useEffect(() => {

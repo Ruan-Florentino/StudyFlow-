@@ -137,8 +137,11 @@ export function AppShell({
         )}
 
 
-        {/* Global Audio Player for Study Rooms */}
-        <div className="absolute w-[1px] h-[1px] opacity-0 pointer-events-none overflow-hidden">
+        {/* Global Audio Player — iOS costuma bloquear vídeo totalmente invisível; micro-footprint + inline. */}
+        <div
+          className="pointer-events-none fixed bottom-0 right-0 z-0 h-[2px] w-[2px] overflow-hidden opacity-[0.02]"
+          aria-hidden
+        >
           {activeYoutubeId && (() => {
             const Player = PlayerComponent;
             if (!Player) return null;
@@ -150,7 +153,7 @@ export function AppShell({
                 volume={(studyRooms.audioVolume ?? 50) / 100}
                 width="100%"
                 height="100%"
-                playsinline
+                playsInline
                 onError={(e: unknown) => console.error('ReactPlayer Error:', e)}
                 config={{
                   youtube: {
@@ -158,6 +161,7 @@ export function AppShell({
                     iv_load_policy: 3,
                     fs: 0,
                     disablekb: 1,
+                    playsinline: 1,
                   }
                 }}
               />

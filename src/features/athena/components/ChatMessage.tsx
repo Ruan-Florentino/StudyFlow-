@@ -12,7 +12,23 @@ const ChatMarkdownEnhanced = lazy(() =>
   import('./ChatMarkdownEnhanced').then((module) => ({ default: module.ChatMarkdownEnhanced }))
 );
 
-const ENHANCED_MARKDOWN_PATTERN = /```|`[^`\n]+`|\$\$[\s\S]*?\$\$|(?<!\\)\$[^$\n]+?\$|\\\(|\\\[/;
+/** Safari antes da 16.4 não suporta lookbehind em RegExp; avaliamos `$…$` sem lookbehind. */
+function messageNeedsEnhancedMarkdown(content: string): boolean {
+  if (!content) return false;
+  if (/```/.test(content)) return true;
+  if (/`[^`\n]+`/.test(content)) return true;
+  if (/\$\$[\s\S]*?\$\$/.test(content)) return true;
+  if (/\\\(|\\\[/.test(content)) return true;
+  const inlineMath = /\$[^$\n]+\$/g;
+  let match: RegExpExecArray | null;
+  while ((match = inlineMath.exec(content)) !== null) {
+    const start = match.index;
+    if (start === 0 || content[start - 1] !== '\\') {
+      return true;
+    }
+  }
+  return false;
+}
 
 interface ChatMessageProps {
   message: Message;
@@ -23,7 +39,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
   const isAssistant = message.role === 'assistant';
   const reduceMotion = useReducedMotion() ?? false;
   const messageContent = message.content + (isStreaming ? '●' : '');
-  const needsEnhancedMarkdown = ENHANCED_MARKDOWN_PATTERN.test(messageContent);
+  const needsEnhancedMarkdown = messageNeedsEnhancedMarkdown(messageContent);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message.content);

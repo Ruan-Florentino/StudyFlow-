@@ -43,16 +43,28 @@ export function AppContent() {
     });
   }, [location.pathname, location.search, hasCompletedOnboarding, loading, user]);
 
-  // Global Interaction & Audio
+  // Global Interaction & Audio — iOS/Safari exige gesto; click pode chegar tarde ou não subir ao window.
   useEffect(() => {
+    let unlocked = false;
     const handleInteraction = () => {
+      if (unlocked) return;
+      unlocked = true;
       setIsUserInteracted(true);
-      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('pointerdown', handleInteraction, true);
+      window.removeEventListener('touchstart', handleInteraction, true);
+      window.removeEventListener('click', handleInteraction, true);
     };
-    window.addEventListener('click', handleInteraction);
+    const captureOpts = { capture: true, passive: true } as const;
+    window.addEventListener('pointerdown', handleInteraction, captureOpts);
+    window.addEventListener('touchstart', handleInteraction, captureOpts);
+    window.addEventListener('click', handleInteraction, captureOpts);
     initAudioUnlocker();
     checkStreak();
-    return () => window.removeEventListener('click', handleInteraction);
+    return () => {
+      window.removeEventListener('pointerdown', handleInteraction, true);
+      window.removeEventListener('touchstart', handleInteraction, true);
+      window.removeEventListener('click', handleInteraction, true);
+    };
   }, [checkStreak]);
 
   // Theme Sync
