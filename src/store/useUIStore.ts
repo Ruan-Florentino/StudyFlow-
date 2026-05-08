@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 
 export interface UIStore {
   themeColor: string;
@@ -54,6 +55,6 @@ export const useUIStore = create<UIStore>()(
         featureUsage: { ...state.featureUsage, [feature]: (state.featureUsage[feature] || 0) + 1 }
       })),
     }),
-    { name: 'studyflow-ui' }
+    { name: 'studyflow-ui', storage: safeJsonStorage }
   )
 );

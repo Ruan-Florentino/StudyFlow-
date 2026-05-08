@@ -5,6 +5,37 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 
+/**
+ * Safari (modo privado / ITP agressivo) pode bloquear ou lançar em `localStorage`.
+ * Sem adapter, `createClient` quebra e a app fica branca — Chrome in-app costuma ser mais permissivo.
+ */
+function createAuthPersistStorage(): Storage {
+  try {
+    const probeKey = '__sf_auth_ls_probe__';
+    window.localStorage.setItem(probeKey, '1');
+    window.localStorage.removeItem(probeKey);
+    return window.localStorage;
+  } catch {
+    const memory = new Map<string, string>();
+    return {
+      get length() {
+        return memory.size;
+      },
+      clear: () => {
+        memory.clear();
+      },
+      getItem: (key: string) => memory.get(key) ?? null,
+      key: (index: number) => Array.from(memory.keys())[index] ?? null,
+      removeItem: (key: string) => {
+        memory.delete(key);
+      },
+      setItem: (key: string, value: string) => {
+        memory.set(key, value);
+      },
+    } as Storage;
+  }
+}
+
 let _supabase: any = null;
 
 const createMockClient = () => {
@@ -64,9 +95,9 @@ export const supabase = new Proxy({} as any, {
             persistSession: true,
             autoRefreshToken: true,
             detectSessionInUrl: true,
-            storage: window.localStorage,
-            storageKey: 'studioflow-auth'
-          }
+            storage: createAuthPersistStorage(),
+            storageKey: 'studioflow-auth',
+          },
         });
       }
     }

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import type { Question } from '../data/types';
 import { invalidateQuestionsBundleCache } from '../data/questionsLoader';
 
@@ -28,6 +29,6 @@ export const useImportedQuestionsStore = create<ImportedQuestionsStore>()(
         set({ importedQuestions: [] });
       },
     }),
-    { name: 'studyflow-imported-questions' }
+    { name: 'studyflow-imported-questions', storage: safeJsonStorage }
   )
 );

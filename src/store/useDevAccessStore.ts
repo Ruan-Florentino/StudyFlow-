@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import type { UserRole } from '../types/userAccess';
 import { useUIStore } from './useUIStore';
 
@@ -55,6 +56,6 @@ export const useDevAccessStore = create<DevAccessStore>()(
         window.location.reload();
       },
     }),
-    { name: 'studyflow-dev-access' }
+    { name: 'studyflow-dev-access', storage: safeJsonStorage }
   )
 );

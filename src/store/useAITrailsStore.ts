@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import type { RecommendedTrail } from '../data/explore';
 
 const MAX_TRAILS = 12;
@@ -25,6 +26,6 @@ export const useAITrailsStore = create<AITrailsStore>()(
         })),
       clearAiTrails: () => set({ aiTrails: [] }),
     }),
-    { name: 'studyflow-ai-trails' }
+    { name: 'studyflow-ai-trails', storage: safeJsonStorage }
   )
 );

@@ -35,6 +35,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     }
 
     let syncGeneration = 0;
+    let cancelled = false;
 
     const teardownRemote = () => {
       remoteCleanupRef.current?.();
@@ -42,6 +43,7 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     };
 
     const mountSession = async (user: User) => {
+      if (cancelled) return;
       teardownRemote();
       const gen = ++syncGeneration;
       setUserId(user.id);
@@ -57,18 +59,16 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
       } catch (e) {
         console.error('[SupabaseProvider] startUserRemoteSync:', e);
       } finally {
-        if (gen === syncGeneration) {
+        if (!cancelled && gen === syncGeneration) {
           setAuthReady(true);
         }
       }
     };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const applyAuthSession = (nextSession: Session | null) => {
+      if (cancelled) return;
       setSession(nextSession);
       setAuthHydrated(true);
-
       if (nextSession) {
         void mountSession(nextSession.user);
       } else {
@@ -78,9 +78,40 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
         });
         setAuthReady(true);
       }
+    };
+
+    /** Safari por vezes não entrega o primeiro `onAuthStateChange`; sem fallback a UI fica em loading eterno. */
+    let receivedAuthCallback = false;
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (cancelled) return;
+      receivedAuthCallback = true;
+      applyAuthSession(nextSession);
     });
 
+    const fallbackId = window.setTimeout(() => {
+      if (cancelled || receivedAuthCallback) return;
+      void supabase.auth
+        .getSession()
+        .then(({ data: { session: next } }) => {
+          if (receivedAuthCallback) return;
+          applyAuthSession(next);
+        })
+        .catch((e) => {
+          console.error('[SupabaseProvider] getSession (Safari fallback):', e);
+          if (!receivedAuthCallback) {
+            setAuthHydrated(true);
+            setAuthReady(true);
+          }
+        });
+    }, 0);
+
     return () => {
+      cancelled = true;
+      window.clearTimeout(fallbackId);
+      receivedAuthCallback = true;
       teardownRemote();
       subscription.unsubscribe();
     };

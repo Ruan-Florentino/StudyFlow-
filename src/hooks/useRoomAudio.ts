@@ -19,11 +19,7 @@ export function useRoomAudio(audioSrc: string | undefined, fallbackSrc?: string,
 
     const audio = new Audio();
     audio.loop = true;
-    audio.preload = 'metadata'; // Use metadata
-    // only set crossorigin if it's an external url
-    if (audioSrc.startsWith('http')) {
-       audio.crossOrigin = 'anonymous';
-    }
+    audio.preload = 'metadata';
     audio.volume = isMuted ? 0 : volume;
     
     audioRef.current = audio;

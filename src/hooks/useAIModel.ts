@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import { AI_MODELS, AIModelConfig } from '../config/aiModels';
 
 interface AIModelState {
@@ -21,6 +22,7 @@ export const useAIModel = create<AIModelState>()(
     }),
     {
       name: 'studyflow-ai-model-selection',
+      storage: safeJsonStorage,
     }
   )
 );

@@ -35,12 +35,11 @@ export class ErrorBoundary extends React.Component<Props, State> {
               <RefreshCw size={16} />
               Recarregar
             </button>
-            {/* @ts-ignore */}
-            {import.meta.env.DEV && this.state.error && (
+            {import.meta.env.DEV && this.state.error != null ? (
               <pre className="mt-6 text-[10px] text-rose-400/70 text-left p-3 bg-rose-500/10 rounded-lg overflow-auto max-h-32">
                 {this.state.error.message}
               </pre>
-            )}
+            ) : null}
           </div>
         </div>
       );

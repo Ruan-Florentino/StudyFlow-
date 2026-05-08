@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import type { Question } from '../data/types';
 
 export interface SimuladoConfig {
@@ -115,6 +116,6 @@ export const useSimuladoSessionStore = create<SimuladoSessionState>()(
         }),
       reset: () => set({ ...initial, config: { ...DEFAULT_SIMULADO_CONFIG } }),
     }),
-    { name: 'studyflow-simulado-session', version: 1 }
+    { name: 'studyflow-simulado-session', version: 1, storage: safeJsonStorage }
   )
 );

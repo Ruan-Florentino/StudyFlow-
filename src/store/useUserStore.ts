@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import { LEAGUE_XP_TIERS } from '../lib/leagueThresholds';
 import type { UserRole } from '../types/userAccess';
 import type { Achievement, LeaderboardUserRow, QuestionHistory } from './types';
@@ -124,6 +125,7 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: 'studyflow-user',
+      storage: safeJsonStorage,
       // Fotos vêm do Supabase (users + Storage); persistir aqui gerava URL apagada após reidratação.
       partialize: (s) => {
         const { profilePic: _p, coverPic: _c, ...rest } = s;

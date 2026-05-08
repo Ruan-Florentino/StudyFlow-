@@ -1,11 +1,10 @@
 import React, { lazy, useEffect } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { PremiumGate } from '../../components/PremiumGate';
 import { devAgentLog } from '../../lib/devAgentLog';
 
 // Core Views
 const DashboardView = lazy(() => import('../../views/core/DashboardView').then(m => ({ default: m.default })));
-import { PremiumGate } from '../../components/PremiumGate';
-import { useAIUI } from '../../hooks/useAIUI';
 
 // ⚡ Lazy Loaded Views
 const QuestionsView = lazy(() => import('../../views/core/QuestionsView').then(m => ({ default: m.default })));

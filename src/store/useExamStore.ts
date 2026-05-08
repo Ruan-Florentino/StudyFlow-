@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import type { ExamDetail, Question, QuestionHistory } from './types';
 
 export interface ExamStore {
@@ -92,6 +93,7 @@ export const useExamStore = create<ExamStore>()(
     }),
     {
       name: 'studyflow-exams',
+      storage: safeJsonStorage,
       version: 2,
       migrate: (persisted, version) => {
         if (version >= 2) return persisted as ExamStore;

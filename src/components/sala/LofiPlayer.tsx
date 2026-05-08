@@ -71,9 +71,22 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
 
   const activeStation = stationById(selectedId) ?? SALA_AUDIO_STATIONS[0];
   const playIntentRef = useRef(false);
+  const volumeRef = useRef(volume);
+  const isMutedRef = useRef(isMuted);
   useEffect(() => {
     playIntentRef.current = isPlaying;
   }, [isPlaying]);
+  useEffect(() => {
+    volumeRef.current = volume;
+    isMutedRef.current = isMuted;
+  }, [volume, isMuted]);
+
+  const applyGain = useCallback((el: HTMLAudioElement) => {
+    el.defaultMuted = false;
+    el.muted = false;
+    const v = isMutedRef.current ? 0 : volumeRef.current;
+    el.volume = Math.min(1, Math.max(0, v));
+  }, []);
 
   useEffect(() => {
     const saved = salaReadStored(subjectId);
@@ -93,24 +106,29 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
     if (!el) return;
     const shouldPlay = playIntentRef.current;
     el.pause();
+    applyGain(el);
     el.src = activeStation.url;
     el.load();
     if (shouldPlay) {
+      applyGain(el);
       void el
         .play()
-        .then(() => setIsPlaying(true))
+        .then(() => {
+          applyGain(el);
+          setIsPlaying(true);
+        })
         .catch((err) => {
           console.warn('[sala-audio] play() falhou', activeStation.url, err);
           setIsPlaying(false);
         });
     }
-  }, [activeStation.url]);
+  }, [activeStation.url, applyGain]);
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
+      applyGain(audioRef.current);
     }
-  }, [volume, isMuted]);
+  }, [applyGain, volume, isMuted]);
 
   const togglePlay = async () => {
     const el = audioRef.current;
@@ -125,7 +143,9 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
         el.src = activeStation.url;
         el.load();
       }
+      applyGain(el);
       await el.play();
+      applyGain(el);
       setIsPlaying(true);
     } catch (err) {
       console.warn('[sala-audio] togglePlay falhou', activeStation.url, err);
@@ -135,7 +155,9 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
         el.src = fallbackStation.url;
         el.load();
         try {
+          applyGain(el);
           await el.play();
+          applyGain(el);
           setIsPlaying(true);
           return;
         } catch (fallbackErr) {
@@ -183,7 +205,6 @@ export function LofiPlayer({ subjectId, color, glow }: LofiPlayerProps) {
       <audio
         ref={audioRef}
         preload="metadata"
-        crossOrigin="anonymous"
         onError={(e) => console.warn('[sala-audio] erro no <audio>', activeStation.url, e)}
       />
 

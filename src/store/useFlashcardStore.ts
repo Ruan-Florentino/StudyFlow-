@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import type { Deck, Flashcard } from './types';
 
 export interface FlashcardStore {
@@ -92,6 +93,6 @@ export const useFlashcardStore = create<FlashcardStore>()(
         flashcards: state.flashcards.filter(f => f.deckId !== id)
       })),
     }),
-    { name: 'studyflow-flashcards' }
+    { name: 'studyflow-flashcards', storage: safeJsonStorage }
   )
 );

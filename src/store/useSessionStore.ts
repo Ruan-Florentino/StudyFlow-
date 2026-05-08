@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJsonStorage } from '../lib/safeJsonStorage';
 import { ensureNoteUuid } from '../lib/ensureNoteUuid';
 import { syncNoteToSupabase } from '../lib/supabase/syncNoteToSupabase';
 import { toast } from './useToastStore';
@@ -135,6 +136,6 @@ export const useSessionStore = create<SessionStore>()(
       updateNeuralSync: (val) => set({ neuralSync: val }),
       toggleAppBlocker: (val) => set(state => ({ isAppBlockerActive: val ?? !state.isAppBlockerActive })),
     }),
-    { name: 'studyflow-sessions' }
+    { name: 'studyflow-sessions', storage: safeJsonStorage }
   )
 );

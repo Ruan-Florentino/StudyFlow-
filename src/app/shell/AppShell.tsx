@@ -97,7 +97,10 @@ export function AppShell({
   useEffect(() => {
     const audio = nativeAudioRef.current;
     if (!audio || !nativeRoomAudioSrc) return;
-    audio.volume = (studyRooms.audioVolume ?? 50) / 100;
+    const vol = (studyRooms.audioVolume ?? 50) / 100;
+    audio.muted = false;
+    audio.defaultMuted = false;
+    audio.volume = vol <= 0 ? 0 : Math.min(1, vol);
     if (!studyRooms.audioPlaying || !isUserInteracted) {
       audio.pause();
       return;
