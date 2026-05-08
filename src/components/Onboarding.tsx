@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Target, Clock, BookOpen, Sparkles, Home, Compass } from 'lucide-react';
-import { GlassCard, AnimatedButton } from './UI';
+import { ArrowRight, Target, Clock, BookOpen, Home, Compass } from 'lucide-react';
+import { AnimatedButton } from './UI';
 import { useStore } from '../store';
 
 export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) => void }) => {
@@ -11,12 +11,10 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
     objetivo: '',
     horas: '',
     dificuldades: [] as string[],
-    objetivoFinalText: '',
-    objetivoFinalDate: ''
   });
 
   const nextStep = () => {
-    if (step < 5) setStep(s => s + 1);
+    if (step < 4) setStep(s => s + 1);
   };
   
   const prevStep = () => {
@@ -36,7 +34,7 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
       <div className="h-1 bg-white/10 w-full relative">
         <motion.div 
           initial={{ width: 0 }}
-          animate={{ width: `${(step / 5) * 100}%` }}
+          animate={{ width: `${(step / 4) * 100}%` }}
           className="absolute top-0 left-0 h-full bg-primary shadow-[0_0_10px_rgba(0,255,148,0.5)]"
         />
       </div>
@@ -159,60 +157,8 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
           )}
 
           {step === 4 && (
-            <motion.div 
-              key="step4" 
-              initial={{ opacity: 0, x: 20 }} 
-              animate={{ opacity: 1, x: 0 }} 
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-8"
-            >
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-green-600 rounded-full flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(0,255,148,0.3)]">
-                  <Sparkles size={32} className="text-black" />
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold">Configure seu objetivo</h2>
-                <p className="text-text-secondary">Para onde estamos indo?</p>
-              </div>
-
-              <GlassCard className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-text-secondary uppercase tracking-widest">Eu quero passar em...</label>
-                  <input
-                    type="text"
-                    value={data.objetivoFinalText}
-                    onChange={e => setData({ ...data, objetivoFinalText: e.target.value })}
-                    placeholder="Ex: Medicina na USP"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-text-secondary uppercase tracking-widest">Até...</label>
-                  <input
-                    type="date"
-                    value={data.objetivoFinalDate}
-                    onChange={e => setData({ ...data, objetivoFinalDate: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-white color-scheme-dark"
-                  />
-                </div>
-              </GlassCard>
-
-              <div className="flex justify-between mt-8">
-                <AnimatedButton onClick={prevStep} variant="ghost" className="px-6">Voltar</AnimatedButton>
-                <AnimatedButton 
-                  onClick={nextStep} 
-                  disabled={!data.objetivoFinalText || !data.objetivoFinalDate}
-                  className="px-8 border-primary bg-primary text-black"
-                >
-                  <Sparkles size={16} />
-                  Continuar
-                </AnimatedButton>
-              </div>
-            </motion.div>
-          )}
-
-          {step === 5 && (
             <motion.div
-              key="step5"
+              key="step4-first"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}

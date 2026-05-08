@@ -1,4 +1,5 @@
-﻿import { NavLink } from 'react-router-dom';
+﻿import { createPortal } from 'react-dom';
+import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { springs } from '../lib/animations/easings';
 import { Home, Compass, Target, PenLine, Users, User, Sparkles } from 'lucide-react';
@@ -35,9 +36,9 @@ export function BottomNav() {
   const { currentTab } = useAppNavigation();
   const activeRoomId = useStore((s) => s.studyRooms?.activeRoom ?? null);
 
-  return (
+  const nav = (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
+      className="pointer-events-auto fixed bottom-0 left-0 right-0 z-[90] pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2 [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
       style={{
         transform: currentTab === 'comunidade' && activeRoomId ? 'translateY(120%)' : 'translateY(0)',
       }}
@@ -111,4 +112,7 @@ export function BottomNav() {
       </div>
     </nav>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(nav, document.body);
 }
