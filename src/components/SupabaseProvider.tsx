@@ -6,7 +6,6 @@ import {
   type SupabaseAuthSessionValue,
 } from '../contexts/SupabaseAuthSessionContext';
 import { useUserStore } from '../store/useUserStore';
-import { SupabaseSetupRequired } from './SupabaseSetupRequired';
 
 interface SupabaseProviderProps {
   children: ReactNode;
@@ -30,6 +29,8 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
+      setSession(null);
+      setAuthHydrated(true);
       setAuthReady(true);
       return;
     }
@@ -117,9 +118,6 @@ export const SupabaseProvider: React.FC<SupabaseProviderProps> = ({ children }) 
     };
   }, [setUserId, setAuthReady]);
 
-  if (!isSupabaseConfigured) {
-    return <SupabaseSetupRequired />;
-  }
 
   return (
     <SupabaseAuthSessionContext.Provider value={sessionValue}>
