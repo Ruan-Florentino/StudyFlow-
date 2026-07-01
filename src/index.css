@@ -619,9 +619,14 @@ body {
 }
 
 .liquid-glass {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.56), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045) 42%, rgba(var(--hub-primary-rgb), 0.055)),
+    rgba(8, 18, 16, 0.68);
+  border: 1px solid rgba(216, 255, 239, 0.2);
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.56),
+    0 0 0 1px rgba(255, 255, 255, 0.035) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
 }
 
 .liquid-glass :where(.text-text-secondary) {
@@ -650,17 +655,19 @@ body {
   background:
     linear-gradient(
       165deg,
-      rgba(255, 255, 255, 0.13) 0%,
-      rgba(255, 255, 255, 0.04) 38%,
-      rgba(0, 0, 0, 0.16) 100%
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(var(--hub-primary-rgb), 0.08) 34%,
+      rgba(96, 245, 255, 0.045) 64%,
+      rgba(0, 0, 0, 0.18) 100%
     );
   background-color: color-mix(in srgb, var(--hub-bg-overlay) 58%, transparent);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(216, 255, 239, 0.22);
   box-shadow:
     0 1px 0 0 rgba(255, 255, 255, 0.42) inset,
     0 0 0 1px rgba(0, 0, 0, 0.35) inset,
     0 28px 56px rgba(0, 0, 0, 0.52),
-    0 10px 24px rgba(0, 0, 0, 0.32);
+    0 10px 24px rgba(0, 0, 0, 0.32),
+    0 0 36px rgba(var(--hub-primary-rgb), 0.08);
 }
 
 /* Brilho superior tipo vidro polido (iOS) */
@@ -739,3 +746,99 @@ body {
     transform: scale(1.2);
   }
 }
+
+/* StudyFlow cinematic polish start */
+.app-cinematic-bg {
+  position: relative;
+  overflow-x: hidden;
+  background:
+    linear-gradient(180deg, rgba(3, 7, 6, 0.72), rgba(3, 7, 6, 0.96)),
+    radial-gradient(ellipse at 50% -12%, rgba(var(--hub-primary-rgb), 0.18), transparent 46%),
+    linear-gradient(125deg, rgba(96, 245, 255, 0.08), transparent 34%, rgba(167, 139, 250, 0.1) 68%, transparent),
+    #030706;
+}
+
+.app-cinematic-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 72%);
+  opacity: 0.32;
+}
+
+.app-frame {
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(8, 18, 16, 0.92), rgba(3, 7, 6, 0.98)),
+    linear-gradient(135deg, rgba(var(--hub-primary-rgb), 0.06), rgba(96, 245, 255, 0.035) 38%, rgba(167, 139, 250, 0.045));
+  border: 1px solid rgba(216, 255, 239, 0.16);
+}
+
+.app-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.055), transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 18%);
+  opacity: 0.9;
+}
+
+#app-main-scroll {
+  scroll-behavior: smooth;
+}
+
+.glass-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(var(--hub-primary-rgb), 0.055), transparent 55%);
+  opacity: 0.72;
+  transition: opacity var(--duration-normal) var(--ease-smooth-out);
+}
+
+.glass-sheen:hover::before {
+  opacity: 1;
+}
+
+.glass-sheen > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .app-frame {
+    animation: studyflow-frame-in 520ms var(--ease-smooth-out) both;
+  }
+
+  .liquid-glass {
+    transition:
+      border-color var(--duration-normal) var(--ease-smooth-out),
+      box-shadow var(--duration-normal) var(--ease-smooth-out),
+      background-color var(--duration-normal) var(--ease-smooth-out),
+      transform var(--duration-fast) var(--ease-smooth-out);
+  }
+}
+
+@keyframes studyflow-frame-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* StudyFlow cinematic polish end */

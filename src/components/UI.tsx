@@ -237,7 +237,7 @@ export const GlassCard = ({
     onClick={onClick}
     style={style}
     className={cn(
-      'liquid-glass p-6 rounded-[24px] relative overflow-hidden transition-[border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35',
+      'liquid-glass glass-sheen p-6 rounded-[24px] relative overflow-hidden transition-[border-color,box-shadow,transform,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35',
       onClick && 'cursor-pointer',
       glow && 'shadow-[0_0_30px_rgba(var(--hub-primary-rgb),0.14)] border-primary/35 hover:shadow-[0_0_36px_rgba(var(--hub-primary-rgb),0.2)]',
       className
@@ -255,7 +255,7 @@ export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = 
     whileTap={reduceMotion ? undefined : { scale: 0.97, transition: springs.snappy }}
     whileHover={reduceMotion ? undefined : { scale: 1.02, transition: springs.soft }}
     onClick={onClick}
-    className="liquid-glass p-5 rounded-[24px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35 group relative overflow-hidden shadow-lg"
+    className="liquid-glass glass-sheen p-5 rounded-[24px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35 group relative overflow-hidden shadow-lg"
   >
     <div className={cn(bg, color, "w-12 h-12 rounded-2xl flex items-center justify-center transition-[transform,border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] border border-transparent group-hover:border-primary/30 shadow-inner")}>
       <Icon size={24} strokeWidth={1.5} />
@@ -274,7 +274,7 @@ export const LogoIcon = ({ size = 24 }: { size?: number }) => (
     alt=""
     width={size}
     height={size}
-    className="object-contain select-none pointer-events-none drop-shadow-[0_0_12px_rgba(var(--hub-primary-rgb),0.25)]"
+    className="object-contain select-none pointer-events-none drop-shadow-[0_0_16px_rgba(var(--hub-primary-rgb),0.36)]"
     decoding="async"
     draggable={false}
   />
@@ -298,7 +298,7 @@ export const Logo = ({ size = "md", className, showText = false }: { size?: "sm"
       className={cn("flex items-center gap-3", className)}
     >
       <div className={cn(
-        "relative flex items-center justify-center rounded-2xl liquid-glass overflow-hidden group",
+        "relative flex items-center justify-center rounded-2xl liquid-glass glass-sheen overflow-hidden group",
         sizes[size].container
       )}>
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-primary/10 opacity-50" />

@@ -157,11 +157,11 @@ export function AppShell({
   }, []);
 
   return (
-    <div className="app-shell-viewport bg-background flex justify-center selection:bg-primary/30 selection:text-white">
+    <div className="app-shell-viewport app-cinematic-bg flex justify-center selection:bg-primary/30 selection:text-white">
       <div 
         id="root-wrapper"
-        className="w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto relative bg-background overflow-x-hidden border border-white/10 liquid-glass max-md:flex max-md:flex-col max-md:min-h-[100dvh] md:min-h-screen md:h-auto md:max-h-none pt-[env(safe-area-inset-top,0px)]"
-        style={{ boxShadow: '0 24px 70px rgba(0, 0, 0, 0.55)' }}
+        className="app-frame w-full max-w-md md:max-w-4xl lg:max-w-7xl mx-auto relative overflow-x-hidden liquid-glass max-md:flex max-md:flex-col max-md:min-h-[100dvh] md:min-h-screen md:h-auto md:max-h-none pt-[env(safe-area-inset-top,0px)]"
+        style={{ boxShadow: '0 30px 90px rgba(0, 0, 0, 0.62)' }}
       >
         <Suspense fallback={null}>
           <GlobalCelebrations />

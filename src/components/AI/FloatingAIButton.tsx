@@ -30,100 +30,109 @@ function OwlSVG({ blinking, hover }: { blinking: boolean; hover: boolean }) {
       aria-hidden
       className="pointer-events-none select-none"
       style={{
-        width: '55%',
-        height: '55%',
-        filter: 'drop-shadow(0 0 10px rgba(0,255,136,0.55))',
-        transform: hover ? 'rotate(-4deg) scale(1.08)' : 'rotate(0deg) scale(1)',
+        width: '68%',
+        height: '68%',
+        filter: hover
+          ? 'drop-shadow(0 0 12px rgba(0,255,168,0.72)) drop-shadow(0 8px 16px rgba(0,0,0,0.45))'
+          : 'drop-shadow(0 0 9px rgba(0,255,168,0.48)) drop-shadow(0 6px 12px rgba(0,0,0,0.38))',
+        transform: hover ? 'rotate(-3deg) translateY(-1px) scale(1.08)' : 'rotate(0deg) translateY(0) scale(1)',
         transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
         willChange: 'transform',
       }}
     >
-      {/* Corpo */}
-      <g id="body">
-        <ellipse cx="32" cy="40" rx="16" ry="18" fill="#3d2314" />
-        <ellipse cx="32" cy="40" rx="12" ry="14" fill="#c8825e" />
-        {/* Penas do peito */}
-        <ellipse cx="32" cy="44" rx="9" ry="10" fill="#e8a07a" opacity="0.55" />
-        {/* Asas */}
-        <ellipse
-          cx="18"
-          cy="40"
-          rx="7"
-          ry="12"
-          fill="#2b1a10"
-          style={{
-            transform: hover ? 'rotate(-8deg) translateY(-2px)' : 'none',
-            transformOrigin: '18px 34px',
-            transition: 'transform 0.4s ease',
-          }}
+      <defs>
+        <linearGradient id="athena-owl-body" x1="12" x2="52" y1="10" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#244238" />
+          <stop offset="0.45" stopColor="#10231d" />
+          <stop offset="1" stopColor="#060b09" />
+        </linearGradient>
+        <linearGradient id="athena-owl-face" x1="18" x2="46" y1="14" y2="41" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#f8fff7" />
+          <stop offset="0.55" stopColor="#bfffe4" />
+          <stop offset="1" stopColor="#5fffc0" />
+        </linearGradient>
+        <radialGradient id="athena-eye-glow" cx="50%" cy="45%" r="58%">
+          <stop offset="0" stopColor="#f8fff7" />
+          <stop offset="0.44" stopColor="#8dffd6" />
+          <stop offset="1" stopColor="#00e88f" />
+        </radialGradient>
+        <filter id="athena-owl-soft-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="1.8" result="blur" />
+          <feColorMatrix
+            in="blur"
+            result="glow"
+            values="0 0 0 0 0  0 0 0 0 0.92  0 0 0 0 0.56  0 0 0 0.75 0"
+          />
+          <feMerge>
+            <feMergeNode in="glow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <g filter="url(#athena-owl-soft-glow)">
+        <path
+          d="M18.8 17.7 15.5 7.8 26.2 13a21 21 0 0 1 11.6 0l10.7-5.2-3.3 9.9c4 3.5 6.4 8.9 6.4 15.4 0 13.6-8.2 24.2-19.6 24.2S12.4 46.7 12.4 33.1c0-6.5 2.4-11.9 6.4-15.4Z"
+          fill="url(#athena-owl-body)"
+          stroke="rgba(174,255,220,0.42)"
+          strokeWidth="1.35"
         />
-        <ellipse
-          cx="46"
-          cy="40"
-          rx="7"
-          ry="12"
-          fill="#2b1a10"
-          style={{
-            transform: hover ? 'rotate(8deg) translateY(-2px)' : 'none',
-            transformOrigin: '46px 34px',
-            transition: 'transform 0.4s ease',
-          }}
+        <path
+          d="M20.8 22.2c3.3-4.5 9-4.6 11.2-.6 2.2-4 7.9-3.9 11.2.6 3.5 4.8.6 12.2-5.2 13.3-2.6.5-4.8-.4-6-2.2-1.2 1.8-3.4 2.7-6 2.2-5.8-1.1-8.7-8.5-5.2-13.3Z"
+          fill="url(#athena-owl-face)"
+          opacity="0.95"
         />
+        <path
+          d="M23.1 42.7c2.2 2.4 5.1 3.6 8.9 3.6s6.7-1.2 8.9-3.6"
+          fill="none"
+          stroke="rgba(191,255,228,0.5)"
+          strokeLinecap="round"
+          strokeWidth="1.5"
+        />
+        <path d="M18.4 31.5c-2.5 4.7-2 10.2 1.7 15.5" fill="none" stroke="rgba(255,255,255,0.16)" strokeLinecap="round" strokeWidth="2" />
+        <path d="M45.6 31.5c2.5 4.7 2 10.2-1.7 15.5" fill="none" stroke="rgba(255,255,255,0.16)" strokeLinecap="round" strokeWidth="2" />
       </g>
 
-      {/* Cabeça */}
-      <g id="head">
-        <circle cx="32" cy="24" r="15" fill="#3d2314" />
-        <circle cx="32" cy="24" r="11" fill="#c8825e" />
-        {/* Orelhas */}
-        <polygon points="20,13 16,4 25,11" fill="#2b1a10" />
-        <polygon points="44,13 48,4 39,11" fill="#2b1a10" />
-      </g>
-
-      {/* Olhos — piscam via clipPath height */}
-      <g id="eyes">
-        {/* órbita esquerda */}
-        <circle cx="25" cy="23" r="6" fill="#f0f0f0" />
-        <circle cx="47" cy="23" r="6" fill="#f0f0f0" />
-        {/* iris */}
-        <circle cx="25" cy="23" r="3.8" fill="#00c96a" />
-        <circle cx="47" cy="23" r="3.8" fill="#00c96a" />
-        {/* pupila */}
-        <circle cx="25.6" cy="22.4" r="2.2" fill="#0a0e0d" />
-        <circle cx="47.6" cy="22.4" r="2.2" fill="#0a0e0d" />
-        {/* brilho */}
-        <circle cx="26.5" cy="21.5" r="0.8" fill="white" />
-        <circle cx="48.5" cy="21.5" r="0.8" fill="white" />
-        {/* Pálpebras (piscada) */}
-        {blinking && (
+      <g
+        style={{
+          transform: hover ? 'translateY(-1px)' : 'translateY(0)',
+          transition: 'transform 0.28s ease',
+        }}
+      >
+        <circle cx="25.2" cy="26.6" r="6.2" fill="#07110d" />
+        <circle cx="38.8" cy="26.6" r="6.2" fill="#07110d" />
+        {!blinking ? (
           <>
-            <rect x="18.5" y="17.5" width="13" height="11" rx="5" fill="#c8825e" />
-            <rect x="40.5" y="17.5" width="13" height="11" rx="5" fill="#c8825e" />
+            <circle cx="25.2" cy="26.6" r="4.25" fill="url(#athena-eye-glow)" />
+            <circle cx="38.8" cy="26.6" r="4.25" fill="url(#athena-eye-glow)" />
+            <circle cx={hover ? '26' : '25.2'} cy="26.3" r="2.05" fill="#02100b" />
+            <circle cx={hover ? '39.6' : '38.8'} cy="26.3" r="2.05" fill="#02100b" />
+            <circle cx="26.9" cy="24.8" r="0.95" fill="#ffffff" opacity="0.95" />
+            <circle cx="40.5" cy="24.8" r="0.95" fill="#ffffff" opacity="0.95" />
+          </>
+        ) : (
+          <>
+            <path d="M20.8 26.6h8.8" stroke="#9fffe0" strokeLinecap="round" strokeWidth="2.2" />
+            <path d="M34.4 26.6h8.8" stroke="#9fffe0" strokeLinecap="round" strokeWidth="2.2" />
           </>
         )}
+        <path d="M32 29.7 28.8 34h6.4L32 29.7Z" fill="#f7b955" />
+        <path d="M29.1 39.1c1.7.9 4.1.9 5.8 0" fill="none" stroke="#9fffe0" strokeLinecap="round" strokeWidth="1.3" opacity="0.45" />
       </g>
 
-      {/* Bico */}
-      <g id="beak">
-        <polygon points="32,27 29,31 35,31" fill="#e8944a" />
-      </g>
-
-      {/* Patas */}
-      <g id="feet" opacity="0.7">
-        <rect x="25" y="56" width="5" height="3" rx="1.5" fill="#e8944a" />
-        <rect x="34" y="56" width="5" height="3" rx="1.5" fill="#e8944a" />
+      <g opacity="0.72">
+        <path d="M25.4 55.5h5.2" stroke="#f7b955" strokeLinecap="round" strokeWidth="2.4" />
+        <path d="M33.4 55.5h5.2" stroke="#f7b955" strokeLinecap="round" strokeWidth="2.4" />
       </g>
     </svg>
   );
 }
-
-/* ─── Partículas orbitando ──────────────────────────────────────────────── */
 const PARTICLES = [
-  { delay: 0,   size: 3,   orbit: 42, speed: 6,  color: 'rgba(0,255,136,0.8)' },
-  { delay: 1.2, size: 2,   orbit: 36, speed: 8,  color: 'rgba(0,255,200,0.6)' },
-  { delay: 2.4, size: 2.5, orbit: 46, speed: 10, color: 'rgba(100,255,200,0.7)' },
-  { delay: 0.8, size: 2,   orbit: 39, speed: 7,  color: 'rgba(0,200,255,0.5)' },
-  { delay: 3,   size: 1.5, orbit: 44, speed: 9,  color: 'rgba(180,255,200,0.4)' },
+  { delay: 0,   size: 3,   orbit: 44, speed: 6,  color: 'rgba(0,255,168,0.82)' },
+  { delay: 1.2, size: 2,   orbit: 38, speed: 8,  color: 'rgba(96,245,255,0.62)' },
+  { delay: 2.4, size: 2.5, orbit: 48, speed: 10, color: 'rgba(167,139,250,0.58)' },
+  { delay: 0.8, size: 2,   orbit: 41, speed: 7,  color: 'rgba(0,220,255,0.52)' },
+  { delay: 3,   size: 1.5, orbit: 46, speed: 9,  color: 'rgba(248,198,109,0.42)' },
 ];
 
 function OrbitingParticle({
@@ -266,7 +275,7 @@ export function FloatingAIButton() {
     }, 120);
   };
 
-  const SIZE = 66; // px
+  const SIZE = 72; // px
 
   return (
     <>
@@ -285,8 +294,8 @@ export function FloatingAIButton() {
         whileTap={{ scale: 0.88, transition: springs.snappy }}
         className="fixed z-[100] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d]"
         style={{
-          right: 16,
-          bottom: 'calc(5.85rem + env(safe-area-inset-bottom, 0px))',
+          right: 18,
+          bottom: 'calc(6.05rem + env(safe-area-inset-bottom, 0px))',
           width: SIZE,
           height: SIZE,
         }}
@@ -309,7 +318,7 @@ export function FloatingAIButton() {
                 rgba(0,255,136,0)    0%,
                 rgba(0,255,200,0.6) 20%,
                 rgba(0,200,255,0.4) 35%,
-                rgba(120,80,255,0.3) 50%,
+                rgba(167,139,250,0.38) 50%,
                 rgba(0,255,136,0.5) 70%,
                 rgba(0,255,136,0)   100%
               )`,
@@ -329,7 +338,7 @@ export function FloatingAIButton() {
           className="pointer-events-none absolute rounded-full"
           style={{
             inset: -8,
-            background: 'radial-gradient(circle, rgba(0,255,136,0.35) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(0,240,168,0.38) 0%, rgba(96,245,255,0.1) 38%, transparent 72%)',
             animation: reduced ? 'none' : `athena-halo-pulse ${hover ? '1.6s' : '3.2s'} ease-in-out infinite`,
             willChange: 'opacity, transform',
             filter: 'blur(6px)',
@@ -349,8 +358,8 @@ export function FloatingAIButton() {
             inset: -2,
             padding: 2,
             background: hover
-              ? `conic-gradient(from 90deg, #00ff88, #00e5cc, #4f46e5, #00ff88)`
-              : `conic-gradient(from 90deg, #00cc6a, #00a888, #2d8a5e, #00cc6a)`,
+              ? `conic-gradient(from 90deg, #00f0a8, #60f5ff, #a78bfa, #f8c66d, #00f0a8)`
+              : `conic-gradient(from 90deg, #00c985, #14b8a6, #4f46e5, #00c985)`,
             borderRadius: '50%',
             WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             WebkitMaskComposite: 'xor',
@@ -367,7 +376,7 @@ export function FloatingAIButton() {
           aria-hidden
           className="absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(circle at 38% 30%, rgba(255,255,255,0.18) 0%, rgba(10,20,16,0.92) 60%, rgba(0,20,12,0.98) 100%)`,
+            background: `radial-gradient(circle at 34% 24%, rgba(255,255,255,0.24) 0%, rgba(53,255,188,0.16) 28%, rgba(8,20,18,0.94) 64%, rgba(2,8,7,0.99) 100%)`,
             backdropFilter: 'blur(20px) saturate(160%)',
             WebkitBackdropFilter: 'blur(20px) saturate(160%)',
             boxShadow: hover

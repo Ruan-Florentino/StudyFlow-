@@ -1,4 +1,4 @@
-﻿import { createPortal } from 'react-dom';
+import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { springs } from '../lib/animations/easings';
@@ -43,8 +43,8 @@ export function BottomNav() {
         transform: currentTab === 'comunidade' && activeRoomId ? 'translateY(120%)' : 'translateY(0)',
       }}
     >
-      <div className="bottom-nav-dock mx-auto max-w-xl rounded-3xl p-1.5 overflow-hidden">
-        <div className="relative flex h-[3.75rem] gap-1 overflow-x-auto overflow-y-hidden px-0.5 snap-x snap-mandatory no-scrollbar md:items-center md:justify-around md:gap-0.5 md:overflow-visible md:snap-none">
+      <div className="bottom-nav-dock mx-auto max-w-xl rounded-[28px] p-2 overflow-hidden">
+        <div className="relative flex h-[3.85rem] gap-1 overflow-x-auto overflow-y-hidden px-0.5 snap-x snap-mandatory no-scrollbar md:items-center md:justify-around md:gap-1 md:overflow-visible md:snap-none">
           {NAV_ITEMS.map((item) => {
             const isActive = currentTab === item.id;
             return (
@@ -61,12 +61,12 @@ export function BottomNav() {
               >
                 <motion.div
                   whileTap={{ scale: 0.94, transition: springs.snappy }}
-                  className="relative flex min-h-[3.35rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-2xl px-0.5"
+                  className="relative flex min-h-[3.35rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 transition-colors duration-200 hover:bg-white/[0.045]"
                 >
                   {isActive && (
                     <motion.div
                       layoutId="bottom-nav-active-pill"
-                      className="absolute inset-0 rounded-2xl bg-white/[0.09] ring-1 ring-white/[0.1] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.22),0_0_28px_-12px_rgba(var(--hub-primary-rgb),0.38)]"
+                      className="absolute inset-0 rounded-[22px] bg-[linear-gradient(135deg,rgba(var(--hub-primary-rgb),0.18),rgba(96,245,255,0.08),rgba(255,255,255,0.06))] ring-1 ring-primary/25 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.26),0_10px_28px_-18px_rgba(var(--hub-primary-rgb),0.9)]"
                       transition={springs.pill}
                     />
                   )}
