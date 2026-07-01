@@ -13,7 +13,8 @@ export default defineConfig(({mode}) => {
       react(), 
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
+        selfDestroying: true,
         devOptions: {
           enabled: false
         },
@@ -68,6 +69,9 @@ export default defineConfig(({mode}) => {
           ]
         },
         workbox: {
+          skipWaiting: true,
+          clientsClaim: true,
+          cleanupOutdatedCaches: true,
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB limit
           manifestTransforms: [
             async (entries) => {

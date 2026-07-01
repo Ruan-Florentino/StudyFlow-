@@ -4,7 +4,6 @@ import { devAgentLog } from '../../lib/devAgentLog';
 import { routes } from './routes';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { AppContent } from '../AppContent';
-import { AuthWrapper } from '../AuthWrapper';
 
 /**
  * RouterConfig
@@ -29,7 +28,7 @@ const NotFoundRedirect = () => {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <AuthWrapper><AppContent /></AuthWrapper>,
+    element: <AppContent />,
     errorElement: <ErrorLoader />,
     children: [
       ...routes.map(route => ({
