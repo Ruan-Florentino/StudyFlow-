@@ -200,8 +200,10 @@ export function FloatingAIButton() {
     if (reduced) return undefined;
     let blinkTimer: ReturnType<typeof setTimeout>;
     let releaseTimer: ReturnType<typeof setTimeout>;
+    let rafId: number | null = null;
     let lastScroll = 0;
     let lastX = -24;
+    let lastY = Math.round((window.innerHeight || 720) * 0.58);
 
     const main = document.getElementById('app-main-scroll');
     const getScrollTop = () => main?.scrollTop ?? window.scrollY;
@@ -213,24 +215,26 @@ export function FloatingAIButton() {
       const viewportHeight = window.innerHeight || 720;
       const viewportWidth = window.innerWidth || 390;
       const progress = clamp(scrollTop / getScrollMax(), 0, 1);
-      const low = Math.max(88, viewportHeight * 0.16);
-      const high = Math.max(low + 120, viewportHeight - 212);
-      const scrollY = low + progress * (high - low);
-      const wave = Math.sin(progress * Math.PI * 4.2) * Math.min(110, viewportWidth * 0.24);
-      const drift = Math.cos(scrollTop / 180) * 16;
-      const x = Math.round(-24 - Math.abs(wave) - drift);
-      const y = Math.round(clamp(scrollY + Math.sin(scrollTop / 82) * 18, low, high));
+      const upper = Math.max(84, viewportHeight * 0.13);
+      const lower = Math.max(upper + 160, viewportHeight - 214);
+      const scrollTrackY = lower - progress * (lower - upper);
+      const followY = lastY - delta * 0.42;
+      const y = Math.round(clamp(delta === 0 ? scrollTrackY : followY * 0.68 + scrollTrackY * 0.32, upper, lower));
+      const wave = Math.sin(progress * Math.PI * 3.6) * Math.min(138, viewportWidth * 0.32);
+      const drift = Math.cos(scrollTop / 160) * 18;
+      const x = Math.round(-28 - Math.abs(wave) - drift);
       const horizontal = x - lastX;
-      const goingUp = delta < 0;
-      const edgePeek = Math.abs(horizontal) > 18 || Math.abs(wave) > Math.min(82, viewportWidth * 0.18);
+      const goingDown = delta > 0;
+      const edgePeek = Math.abs(horizontal) > 12 || Math.abs(delta) > 7;
       lastX = x;
+      lastY = y;
 
-      const flip: 1 | -1 = horizontal < -2 ? -1 : 1;
+      const flip: 1 | -1 = horizontal < -1 ? -1 : 1;
 
       return {
         x,
         y,
-        tilt: clamp((goingUp ? -13 : 11) + horizontal * 0.11, -22, 22),
+        tilt: clamp((goingDown ? -14 : 12) + horizontal * 0.1, -22, 22),
         flip,
         peek: edgePeek,
         progress,
@@ -254,26 +258,31 @@ export function FloatingAIButton() {
           gliding: false,
           peek: false,
         }));
-      }, 620);
+      }, 520);
     };
 
-    const handleScroll = () => {
+    const syncToScroll = () => {
+      rafId = null;
       const scrollTop = getScrollTop();
       const delta = scrollTop - lastScroll;
-      if (Math.abs(delta) < 1.5) return;
       lastScroll = scrollTop;
       const next = calculateFlight(scrollTop, delta);
 
       setFlight((current) => ({
         x: next.x,
         y: next.y,
-        tilt: next.tilt,
+        tilt: Math.abs(delta) > 0.5 ? next.tilt : current.tilt,
         flip: next.flip,
-        burst: current.burst + 1,
-        gliding: true,
+        burst: Math.abs(delta) > 2 ? current.burst + 1 : current.burst,
+        gliding: Math.abs(delta) > 0.5,
         peek: next.peek,
       }));
-      settleFlight();
+      if (Math.abs(delta) > 0.5) settleFlight();
+    };
+
+    const requestSync = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(syncToScroll);
     };
 
     const handlePointerMove = (event: PointerEvent) => {
@@ -295,24 +304,25 @@ export function FloatingAIButton() {
     };
 
     const handleResize = () => {
-      const next = calculateFlight(getScrollTop(), 0);
-      setFlight((current) => ({ ...current, x: next.x, y: next.y }));
+      lastY = Math.round((window.innerHeight || 720) * 0.58);
+      requestSync();
     };
 
     lastScroll = getScrollTop();
     const initial = calculateFlight(lastScroll, 0);
     setFlight((current) => ({ ...current, x: initial.x, y: initial.y }));
     scheduleBlink();
-    main?.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    main?.addEventListener('scroll', requestSync, { passive: true });
+    window.addEventListener('scroll', requestSync, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
 
     return () => {
       clearTimeout(blinkTimer);
       clearTimeout(releaseTimer);
-      main?.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+      main?.removeEventListener('scroll', requestSync);
+      window.removeEventListener('scroll', requestSync);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('pointermove', handlePointerMove);
     };
