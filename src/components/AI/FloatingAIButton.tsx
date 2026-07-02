@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { useLocation } from 'react-router-dom';
 import { useAIUI } from '../../hooks/useAIUI';
 import { ATHENA_CONFIG } from '../../features/athena/constants/config';
 import { springs } from '../../lib/animations/easings';
@@ -14,12 +15,17 @@ type FlightState = {
   peek: boolean;
 };
 
+type RouteMotion = {
+  behind: boolean;
+  pulse: number;
+};
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: boolean; gliding: boolean }) {
   const wingMotion = gliding
-    ? { rotate: [-16, 19, -12], y: [-3, 2, -2] }
-    : { rotate: [-5, 7, -4], y: [0, -1, 0] };
+    ? { rotate: [-4, 5, -3], y: [-0.8, 0.9, -0.4] }
+    : { rotate: [-1.2, 1.4, -0.8], y: [0, -0.35, 0] };
 
   return (
     <svg
@@ -76,7 +82,7 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
 
       <motion.g
         animate={wingMotion}
-        transition={{ duration: gliding ? 0.34 : 1.55, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: gliding ? 1.05 : 2.4, repeat: Infinity, ease: 'easeInOut' }}
         style={{ transformOrigin: '48px 40px' }}
       >
         <path
@@ -145,10 +151,14 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
 
 export function FloatingAIButton() {
   const { openChat, isOpen, setViewMode } = useAIUI();
+  const location = useLocation();
   const reduced = useReducedMotion() ?? false;
   const [hover, setHover] = React.useState(false);
   const [ripple, setRipple] = React.useState(0);
   const [blink, setBlink] = React.useState(false);
+  const [routeMotion, setRouteMotion] = React.useState<RouteMotion>({ behind: false, pulse: 0 });
+  const previousPathRef = React.useRef(location.pathname);
+  const routeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [flight, setFlight] = React.useState<FlightState>({
     x: -24,
     y: 360,
@@ -159,6 +169,33 @@ export function FloatingAIButton() {
     peek: false,
   });
 
+  useEffect(() => {
+    if (previousPathRef.current === location.pathname) return undefined;
+    previousPathRef.current = location.pathname;
+
+    if (routeTimerRef.current) clearTimeout(routeTimerRef.current);
+    setRouteMotion((current) => ({ behind: true, pulse: current.pulse + 1 }));
+    setFlight((current) => ({
+      ...current,
+      tilt: 0,
+      gliding: false,
+      peek: true,
+      burst: current.burst + 1,
+    }));
+
+    routeTimerRef.current = setTimeout(() => {
+      setRouteMotion((current) => ({ behind: false, pulse: current.pulse + 1 }));
+      setFlight((current) => ({ ...current, peek: false }));
+    }, 360);
+
+    return undefined;
+  }, [location.pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (routeTimerRef.current) clearTimeout(routeTimerRef.current);
+    };
+  }, []);
   useEffect(() => {
     if (reduced) return undefined;
     let blinkTimer: ReturnType<typeof setTimeout>;
@@ -309,11 +346,11 @@ export function FloatingAIButton() {
       onHoverEnd={() => setHover(false)}
       initial={{ opacity: 0, scale: 0.72, x: -18, y: 460 }}
       animate={{
-        opacity: flight.peek ? 0.86 : 1,
-        scale: hover ? 1.08 : flight.peek ? 0.95 : 1,
-        x: flight.x,
-        y: flight.y,
-        rotate: flight.tilt,
+        opacity: routeMotion.behind ? 0.18 : flight.peek ? 0.86 : 1,
+        scale: routeMotion.behind ? 0.48 : hover ? 1.06 : flight.peek ? 0.95 : 1,
+        x: flight.x + (routeMotion.behind ? 96 : 0),
+        y: flight.y - (routeMotion.behind ? 18 : 0),
+        rotate: routeMotion.behind ? 8 : flight.tilt,
       }}
       transition={reduced ? { duration: 0.12 } : { type: 'spring', stiffness: 92, damping: 18, mass: 0.72 }}
       whileTap={{ scale: 0.9, transition: springs.snappy }}
@@ -360,12 +397,20 @@ export function FloatingAIButton() {
 
       <motion.span
         className="relative z-10 flex h-full w-full items-center justify-center rounded-full"
-        animate={{ rotateY: flight.flip === -1 ? 180 : 0, x: flight.peek ? flight.flip * 7 : 0 }}
+        animate={{
+          rotateY: routeMotion.behind ? 180 : flight.flip === -1 ? 180 : 0,
+          x: routeMotion.behind ? 18 : flight.peek ? flight.flip * 7 : 0,
+        }}
         transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
         style={{
+          transformPerspective: 760,
           background:
             'radial-gradient(circle at 40% 22%, rgba(255,255,255,0.16), rgba(var(--hub-primary-rgb),0.12) 34%, rgba(4,14,12,0.28) 66%, rgba(0,0,0,0.02) 100%)',
-          filter: hover ? 'drop-shadow(0 0 26px rgba(var(--hub-primary-rgb),0.36))' : 'drop-shadow(0 0 18px rgba(var(--hub-primary-rgb),0.24))',
+          filter: routeMotion.behind
+            ? 'blur(1.6px) drop-shadow(0 0 8px rgba(var(--hub-primary-rgb),0.16))'
+            : hover
+              ? 'drop-shadow(0 0 26px rgba(var(--hub-primary-rgb),0.36))'
+              : 'drop-shadow(0 0 18px rgba(var(--hub-primary-rgb),0.24))',
         }}
       >
         <AthenaOwl blinking={blink} active={hover || flight.gliding} gliding={flight.gliding} />
