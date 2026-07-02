@@ -1,421 +1,197 @@
-/**
- * FloatingAIButton — ATHENA V3 "Orb Cinematográfico"
- *
- * Camadas (de fora pra dentro):
- *  1. Conic-gradient rotativo  → aura holográfica giratória
- *  2. Halo pulse               → respiração suave
- *  3. Partículas orbitando     → 5 dots com mix-blend-mode: screen
- *  4. Anel de borda iridescente
- *  5. Disco glassmorphism      → backdrop-blur + gradiente
- *  6. SVG coruja inline        → permite animar olhos / asas
- *  7. Badge "online" premium
- *  8. Tooltip spring
- *
- * Performance: só transform + opacity (GPU). Nada de top/left animados.
- * a11y: aria-label, focus-visible, prefers-reduced-motion respeitado.
- */
-
-import React, { useEffect, useReducer, useRef } from 'react';
-import { motion, useAnimation, AnimatePresence, useReducedMotion } from 'motion/react';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { Sparkles } from 'lucide-react';
 import { useAIUI } from '../../hooks/useAIUI';
 import { ATHENA_CONFIG } from '../../features/athena/constants/config';
 import { springs } from '../../lib/animations/easings';
 
-/* ─── Coruja SVG inline ─────────────────────────────────────────────────── */
-function OwlSVG({ blinking, hover }: { blinking: boolean; hover: boolean }) {
+function AthenaOwl({ blinking, active }: { blinking: boolean; active: boolean }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 64 64"
       aria-hidden
-      className="pointer-events-none select-none"
+      className="pointer-events-none h-[70%] w-[70%] select-none"
       style={{
-        width: '68%',
-        height: '68%',
-        filter: hover
-          ? 'drop-shadow(0 0 12px rgba(0,255,168,0.72)) drop-shadow(0 8px 16px rgba(0,0,0,0.45))'
-          : 'drop-shadow(0 0 9px rgba(0,255,168,0.48)) drop-shadow(0 6px 12px rgba(0,0,0,0.38))',
-        transform: hover ? 'rotate(-3deg) translateY(-1px) scale(1.08)' : 'rotate(0deg) translateY(0) scale(1)',
-        transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-        willChange: 'transform',
+        filter: active
+          ? 'drop-shadow(0 0 13px rgba(0,255,168,0.62)) drop-shadow(0 10px 20px rgba(0,0,0,0.45))'
+          : 'drop-shadow(0 0 9px rgba(0,255,168,0.42)) drop-shadow(0 7px 14px rgba(0,0,0,0.38))',
       }}
     >
       <defs>
-        <linearGradient id="athena-owl-body" x1="12" x2="52" y1="10" y2="58" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#244238" />
-          <stop offset="0.45" stopColor="#10231d" />
-          <stop offset="1" stopColor="#060b09" />
+        <linearGradient id="athena-launcher-body" x1="14" x2="50" y1="8" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#28493f" />
+          <stop offset="0.5" stopColor="#10251f" />
+          <stop offset="1" stopColor="#06100d" />
         </linearGradient>
-        <linearGradient id="athena-owl-face" x1="18" x2="46" y1="14" y2="41" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#f8fff7" />
-          <stop offset="0.55" stopColor="#bfffe4" />
-          <stop offset="1" stopColor="#5fffc0" />
+        <linearGradient id="athena-launcher-face" x1="20" x2="44" y1="18" y2="38" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#f4fff8" />
+          <stop offset="0.56" stopColor="#b8ffe2" />
+          <stop offset="1" stopColor="#53f3b2" />
         </linearGradient>
-        <radialGradient id="athena-eye-glow" cx="50%" cy="45%" r="58%">
-          <stop offset="0" stopColor="#f8fff7" />
-          <stop offset="0.44" stopColor="#8dffd6" />
-          <stop offset="1" stopColor="#00e88f" />
+        <radialGradient id="athena-launcher-eye" cx="50%" cy="45%" r="60%">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.42" stopColor="#8fffd7" />
+          <stop offset="1" stopColor="#00df8d" />
         </radialGradient>
-        <filter id="athena-owl-soft-glow" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="1.8" result="blur" />
-          <feColorMatrix
-            in="blur"
-            result="glow"
-            values="0 0 0 0 0  0 0 0 0 0.92  0 0 0 0 0.56  0 0 0 0.75 0"
-          />
-          <feMerge>
-            <feMergeNode in="glow" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
       </defs>
 
-      <g filter="url(#athena-owl-soft-glow)">
-        <path
-          d="M18.8 17.7 15.5 7.8 26.2 13a21 21 0 0 1 11.6 0l10.7-5.2-3.3 9.9c4 3.5 6.4 8.9 6.4 15.4 0 13.6-8.2 24.2-19.6 24.2S12.4 46.7 12.4 33.1c0-6.5 2.4-11.9 6.4-15.4Z"
-          fill="url(#athena-owl-body)"
-          stroke="rgba(174,255,220,0.42)"
-          strokeWidth="1.35"
-        />
-        <path
-          d="M20.8 22.2c3.3-4.5 9-4.6 11.2-.6 2.2-4 7.9-3.9 11.2.6 3.5 4.8.6 12.2-5.2 13.3-2.6.5-4.8-.4-6-2.2-1.2 1.8-3.4 2.7-6 2.2-5.8-1.1-8.7-8.5-5.2-13.3Z"
-          fill="url(#athena-owl-face)"
-          opacity="0.95"
-        />
-        <path
-          d="M23.1 42.7c2.2 2.4 5.1 3.6 8.9 3.6s6.7-1.2 8.9-3.6"
-          fill="none"
-          stroke="rgba(191,255,228,0.5)"
-          strokeLinecap="round"
-          strokeWidth="1.5"
-        />
-        <path d="M18.4 31.5c-2.5 4.7-2 10.2 1.7 15.5" fill="none" stroke="rgba(255,255,255,0.16)" strokeLinecap="round" strokeWidth="2" />
-        <path d="M45.6 31.5c2.5 4.7 2 10.2-1.7 15.5" fill="none" stroke="rgba(255,255,255,0.16)" strokeLinecap="round" strokeWidth="2" />
-      </g>
-
-      <g
-        style={{
-          transform: hover ? 'translateY(-1px)' : 'translateY(0)',
-          transition: 'transform 0.28s ease',
-        }}
-      >
-        <circle cx="25.2" cy="26.6" r="6.2" fill="#07110d" />
-        <circle cx="38.8" cy="26.6" r="6.2" fill="#07110d" />
-        {!blinking ? (
-          <>
-            <circle cx="25.2" cy="26.6" r="4.25" fill="url(#athena-eye-glow)" />
-            <circle cx="38.8" cy="26.6" r="4.25" fill="url(#athena-eye-glow)" />
-            <circle cx={hover ? '26' : '25.2'} cy="26.3" r="2.05" fill="#02100b" />
-            <circle cx={hover ? '39.6' : '38.8'} cy="26.3" r="2.05" fill="#02100b" />
-            <circle cx="26.9" cy="24.8" r="0.95" fill="#ffffff" opacity="0.95" />
-            <circle cx="40.5" cy="24.8" r="0.95" fill="#ffffff" opacity="0.95" />
-          </>
-        ) : (
-          <>
-            <path d="M20.8 26.6h8.8" stroke="#9fffe0" strokeLinecap="round" strokeWidth="2.2" />
-            <path d="M34.4 26.6h8.8" stroke="#9fffe0" strokeLinecap="round" strokeWidth="2.2" />
-          </>
-        )}
-        <path d="M32 29.7 28.8 34h6.4L32 29.7Z" fill="#f7b955" />
-        <path d="M29.1 39.1c1.7.9 4.1.9 5.8 0" fill="none" stroke="#9fffe0" strokeLinecap="round" strokeWidth="1.3" opacity="0.45" />
-      </g>
-
-      <g opacity="0.72">
-        <path d="M25.4 55.5h5.2" stroke="#f7b955" strokeLinecap="round" strokeWidth="2.4" />
-        <path d="M33.4 55.5h5.2" stroke="#f7b955" strokeLinecap="round" strokeWidth="2.4" />
-      </g>
+      <path
+        d="M18.7 18.1 15.7 8.9l10 4.7a20.6 20.6 0 0 1 12.6 0l10-4.7-3 9.2c4 3.6 6.4 8.8 6.4 15.1 0 13.4-8.2 23.9-19.7 23.9S12.3 46.6 12.3 33.2c0-6.3 2.4-11.5 6.4-15.1Z"
+        fill="url(#athena-launcher-body)"
+        stroke="rgba(181,255,223,0.45)"
+        strokeWidth="1.3"
+      />
+      <path
+        d="M20.6 22.9c3.2-4.3 8.8-4.2 11.4-.4 2.6-3.8 8.2-3.9 11.4.4 3.2 4.4.6 11.6-5.1 12.8-2.7.6-5-.3-6.3-2.1-1.3 1.8-3.6 2.7-6.3 2.1-5.7-1.2-8.3-8.4-5.1-12.8Z"
+        fill="url(#athena-launcher-face)"
+      />
+      <path d="M23.8 43.1c2 2 4.7 3.1 8.2 3.1s6.2-1.1 8.2-3.1" fill="none" stroke="rgba(181,255,223,0.55)" strokeLinecap="round" strokeWidth="1.5" />
+      <circle cx="25.4" cy="27" r="6" fill="#06110d" />
+      <circle cx="38.6" cy="27" r="6" fill="#06110d" />
+      {blinking ? (
+        <>
+          <path d="M21.2 27h8.4" stroke="#a8ffe0" strokeLinecap="round" strokeWidth="2.1" />
+          <path d="M34.4 27h8.4" stroke="#a8ffe0" strokeLinecap="round" strokeWidth="2.1" />
+        </>
+      ) : (
+        <>
+          <circle cx={active ? '26' : '25.4'} cy="27" r="4.05" fill="url(#athena-launcher-eye)" />
+          <circle cx={active ? '39.2' : '38.6'} cy="27" r="4.05" fill="url(#athena-launcher-eye)" />
+          <circle cx={active ? '26.5' : '25.9'} cy="26.8" r="1.9" fill="#02100b" />
+          <circle cx={active ? '39.7' : '39.1'} cy="26.8" r="1.9" fill="#02100b" />
+          <circle cx="27.3" cy="25.3" r="0.85" fill="#ffffff" opacity="0.95" />
+          <circle cx="40.5" cy="25.3" r="0.85" fill="#ffffff" opacity="0.95" />
+        </>
+      )}
+      <path d="M32 30.2 29 34.1h6l-3-3.9Z" fill="#f6bd60" />
     </svg>
   );
 }
-const PARTICLES = [
-  { delay: 0,   size: 3,   orbit: 44, speed: 6,  color: 'rgba(0,255,168,0.82)' },
-  { delay: 1.2, size: 2,   orbit: 38, speed: 8,  color: 'rgba(96,245,255,0.62)' },
-  { delay: 2.4, size: 2.5, orbit: 48, speed: 10, color: 'rgba(167,139,250,0.58)' },
-  { delay: 0.8, size: 2,   orbit: 41, speed: 7,  color: 'rgba(0,220,255,0.52)' },
-  { delay: 3,   size: 1.5, orbit: 46, speed: 9,  color: 'rgba(248,198,109,0.42)' },
-];
 
-function OrbitingParticle({
-  size, orbit, speed, color, delay, reduced
-}: { size: number; orbit: number; speed: number; color: string; delay: number; reduced: boolean }) {
-  if (reduced) return null;
-  return (
-    <motion.span
-      aria-hidden
-      className="pointer-events-none absolute rounded-full"
-      style={{
-        width: size,
-        height: size,
-        background: color,
-        mixBlendMode: 'screen',
-        boxShadow: `0 0 ${size * 4}px ${color}`,
-        top: '50%',
-        left: '50%',
-        x: '-50%',
-        y: '-50%',
-      }}
-      animate={{
-        rotate: [0, 360],
-        x: [
-          `calc(-50% + ${orbit}px)`,
-          `calc(-50% + ${Math.cos(Math.PI / 2) * orbit}px)`,
-          `calc(-50% - ${orbit}px)`,
-          `calc(-50% + ${Math.cos((3 * Math.PI) / 2) * orbit}px)`,
-          `calc(-50% + ${orbit}px)`,
-        ],
-        y: [
-          `calc(-50%)`,
-          `calc(-50% - ${orbit}px)`,
-          `calc(-50%)`,
-          `calc(-50% + ${orbit}px)`,
-          `calc(-50%)`,
-        ],
-      }}
-      transition={{
-        duration: speed,
-        delay,
-        repeat: Infinity,
-        ease: 'linear',
-      }}
-    />
-  );
-}
-
-/* ─── Tooltip ───────────────────────────────────────────────────────────── */
 function Tooltip({ visible }: { visible: boolean }) {
   return (
     <AnimatePresence>
       {visible && (
         <motion.span
           aria-hidden
-          initial={{ opacity: 0, y: 6, scale: 0.9 }}
+          initial={{ opacity: 0, y: 6, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 4, scale: 0.95 }}
+          exit={{ opacity: 0, y: 4, scale: 0.96 }}
           transition={springs.soft}
-          className="pointer-events-none absolute bottom-full mb-3 right-0 whitespace-nowrap rounded-xl border border-white/10 bg-black/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary shadow-[0_0_16px_rgba(0,255,136,0.2)] backdrop-blur-md"
+          className="pointer-events-none absolute bottom-full right-0 mb-3 hidden whitespace-nowrap rounded-2xl border border-white/10 bg-black/80 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-primary shadow-[0_18px_44px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:block"
         >
-          {ATHENA_CONFIG.NAME} ✦
+          Abrir {ATHENA_CONFIG.NAME}
         </motion.span>
       )}
     </AnimatePresence>
   );
 }
 
-/* ─── Ripple ao clicar ──────────────────────────────────────────────────── */
-function Ripple({ trigger }: { trigger: number }) {
-  return (
-    <AnimatePresence>
-      {trigger > 0 && (
-        <motion.span
-          key={trigger}
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-full border-2 border-primary"
-          initial={{ scale: 0.85, opacity: 0.8 }}
-          animate={{ scale: 2.2, opacity: 0 }}
-          exit={{}}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-        />
-      )}
-    </AnimatePresence>
-  );
-}
-
-/* ─── Conic gradient rotativo (CSS puro via keyframe inline) ────────────── */
-const CONIC_KEYFRAMES = `
-@keyframes athena-conic-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-@keyframes athena-halo-pulse {
-  0%,100% { opacity:.28; transform:scale(0.94); }
-  50%      { opacity:.58; transform:scale(1.08); }
-}
-@keyframes athena-orb-breathe {
-  0%,100% { transform:scale(1); }
-  50%      { transform:scale(1.03); }
-}
-`;
-
-/* ══════════════════════════════════════════════════════════════════════════ */
-/*  COMPONENTE PRINCIPAL                                                     */
-/* ══════════════════════════════════════════════════════════════════════════ */
 export function FloatingAIButton() {
   const { openChat, isOpen, setViewMode } = useAIUI();
   const reduced = useReducedMotion() ?? false;
-
-  /* Estado local */
   const [hover, setHover] = React.useState(false);
   const [ripple, setRipple] = React.useState(0);
   const [blink, setBlink] = React.useState(false);
 
-  /* Piscada aleatória */
   useEffect(() => {
-    if (reduced) return;
-    let t: ReturnType<typeof setTimeout>;
-    const schedule = () => {
-      const delay = 5000 + Math.random() * 6000;
-      t = setTimeout(() => {
+    if (reduced) return undefined;
+    let timer: ReturnType<typeof setTimeout>;
+    let blinkTimer: ReturnType<typeof setTimeout>;
+
+    const scheduleBlink = () => {
+      timer = setTimeout(() => {
         setBlink(true);
-        setTimeout(() => setBlink(false), 160);
-        schedule();
-      }, delay);
+        blinkTimer = setTimeout(() => setBlink(false), 150);
+        scheduleBlink();
+      }, 5200 + Math.random() * 5200);
     };
-    schedule();
-    return () => clearTimeout(t);
+
+    scheduleBlink();
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(blinkTimer);
+    };
   }, [reduced]);
 
   if (isOpen) return null;
 
   const handleOpen = () => {
     if ('vibrate' in navigator) navigator.vibrate(10);
-    setRipple(r => r + 1);
-    setTimeout(() => {
+    setRipple((value) => value + 1);
+    window.setTimeout(() => {
       setViewMode('sidebar');
       openChat('Geral');
-    }, 120);
+    }, 110);
   };
 
-  const SIZE = 72; // px
-
   return (
-    <>
-      {/* Inject keyframes */}
-      <style>{CONIC_KEYFRAMES}</style>
+    <motion.button
+      type="button"
+      aria-label={`Abrir ${ATHENA_CONFIG.NAME}`}
+      onClick={handleOpen}
+      onHoverStart={() => setHover(true)}
+      onHoverEnd={() => setHover(false)}
+      initial={{ scale: 0.82, opacity: 0, y: 12 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      transition={{ ...springs.bouncy, delay: 0.12 }}
+      whileTap={{ scale: 0.94, transition: springs.snappy }}
+      className="group fixed right-4 z-[100] h-16 w-16 overflow-visible rounded-[24px] border border-primary/25 bg-[#06100d]/90 shadow-[0_22px_70px_rgba(0,0,0,0.55)] outline-none backdrop-blur-2xl transition-[width,border-color,box-shadow,background] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d] hover:border-primary/45 hover:bg-[#071611]/95 hover:shadow-[0_24px_80px_rgba(0,0,0,0.62),0_0_32px_rgba(var(--hub-primary-rgb),0.22)] sm:w-[12.25rem] sm:rounded-[26px]"
+      style={{ bottom: 'calc(6.05rem + env(safe-area-inset-bottom, 0px))' }}
+    >
+      <Tooltip visible={hover} />
 
-      <motion.button
-        type="button"
-        aria-label={`Abrir ${ATHENA_CONFIG.NAME}`}
-        onClick={handleOpen}
-        onHoverStart={() => setHover(true)}
-        onHoverEnd={() => setHover(false)}
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ ...springs.bouncy, delay: 0.15 }}
-        whileTap={{ scale: 0.88, transition: springs.snappy }}
-        className="fixed z-[100] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d]"
-        style={{
-          right: 18,
-          bottom: 'calc(6.05rem + env(safe-area-inset-bottom, 0px))',
-          width: SIZE,
-          height: SIZE,
-        }}
-      >
-        {/* ── Tooltip ─────────────────────────────────────── */}
-        <Tooltip visible={hover} />
-
-        {/* ── Ripple ──────────────────────────────────────── */}
-        <Ripple trigger={ripple} />
-
-        {/* ── Conic-gradient giratório (aurora boreal) ────── */}
-        {!reduced && (
-          <span
+      <AnimatePresence>
+        {ripple > 0 && (
+          <motion.span
+            key={ripple}
             aria-hidden
-            className="pointer-events-none absolute rounded-full"
-            style={{
-              inset: -10,
-              background: `conic-gradient(
-                from 0deg,
-                rgba(0,255,136,0)    0%,
-                rgba(0,255,200,0.6) 20%,
-                rgba(0,200,255,0.4) 35%,
-                rgba(167,139,250,0.38) 50%,
-                rgba(0,255,136,0.5) 70%,
-                rgba(0,255,136,0)   100%
-              )`,
-              borderRadius: '50%',
-              animation: `athena-conic-spin ${reduced ? '0s' : '8s'} linear infinite`,
-              willChange: 'transform',
-              opacity: hover ? 0.9 : 0.55,
-              transition: 'opacity 0.4s ease',
-              filter: 'blur(2px)',
-            }}
+            className="pointer-events-none absolute inset-0 rounded-[inherit] border border-primary/60"
+            initial={{ scale: 0.94, opacity: 0.7 }}
+            animate={{ scale: 1.45, opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.48, ease: 'easeOut' }}
           />
         )}
+      </AnimatePresence>
 
-        {/* ── Halo pulse ──────────────────────────────────── */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute rounded-full"
-          style={{
-            inset: -8,
-            background: 'radial-gradient(circle, rgba(0,240,168,0.38) 0%, rgba(96,245,255,0.1) 38%, transparent 72%)',
-            animation: reduced ? 'none' : `athena-halo-pulse ${hover ? '1.6s' : '3.2s'} ease-in-out infinite`,
-            willChange: 'opacity, transform',
-            filter: 'blur(6px)',
-          }}
-        />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-70 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.18), rgba(96,245,255,0.08) 48%, rgba(167,139,250,0.1))',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.35)',
+        }}
+      />
 
-        {/* ── Partículas orbitando ─────────────────────────── */}
-        {PARTICLES.map((p, i) => (
-          <OrbitingParticle key={i} {...p} reduced={reduced} />
-        ))}
-
-        {/* ── Anel iridescente (borda gradient) ───────────── */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute rounded-full transition-all duration-300"
-          style={{
-            inset: -2,
-            padding: 2,
-            background: hover
-              ? `conic-gradient(from 90deg, #00f0a8, #60f5ff, #a78bfa, #f8c66d, #00f0a8)`
-              : `conic-gradient(from 90deg, #00c985, #14b8a6, #4f46e5, #00c985)`,
-            borderRadius: '50%',
-            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            WebkitMaskComposite: 'xor',
-            maskComposite: 'exclude',
-            opacity: hover ? 1 : 0.7,
-            boxShadow: hover
-              ? '0 0 20px rgba(0,255,136,0.5), 0 0 40px rgba(0,200,255,0.2)'
-              : '0 0 12px rgba(0,255,136,0.25)',
-          }}
-        />
-
-        {/* ── Disco central (glassmorphism) ────────────────── */}
+      {!reduced && (
         <motion.span
           aria-hidden
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `radial-gradient(circle at 34% 24%, rgba(255,255,255,0.24) 0%, rgba(53,255,188,0.16) 28%, rgba(8,20,18,0.94) 64%, rgba(2,8,7,0.99) 100%)`,
-            backdropFilter: 'blur(20px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-            boxShadow: hover
-              ? 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.4), 0 0 32px rgba(0,255,136,0.35)'
-              : 'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3)',
-            animation: reduced ? 'none' : `athena-orb-breathe 4s ease-in-out infinite`,
-            willChange: 'transform',
-            border: '1px solid rgba(255,255,255,0.1)',
-            transition: 'box-shadow 0.35s ease',
-          }}
+          className="pointer-events-none absolute -inset-1 rounded-[inherit] opacity-55 blur-md"
+          animate={{ opacity: hover ? [0.45, 0.72, 0.45] : [0.22, 0.42, 0.22] }}
+          transition={{ duration: hover ? 1.8 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ background: 'linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.34), rgba(96,245,255,0.16), transparent)' }}
         />
+      )}
 
-        {/* ── Coruja SVG ──────────────────────────────────── */}
-        <span
-          className="relative z-10 flex h-full w-full items-center justify-center"
-          aria-hidden
-        >
-          <OwlSVG blinking={blink} hover={hover} />
+      <span className="relative z-10 flex h-full w-full items-center gap-3 px-2 sm:px-3">
+        <span className="athena-signal flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] border border-primary/25 bg-primary/10 shadow-[0_14px_34px_rgba(var(--hub-primary-rgb),0.16)]">
+          <AthenaOwl blinking={blink} active={hover} />
         </span>
 
-        {/* ── Badge online ─────────────────────────────────── */}
-        <motion.span
-          aria-hidden
-          className="absolute right-[8%] top-[8%] z-20 flex h-3 w-3 items-center justify-center rounded-full"
-          animate={reduced ? {} : {
-            scale: [1, 1.25, 1],
-            boxShadow: [
-              '0 0 6px rgba(52,211,153,0.8)',
-              '0 0 14px rgba(52,211,153,1)',
-              '0 0 6px rgba(52,211,153,0.8)',
-            ],
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            background: 'linear-gradient(135deg, #34d399, #10b981)',
-            border: '2px solid #0a0e0d',
-          }}
-        />
-      </motion.button>
-    </>
+        <span className="hidden min-w-0 flex-1 text-left sm:block">
+          <span className="block truncate text-[10px] font-black uppercase tracking-widest text-primary/80">Athena online</span>
+          <span className="mt-0.5 flex items-center gap-1.5 truncate text-xs font-bold text-white/80">
+            <Sparkles size={13} className="shrink-0 text-cyan-200" />
+            Abrir assistente
+          </span>
+        </span>
+
+        <span className="absolute right-2 top-2 z-20 h-2.5 w-2.5 rounded-full border-2 border-[#06100d] bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.85)] sm:right-3 sm:top-3" />
+      </span>
+    </motion.button>
   );
 }
