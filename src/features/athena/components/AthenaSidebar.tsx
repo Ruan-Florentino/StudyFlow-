@@ -21,44 +21,44 @@ export function AthenaSidebar() {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={reduceMotion ? { duration: 0.2, ease: [0.22, 1, 0.36, 1] } : springs.page}
-        className="fixed top-0 right-0 bottom-0 w-full sm:w-[450px] bg-background border-l border-white/10 z-[1000] shadow-2xl flex flex-col"
+        className="athena-sidebar-panel fixed bottom-0 right-0 top-0 z-[1000] flex w-full flex-col border-l shadow-2xl sm:w-[450px]"
       >
-        <div className="p-4 border-b border-white/5 flex items-center justify-between bg-black/20 backdrop-blur-md shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
-              <span className="text-xl">🦉</span>
+        <div className="athena-chat-header flex shrink-0 items-center justify-between gap-3 p-4 backdrop-blur-xl">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="athena-signal flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 shadow-[0_16px_34px_rgba(var(--hub-primary-rgb),0.15)]">
+              <span className="relative z-10 text-2xl">{ATHENA_CONFIG.ICON}</span>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-white tracking-tight">{ATHENA_CONFIG.NAME}</h3>
-              <p className="text-[10px] text-white/40 uppercase font-medium tracking-widest">Protocol Sidebar</p>
+            <div className="min-w-0">
+              <h3 className="truncate text-sm font-black tracking-tight text-white">{ATHENA_CONFIG.NAME}</h3>
+              <p className="truncate text-[10px] font-bold uppercase tracking-widest text-white/40">Protocol sidebar</p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <button 
+
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
               onClick={() => {
                 setViewMode('page');
                 goTo('/ai');
               }}
-              className="p-2 hover:bg-white/10 rounded-xl text-white/60 transition-colors"
+              className="rounded-2xl border border-white/10 bg-white/5 p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
               title="Expandir para tela cheia"
             >
               <Maximize2 size={18} />
             </button>
-            <button 
+            <button
+              type="button"
               onClick={closeChat}
-              className="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-xl text-white/60 transition-colors"
+              className="rounded-2xl border border-white/10 bg-white/5 p-2 text-white/60 transition-colors hover:border-red-400/25 hover:bg-red-500/10 hover:text-red-300"
+              title="Fechar Athena"
             >
               <X size={18} />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 min-h-0">
-          <AthenaChat 
-            context="sidebar"
-            showSidebar={false}
-          />
+        <div className="min-h-0 flex-1 p-3">
+          <AthenaChat context="sidebar" showSidebar={false} />
         </div>
       </motion.div>
     </AnimatePresence>

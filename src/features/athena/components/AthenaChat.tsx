@@ -16,9 +16,9 @@ interface AthenaChatProps {
   greeting?: string;
   placeholder?: string;
   systemPrompt?: string;
-  /** Quando true, exibe histórico de conversas (toggle + painel). */
+  /** Quando true, exibe historico de conversas (toggle + painel). */
   showSidebar?: boolean;
-  /** Abre o painel de histórico já expandido (ex.: desktop). No hub, prefira false no mobile. */
+  /** Abre o painel de historico ja expandido (ex.: desktop). No hub, prefira false no mobile. */
   defaultSidebarOpen?: boolean;
   /** Chat reduzido para a home (sem sidebar, layout mais baixo). */
   compact?: boolean;
@@ -26,9 +26,9 @@ interface AthenaChatProps {
   sidebarInCompact?: boolean;
 }
 
-export const AthenaChat: React.FC<AthenaChatProps> = ({ 
-  context = 'home', 
-  greeting, 
+export const AthenaChat: React.FC<AthenaChatProps> = ({
+  context = 'home',
+  greeting,
   placeholder,
   systemPrompt,
   showSidebar: sidebarEnabled = false,
@@ -64,7 +64,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
   const handleSelectSession = (id: string) => {
     const session: ChatSession | null = loadSession(id);
     if (session) {
-      const nextModel = ATHENA_MODELS.find((x) => x.id === session.modelId);
+      const nextModel = ATHENA_MODELS.find((item) => item.id === session.modelId);
       if (nextModel) setSelectedModel(nextModel);
     }
     if (compact && sidebarInCompact) setIsSidebarOpen(false);
@@ -82,8 +82,8 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
     <div
       className={
         compact
-          ? 'flex h-full min-h-0 w-full bg-slate-950/40 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-xl relative'
-          : 'flex h-full min-h-0 w-full max-md:rounded-2xl bg-slate-950/50 rounded-3xl overflow-hidden border border-white/5 backdrop-blur-3xl shadow-2xl relative'
+          ? 'athena-chat-shell flex h-full min-h-0 w-full overflow-hidden rounded-[24px] backdrop-blur-xl'
+          : 'athena-chat-shell flex h-full min-h-0 w-full overflow-hidden rounded-[30px] backdrop-blur-3xl max-md:rounded-[24px]'
       }
     >
       <AnimatePresence>
@@ -95,8 +95,8 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="md:hidden fixed inset-0 z-[55] bg-black/60 border-0 p-0 cursor-pointer"
-              aria-label="Fechar histórico de conversas"
+              className="fixed inset-0 z-[55] cursor-pointer border-0 bg-black/60 p-0 md:hidden"
+              aria-label="Fechar historico de conversas"
               onClick={() => setIsSidebarOpen(false)}
             />
             <motion.div
@@ -104,114 +104,116 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={sidebarTransition}
-              className="mobile-dvh-panel h-full max-md:fixed max-md:left-0 max-md:top-0 max-md:z-[60] max-md:max-h-screen md:relative border-r border-white/5 bg-black/90 md:bg-black/20 backdrop-blur-md flex flex-col overflow-hidden shrink-0 max-md:shadow-2xl"
+              className="athena-sidebar-panel mobile-dvh-panel flex h-full shrink-0 flex-col overflow-hidden border-r max-md:fixed max-md:left-0 max-md:top-0 max-md:z-[60] max-md:max-h-screen max-md:shadow-2xl md:relative"
             >
-            <div className="p-4 border-b border-white/5 flex items-center justify-between gap-2">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-white/40 flex items-center gap-2 min-w-0">
-                <History size={14} />
-                <span className="truncate">Histórico</span>
-              </h3>
-              <button
-                type="button"
-                onClick={handleNewChat}
-                className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-200 ease-out shrink-0"
-                title="Nova conversa"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto no-scrollbar p-2 space-y-1">
-              {sessions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center opacity-30 px-4 py-12">
-                  <MessageSquare size={32} className="mb-3" />
-                  <p className="text-xs leading-relaxed">
-                    Nenhuma sessão salva ainda. Envie uma mensagem para criar a primeira.
-                  </p>
-                </div>
-              ) : (
-                sessions.map((s) => (
-                  <div
-                    key={s.id}
-                    className="group flex items-stretch gap-1 rounded-xl border border-transparent hover:border-white/10 hover:bg-white/5 transition-colors"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSession(s.id)}
-                      className="flex-1 min-w-0 text-left px-3 py-2.5"
-                    >
-                      <p className="text-xs font-bold text-white/90 truncate">
-                        {s.title?.trim() || 'Conversa'}
-                      </p>
-                      <p className="text-[10px] text-white/35 font-medium mt-0.5">
-                        {new Date(s.lastUpdated).toLocaleString('pt-BR', {
-                          day: '2-digit',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteSession(s.id);
-                      }}
-                      className="px-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-r-xl transition-colors"
-                      title="Excluir conversa"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+              <div className="athena-chat-header flex items-center justify-between gap-2 border-b border-white/10 p-4">
+                <h3 className="flex min-w-0 items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50">
+                  <History size={14} />
+                  <span className="truncate">Historico</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleNewChat}
+                  className="athena-signal shrink-0 rounded-2xl bg-primary/10 p-2 text-primary transition-colors duration-200 ease-out hover:bg-primary/20"
+                  title="Nova conversa"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+
+              <div className="flex-1 space-y-1 overflow-y-auto p-2 no-scrollbar">
+                {sessions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center px-4 py-12 text-center text-white/30">
+                    <MessageSquare size={32} className="mb-3" />
+                    <p className="text-xs leading-relaxed">
+                      Nenhuma sessao salva ainda. Envie uma mensagem para criar a primeira.
+                    </p>
                   </div>
-                ))
-              )}
-            </div>
-          </motion.div>
+                ) : (
+                  sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="group flex items-stretch gap-1 rounded-2xl border border-transparent transition-colors hover:border-white/10 hover:bg-white/5"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSelectSession(session.id)}
+                        className="min-w-0 flex-1 px-3 py-2.5 text-left"
+                      >
+                        <p className="truncate text-xs font-bold text-white/90">
+                          {session.title?.trim() || 'Conversa'}
+                        </p>
+                        <p className="mt-0.5 text-[10px] font-medium text-white/40">
+                          {new Date(session.lastUpdated).toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          deleteSession(session.id);
+                        }}
+                        className="rounded-r-2xl px-2 text-white/20 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                        title="Excluir conversa"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
+      <div className="flex min-w-0 flex-1 flex-col">
         <header
           className={
             compact
-              ? 'p-2.5 border-b border-white/5 flex flex-wrap items-center justify-between gap-2 bg-white/5 backdrop-blur-md shrink-0'
-              : 'p-3 sm:p-4 border-b border-white/5 flex flex-wrap items-center justify-between gap-2 bg-white/5 backdrop-blur-md shrink-0'
+              ? 'athena-chat-header flex shrink-0 flex-wrap items-center justify-between gap-2 p-2.5 backdrop-blur-xl'
+              : 'athena-chat-header flex shrink-0 flex-wrap items-center justify-between gap-2 p-3 backdrop-blur-xl sm:p-4'
           }
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             {sidebarEnabled && allowSidebar && (
-            <button 
-              type="button"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/40 shrink-0"
-              title={isSidebarOpen ? 'Ocultar histórico de conversas' : 'Ver histórico de conversas'}
-            >
-              <Sidebar size={18} />
-            </button>
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="shrink-0 rounded-2xl border border-white/10 bg-white/5 p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                title={isSidebarOpen ? 'Ocultar historico de conversas' : 'Ver historico de conversas'}
+              >
+                <Sidebar size={18} />
+              </button>
             )}
+
             <div className="flex min-w-0 flex-col">
               <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
                 <span className={`shrink-0 ${compact ? 'text-lg' : 'text-lg sm:text-xl'}`}>{ATHENA_CONFIG.ICON}</span>
-                <span className={`min-w-0 truncate ${compact ? 'text-xs font-bold tracking-tight text-white' : 'text-xs sm:text-sm font-bold tracking-tight text-white'}`}>{ATHENA_CONFIG.NAME}</span>
-                <span className="inline-flex shrink-0 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-bold rounded uppercase tracking-widest border border-emerald-500/20">
+                <span className={`min-w-0 truncate ${compact ? 'text-xs font-bold tracking-tight text-white' : 'text-xs font-bold tracking-tight text-white sm:text-sm'}`}>
+                  {ATHENA_CONFIG.NAME}
+                </span>
+                <span className="athena-chip inline-flex shrink-0 rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest">
                   Online
                 </span>
               </div>
               {!compact && (
-              <span className="hidden sm:block text-[10px] text-white/30 font-medium truncate">{ATHENA_CONFIG.TAGLINE}</span>
+                <span className="hidden truncate text-[10px] font-medium text-white/40 sm:block">{ATHENA_CONFIG.TAGLINE}</span>
               )}
             </div>
           </div>
 
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <ModelSelector selectedModel={selectedModel} onSelect={setSelectedModel} />
-            <button 
+            <button
               type="button"
               onClick={clearChat}
-              className="p-2.5 hover:bg-red-500/10 hover:text-red-500 rounded-xl transition-all text-white/20"
+              className="rounded-2xl border border-white/10 bg-white/5 p-2.5 text-white/25 transition-all hover:border-red-400/25 hover:bg-red-500/10 hover:text-red-400"
               title="Limpar Chat"
             >
               <Trash2 size={18} />
@@ -219,8 +221,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
           </div>
         </header>
 
-        {/* Messages List */}
-        <div className={`flex-1 min-h-0 overflow-y-auto no-scrollbar ${compact ? 'pt-2' : 'pt-4'}`}>
+        <div className={`relative min-h-0 flex-1 overflow-y-auto no-scrollbar ${compact ? 'pt-2' : 'pt-4'}`}>
           <AnimatePresence mode="popLayout">
             {messages.length === 0 ? (
               <motion.div
@@ -229,53 +230,55 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                 transition={reduceMotion ? { duration: 0.12 } : springs.card}
                 className={
                   compact
-                    ? 'h-full flex flex-col items-center justify-center p-4 text-center'
-                    : 'h-full flex flex-col items-center justify-center px-4 py-8 text-center sm:p-8'
+                    ? 'flex h-full flex-col items-center justify-center p-4 text-center'
+                    : 'flex h-full flex-col items-center justify-center px-4 py-8 text-center sm:p-8'
                 }
               >
                 <div
                   className={
                     compact
-                      ? 'w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-3 relative'
-                      : 'w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 relative'
+                      ? 'athena-signal mb-3 flex h-14 w-14 items-center justify-center rounded-[22px] border border-primary/25 bg-primary/10 shadow-[0_16px_34px_rgba(var(--hub-primary-rgb),0.12)]'
+                      : 'athena-signal mb-4 flex h-16 w-16 items-center justify-center rounded-[26px] border border-primary/25 bg-primary/10 shadow-[0_18px_46px_rgba(var(--hub-primary-rgb),0.14)] sm:mb-6 sm:h-20 sm:w-20'
                   }
                 >
-                  <span className={compact ? 'text-2xl' : 'text-3xl sm:text-4xl'}>{ATHENA_CONFIG.ICON}</span>
+                  <span className={`relative z-10 ${compact ? 'text-2xl' : 'text-3xl sm:text-4xl'}`}>{ATHENA_CONFIG.ICON}</span>
                   <motion.div
                     animate={
                       reduceMotion
-                        ? { opacity: 0.35 }
-                        : { scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }
+                        ? { opacity: 0.2 }
+                        : { scale: [1, 1.08, 1], opacity: [0.12, 0.24, 0.12] }
                     }
                     transition={
                       reduceMotion
                         ? { duration: 0 }
-                        : { repeat: Infinity, duration: 2, ease: 'easeInOut' }
+                        : { repeat: Infinity, duration: 2.4, ease: 'easeInOut' }
                     }
-                    className="absolute inset-0 bg-primary rounded-full blur-2xl"
+                    className="absolute inset-0 rounded-[26px] bg-primary/20 blur-xl"
                   />
                 </div>
-                <h2 className={compact ? 'text-base font-bold text-white mb-1' : 'text-lg sm:text-2xl font-bold text-white mb-2'}>
-                  {greeting || `Olá! Eu sou ${ATHENA_CONFIG.NAME}`}
+
+                <h2 className={compact ? 'mb-1 text-base font-bold text-white' : 'mb-2 text-lg font-bold text-white sm:text-2xl'}>
+                  {greeting || `Ola! Eu sou ${ATHENA_CONFIG.NAME}`}
                 </h2>
-                <p className={compact ? 'text-white/40 text-[11px] max-w-sm mx-auto leading-relaxed' : 'text-white/40 text-sm max-w-md mx-auto leading-relaxed'}>
-                  Pergunte qualquer dúvida de estudo — ENEM, redação ou questões.
+                <p className={compact ? 'mx-auto max-w-sm text-[11px] leading-relaxed text-white/50' : 'mx-auto max-w-md text-sm leading-relaxed text-white/50'}>
+                  Pergunte qualquer duvida de estudo - ENEM, redacao ou questoes.
                 </p>
-                
-                <div className={compact ? 'grid grid-cols-2 gap-2 mt-4 w-full max-w-md' : 'grid grid-cols-2 gap-2 mt-6 w-full max-w-lg px-1 sm:mt-12 sm:gap-3 sm:px-0'}>
+
+                <div className={compact ? 'mt-4 grid w-full max-w-md grid-cols-2 gap-2' : 'mt-6 grid w-full max-w-lg grid-cols-2 gap-2 px-1 sm:mt-12 sm:gap-3 sm:px-0'}>
                   {[
-                    'Explicar Equação do 2º grau',
-                    'Dicas para Redação Nota 1000',
+                    'Explicar equacao do 2o grau',
+                    'Dicas para redacao nota 1000',
                     'O que cai mais em Biologia?',
-                    'Corrigir minha redação'
-                  ].map(action => (
+                    'Corrigir minha redacao',
+                  ].map((action) => (
                     <button
                       key={action}
+                      type="button"
                       onClick={() => sendMessage(action, selectedModel)}
                       className={
                         compact
-                          ? 'p-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold text-white/60 hover:bg-white/10 hover:text-white transition-all text-left'
-                          : 'p-3 sm:p-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] sm:text-xs font-bold text-white/60 hover:bg-white/10 hover:text-white transition-all text-left leading-snug'
+                          ? 'premium-grid-card rounded-2xl border border-white/10 bg-white/5 p-2.5 text-left text-[10px] font-bold text-white/70 transition-all hover:border-primary/25 hover:bg-primary/10 hover:text-white'
+                          : 'premium-grid-card rounded-2xl border border-white/10 bg-white/5 p-3 text-left text-[10px] font-bold leading-snug text-white/70 transition-all hover:border-primary/25 hover:bg-primary/10 hover:text-white sm:p-4 sm:text-xs'
                       }
                     >
                       {action}
@@ -284,13 +287,11 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                 </div>
               </motion.div>
             ) : (
-              messages.map(msg => (
-                <ChatMessage key={msg.id} message={msg} />
-              ))
+              messages.map((message) => <ChatMessage key={message.id} message={message} />)
             )}
-            
+
             {loading && (
-              <div className="p-6 flex items-center gap-3">
+              <div className="athena-message-row flex items-center gap-3 py-5">
                 <div className="flex gap-1">
                   <motion.div
                     animate={reduceMotion ? { opacity: [0.35, 1, 0.35] } : { y: [0, -5, 0] }}
@@ -299,7 +300,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                         ? { repeat: Infinity, duration: 1.1, ease: 'easeInOut' }
                         : { repeat: Infinity, duration: 0.6 }
                     }
-                    className="w-1.5 h-1.5 bg-primary rounded-full"
+                    className="h-1.5 w-1.5 rounded-full bg-primary"
                   />
                   <motion.div
                     animate={reduceMotion ? { opacity: [0.35, 1, 0.35] } : { y: [0, -5, 0] }}
@@ -308,7 +309,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                         ? { repeat: Infinity, duration: 1.1, ease: 'easeInOut', delay: 0.15 }
                         : { repeat: Infinity, duration: 0.6, delay: 0.2 }
                     }
-                    className="w-1.5 h-1.5 bg-primary rounded-full"
+                    className="h-1.5 w-1.5 rounded-full bg-primary"
                   />
                   <motion.div
                     animate={reduceMotion ? { opacity: [0.35, 1, 0.35] } : { y: [0, -5, 0] }}
@@ -317,11 +318,11 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                         ? { repeat: Infinity, duration: 1.1, ease: 'easeInOut', delay: 0.3 }
                         : { repeat: Infinity, duration: 0.6, delay: 0.4 }
                     }
-                    className="w-1.5 h-1.5 bg-primary rounded-full"
+                    className="h-1.5 w-1.5 rounded-full bg-primary"
                   />
                 </div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-primary/50">
-                  {ATHENA_CONFIG.NAME} está pensando...
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary/60">
+                  {ATHENA_CONFIG.NAME} esta pensando...
                 </span>
               </div>
             )}
@@ -329,18 +330,17 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
           <div ref={messagesEndRef} className={compact ? 'h-8' : 'h-20'} />
         </div>
 
-        {/* Input Area */}
-        <div className={compact ? 'p-3 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent shrink-0' : 'p-3 sm:p-6 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent shrink-0'}>
-          <ChatInput onSend={(c) => sendMessage(c, selectedModel)} disabled={loading} placeholder={placeholder} />
-          <div className={`flex justify-between items-center px-2 ${compact ? 'mt-2' : 'mt-4'}`}>
-            <div className="flex items-center gap-2 text-[9px] text-white/20 font-bold uppercase tracking-widest">
+        <div className={compact ? 'shrink-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3' : 'shrink-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 sm:p-6'}>
+          <ChatInput onSend={(content) => sendMessage(content, selectedModel)} disabled={loading} placeholder={placeholder} />
+          <div className={`flex items-center justify-between px-2 ${compact ? 'mt-2' : 'mt-4'}`}>
+            <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/25">
               <Shield size={10} />
-              <span>{ATHENA_CONFIG.NAME} · DeepSeek</span>
+              <span>{ATHENA_CONFIG.NAME} - DeepSeek</span>
             </div>
             {!compact && (
-            <div className="flex items-center gap-1 text-[9px] text-white/10 font-medium">
-               <span>Shift + Enter nova linha</span>
-            </div>
+              <div className="flex items-center gap-1 text-[9px] font-medium text-white/20">
+                <span>Shift + Enter nova linha</span>
+              </div>
             )}
           </div>
         </div>

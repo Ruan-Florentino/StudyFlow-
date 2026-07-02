@@ -12,7 +12,7 @@ const ChatMarkdownEnhanced = lazy(() =>
   import('./ChatMarkdownEnhanced').then((module) => ({ default: module.ChatMarkdownEnhanced }))
 );
 
-/** Safari antes da 16.4 não suporta lookbehind em RegExp; avaliamos `$…$` sem lookbehind. */
+/** Safari antes da 16.4 nao suporta lookbehind em RegExp; avaliamos `$...$` sem lookbehind. */
 function messageNeedsEnhancedMarkdown(content: string): boolean {
   if (!content) return false;
   if (/```/.test(content)) return true;
@@ -38,39 +38,51 @@ interface ChatMessageProps {
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
   const isAssistant = message.role === 'assistant';
   const reduceMotion = useReducedMotion() ?? false;
-  const messageContent = message.content + (isStreaming ? '●' : '');
+  const messageContent = message.content + (isStreaming ? '...' : '');
   const needsEnhancedMarkdown = messageNeedsEnhancedMarkdown(messageContent);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message.content);
   };
 
+  const avatar = (
+    <div
+      className={`athena-signal flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border shadow-lg ${
+        isAssistant
+          ? 'border-primary/25 bg-primary/10 text-primary shadow-primary/10'
+          : 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200 shadow-cyan-500/10'
+      }`}
+    >
+      {isAssistant ? <Zap size={16} /> : <User size={16} />}
+    </div>
+  );
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 10, scale: reduceMotion ? 1 : 0.985 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={reduceMotion ? { duration: 0.12 } : springs.card}
-      className={`flex w-full gap-4 p-4 ${isAssistant ? 'bg-white/5' : ''}`}
+      className={`athena-message-row flex w-full gap-3 py-3 sm:gap-4 sm:py-4 ${
+        isAssistant ? 'justify-start' : 'justify-end'
+      }`}
     >
-      <div
-        className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-          isAssistant ? 'bg-primary/20 text-primary' : 'bg-indigo-500/20 text-indigo-500'
-        }`}
-      >
-        {isAssistant ? <Zap size={16} /> : <User size={16} />}
-      </div>
+      {isAssistant && avatar}
 
-      <div className="flex-1 overflow-hidden">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold uppercase tracking-widest opacity-30">
-            {isAssistant ? ATHENA_CONFIG.NAME : 'Você'}
+      <div
+        className={`athena-message-card ${
+          isAssistant ? 'assistant' : 'user'
+        } min-w-0 max-w-[min(82vw,46rem)] rounded-[22px] px-4 py-3 sm:px-5 sm:py-4`}
+      >
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="truncate text-[10px] font-bold uppercase tracking-widest text-white/40">
+            {isAssistant ? ATHENA_CONFIG.NAME : 'Voce'}
           </span>
           {isAssistant && (
             <motion.button
               type="button"
               onClick={copyToClipboard}
               whileTap={{ scale: 0.92, transition: springs.snappy }}
-              className="p-1 hover:bg-white/10 rounded transition-colors duration-200 ease-out opacity-30 hover:opacity-100"
+              className="rounded-lg p-1.5 text-white/30 opacity-60 transition-all duration-200 ease-out hover:bg-white/10 hover:text-white hover:opacity-100"
               title="Copiar"
             >
               <Copy size={12} />
@@ -80,7 +92,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
 
         <Suspense
           fallback={
-            <div className="text-white/90 leading-relaxed font-medium whitespace-pre-wrap">
+            <div className="whitespace-pre-wrap text-sm font-medium leading-relaxed text-white/90">
               {messageContent}
             </div>
           }
@@ -92,6 +104,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
           )}
         </Suspense>
       </div>
+
+      {!isAssistant && avatar}
     </motion.div>
   );
 };

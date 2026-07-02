@@ -35,20 +35,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, placehol
   };
 
   return (
-    <div className="relative bg-white/5 border border-white/10 rounded-2xl p-2 focus-within:border-primary/50 transition-all duration-300 ease-out shadow-2xl backdrop-blur-xl">
-      <div className="flex items-end gap-2 px-2">
-        <button className="p-2.5 text-white/30 hover:text-white transition-colors shrink-0">
+    <div className="athena-input-shell relative rounded-[24px] p-2 transition-all duration-300 ease-out backdrop-blur-xl">
+      <div className="flex items-end gap-2 px-1 sm:px-2">
+        <button
+          type="button"
+          className="shrink-0 rounded-2xl p-2.5 text-white/30 transition-colors hover:bg-white/5 hover:text-white"
+          title="Anexar arquivo"
+        >
           <Paperclip size={20} />
         </button>
-        
+
         <textarea
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || 'Pergunte algo para ATHENA V3…'}
+          placeholder={placeholder || 'Pergunte algo para ATHENA V3...'}
           rows={1}
-          className="flex-1 bg-transparent border-none py-2.5 text-sm text-white outline-none resize-none max-h-[200px] scrollbar-none placeholder:text-white/20"
+          className="max-h-[200px] min-h-[44px] flex-1 resize-none border-none bg-transparent py-3 text-sm font-medium leading-relaxed text-white outline-none scrollbar-none placeholder:text-white/25"
           disabled={disabled}
         />
 
@@ -57,11 +61,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, placehol
           onClick={handleSend}
           disabled={!input.trim() || disabled}
           whileTap={input.trim() && !disabled ? { scale: 0.94, transition: springs.snappy } : undefined}
-          className={`p-2.5 rounded-xl transition-all duration-200 ease-out shrink-0 ${
+          className={`athena-signal shrink-0 rounded-2xl p-3 transition-all duration-200 ease-out ${
             input.trim() && !disabled
-              ? 'bg-primary text-black shadow-[0_0_20px_rgba(var(--hub-primary-rgb),0.35)] scale-100'
-              : 'bg-white/5 text-white/20 scale-95'
+              ? 'scale-100 bg-primary text-black shadow-[0_0_24px_rgba(var(--hub-primary-rgb),0.38)]'
+              : 'scale-95 bg-white/5 text-white/20'
           }`}
+          title="Enviar mensagem"
         >
           <Send size={20} />
         </motion.button>
