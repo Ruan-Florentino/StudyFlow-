@@ -215,17 +215,17 @@ export function FloatingAIButton() {
       const viewportHeight = window.innerHeight || 720;
       const viewportWidth = window.innerWidth || 390;
       const progress = clamp(scrollTop / getScrollMax(), 0, 1);
-      const upper = Math.max(84, viewportHeight * 0.13);
-      const lower = Math.max(upper + 160, viewportHeight - 214);
-      const scrollTrackY = lower - progress * (lower - upper);
-      const followY = lastY - delta * 0.42;
-      const y = Math.round(clamp(delta === 0 ? scrollTrackY : followY * 0.68 + scrollTrackY * 0.32, upper, lower));
+      const upper = Math.max(72, viewportHeight * 0.1);
+      const lower = Math.max(upper + 240, viewportHeight - 148);
+      const scrollTrackY = upper + progress * (lower - upper);
+      const followY = lastY + delta * 1.45;
+      const y = Math.round(clamp(delta === 0 ? scrollTrackY : followY * 0.9 + scrollTrackY * 0.1, upper, lower));
       const wave = Math.sin(progress * Math.PI * 3.6) * Math.min(138, viewportWidth * 0.32);
       const drift = Math.cos(scrollTop / 160) * 18;
       const x = Math.round(-28 - Math.abs(wave) - drift);
       const horizontal = x - lastX;
       const goingDown = delta > 0;
-      const edgePeek = Math.abs(horizontal) > 12 || Math.abs(delta) > 7;
+      const edgePeek = Math.abs(horizontal) > 10 || Math.abs(delta) > 2;
       lastX = x;
       lastY = y;
 
@@ -273,11 +273,11 @@ export function FloatingAIButton() {
         y: next.y,
         tilt: Math.abs(delta) > 0.5 ? next.tilt : current.tilt,
         flip: next.flip,
-        burst: Math.abs(delta) > 2 ? current.burst + 1 : current.burst,
-        gliding: Math.abs(delta) > 0.5,
+        burst: Math.abs(delta) > 1 ? current.burst + 1 : current.burst,
+        gliding: Math.abs(delta) > 0.25,
         peek: next.peek,
       }));
-      if (Math.abs(delta) > 0.5) settleFlight();
+      if (Math.abs(delta) > 0.25) settleFlight();
     };
 
     const requestSync = () => {
@@ -362,7 +362,7 @@ export function FloatingAIButton() {
         y: flight.y - (routeMotion.behind ? 18 : 0),
         rotate: routeMotion.behind ? 8 : flight.tilt,
       }}
-      transition={reduced ? { duration: 0.12 } : { type: 'spring', stiffness: 92, damping: 18, mass: 0.72 }}
+      transition={reduced ? { duration: 0.08 } : { type: 'spring', stiffness: 230, damping: 24, mass: 0.42 }}
       whileTap={{ scale: 0.9, transition: springs.snappy }}
       className="fixed right-0 top-0 z-[100] h-[5.75rem] w-[5.75rem] overflow-visible rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d]"
     >
