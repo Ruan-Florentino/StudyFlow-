@@ -842,3 +842,161 @@ body {
   }
 }
 /* StudyFlow cinematic polish end */
+
+/* StudyFlow structural polish T14 start */
+.app-shell-premium {
+  max-width: min(100%, 78rem);
+  padding-inline: clamp(1rem, 3vw, 2.25rem);
+}
+
+.app-cinematic-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.035) 38%, transparent 56%),
+    repeating-linear-gradient(90deg, transparent 0 92px, rgba(255, 255, 255, 0.018) 92px 93px),
+    linear-gradient(180deg, rgba(var(--hub-primary-rgb), 0.045), transparent 34%, rgba(96, 245, 255, 0.035));
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent 78%);
+}
+
+.app-frame {
+  box-shadow:
+    0 34px 110px rgba(0, 0, 0, 0.68),
+    0 0 0 1px rgba(255, 255, 255, 0.035) inset,
+    0 0 48px rgba(var(--hub-primary-rgb), 0.08);
+}
+
+.app-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 16%),
+    linear-gradient(90deg, rgba(var(--hub-primary-rgb), 0.08), transparent 26%, transparent 74%, rgba(96, 245, 255, 0.055));
+  opacity: 0.78;
+}
+
+#app-main-scroll {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 7rem),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.16), transparent 11rem);
+}
+
+.liquid-glass {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.155), rgba(255, 255, 255, 0.05) 38%, rgba(var(--hub-primary-rgb), 0.065)),
+    linear-gradient(180deg, rgba(96, 245, 255, 0.035), transparent 52%),
+    rgba(8, 18, 16, 0.72);
+  border-color: rgba(216, 255, 239, 0.23);
+  box-shadow:
+    0 22px 62px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.32);
+}
+
+.liquid-glass::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  mask-image: linear-gradient(180deg, #000, transparent 54%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .liquid-glass:hover {
+    box-shadow:
+      0 28px 78px rgba(0, 0, 0, 0.62),
+      0 0 36px rgba(var(--hub-primary-rgb), 0.12),
+      0 0 0 1px rgba(255, 255, 255, 0.045) inset,
+      inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  }
+
+  .bottom-nav-item:hover::after {
+    opacity: 1;
+    transform: translateY(0) scaleX(1);
+  }
+}
+
+.bottom-nav-shell {
+  filter: drop-shadow(0 -12px 32px rgba(0, 0, 0, 0.32));
+}
+
+.bottom-nav-dock {
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.18) 0%, rgba(var(--hub-primary-rgb), 0.105) 34%, rgba(96, 245, 255, 0.06) 62%, rgba(0, 0, 0, 0.24) 100%),
+    rgba(8, 18, 16, 0.72);
+  border-color: rgba(216, 255, 239, 0.28);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.46) inset,
+    0 0 0 1px rgba(0, 0, 0, 0.38) inset,
+    0 30px 62px rgba(0, 0, 0, 0.58),
+    0 0 42px rgba(var(--hub-primary-rgb), 0.11);
+}
+
+.bottom-nav-dock::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 3px;
+  height: 1px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, transparent, rgba(var(--hub-primary-rgb), 0.72), transparent);
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.bottom-nav-item::after {
+  content: '';
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0.38rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--hub-primary);
+  opacity: 0;
+  transform: translateY(3px) scaleX(0.55);
+  transition:
+    opacity var(--duration-normal) var(--ease-smooth-out),
+    transform var(--duration-normal) var(--ease-smooth-out);
+}
+
+:where(input, textarea, select) {
+  color-scheme: dark;
+}
+
+:where(button, a, [role='button']) {
+  touch-action: manipulation;
+}
+
+@media (min-width: 768px) {
+  .app-frame {
+    border-radius: 32px;
+    margin-block: clamp(0.75rem, 1.6vw, 1.25rem);
+    min-height: calc(100dvh - clamp(1.5rem, 3.2vw, 2.5rem));
+  }
+}
+
+@media (max-width: 767px) {
+  .app-shell-premium {
+    padding-inline: max(1rem, env(safe-area-inset-left, 0px));
+  }
+
+  .liquid-glass {
+    backdrop-filter: blur(28px) saturate(175%);
+    -webkit-backdrop-filter: blur(28px) saturate(175%);
+  }
+}
+/* StudyFlow structural polish T14 end */

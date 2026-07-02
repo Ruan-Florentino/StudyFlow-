@@ -162,10 +162,10 @@ export const AnimatedButton = ({
 }) => {
   const reduceMotion = useReducedMotion() ?? false;
   const variants = {
-    primary: 'bg-primary text-black font-bold hover:bg-primary/90',
-    secondary: 'bg-white/5 text-white border border-white/10 hover:bg-white/10 backdrop-blur-md',
-    ghost: 'bg-transparent text-white hover:bg-white/5',
-    danger: 'bg-red-500/10 text-red-500 font-bold hover:bg-red-500/20 border border-red-500/20 backdrop-blur-md',
+    primary: 'bg-[linear-gradient(135deg,#baffea_0%,var(--hub-primary)_42%,#38dba3_100%)] text-black font-black border border-white/20 hover:brightness-105 shadow-[0_12px_30px_rgba(var(--hub-primary-rgb),0.24)]',
+    secondary: 'bg-white/[0.075] text-white border border-white/[0.12] hover:bg-white/[0.12] hover:border-white/[0.22] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]',
+    ghost: 'bg-transparent text-white hover:bg-white/[0.07] hover:text-primary',
+    danger: 'bg-red-500/10 text-red-400 font-bold hover:bg-red-500/20 border border-red-500/20 backdrop-blur-xl',
   };
 
   const isBusy = disabled || loading;
@@ -188,14 +188,14 @@ export const AnimatedButton = ({
       onClick={isBusy ? undefined : onClick}
       disabled={isBusy}
       className={cn(
-        'px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm shadow-sm',
+        'relative isolate min-h-11 px-6 py-3.5 rounded-2xl inline-flex items-center justify-center gap-2 overflow-hidden text-sm shadow-sm',
         'transition-shadow [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-snappy)]',
         variant === 'primary' && !isBusy && 'relative overflow-hidden',
         variant === 'primary' &&
           !isBusy &&
           'before:absolute before:inset-0 before:-translate-x-full before:skew-x-[-18deg] before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:transition-transform before:duration-700 before:ease-out hover:before:translate-x-full',
         variants[variant],
-        glow && !isBusy && 'shadow-[0_8px_24px_rgba(91,124,250,0.25)]',
+        glow && !isBusy && 'shadow-[0_18px_38px_rgba(var(--hub-primary-rgb),0.24)]',
         isBusy && 'opacity-70 cursor-not-allowed',
         disabled && !loading && 'grayscale',
         className
@@ -237,7 +237,7 @@ export const GlassCard = ({
     onClick={onClick}
     style={style}
     className={cn(
-      'liquid-glass glass-sheen p-6 rounded-[24px] relative overflow-hidden transition-[border-color,box-shadow,transform,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35',
+      'liquid-glass glass-sheen p-6 rounded-[24px] relative isolate overflow-hidden transition-[border-color,box-shadow,transform,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35',
       onClick && 'cursor-pointer',
       glow && 'shadow-[0_0_30px_rgba(var(--hub-primary-rgb),0.14)] border-primary/35 hover:shadow-[0_0_36px_rgba(var(--hub-primary-rgb),0.2)]',
       className
@@ -255,7 +255,7 @@ export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = 
     whileTap={reduceMotion ? undefined : { scale: 0.97, transition: springs.snappy }}
     whileHover={reduceMotion ? undefined : { scale: 1.02, transition: springs.soft }}
     onClick={onClick}
-    className="liquid-glass glass-sheen p-5 rounded-[24px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35 group relative overflow-hidden shadow-lg"
+    className="liquid-glass glass-sheen p-5 rounded-[24px] min-h-[128px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35 group relative overflow-hidden shadow-lg"
   >
     <div className={cn(bg, color, "w-12 h-12 rounded-2xl flex items-center justify-center transition-[transform,border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] border border-transparent group-hover:border-primary/30 shadow-inner")}>
       <Icon size={24} strokeWidth={1.5} />
