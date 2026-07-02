@@ -1,90 +1,124 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { Sparkles } from 'lucide-react';
 import { useAIUI } from '../../hooks/useAIUI';
 import { ATHENA_CONFIG } from '../../features/athena/constants/config';
 import { springs } from '../../lib/animations/easings';
 
-function AthenaOwl({ blinking, active }: { blinking: boolean; active: boolean }) {
+type FlightState = {
+  x: number;
+  y: number;
+  tilt: number;
+  flip: 1 | -1;
+  burst: number;
+  gliding: boolean;
+};
+
+function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: boolean; gliding: boolean }) {
+  const wingMotion = gliding
+    ? { rotate: [-8, 13, -6], y: [-1, 1, -1] }
+    : { rotate: [-3, 4, -2], y: [0, -0.5, 0] };
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 64 64"
+      viewBox="0 0 86 86"
       aria-hidden
-      className="pointer-events-none h-[70%] w-[70%] select-none"
-      style={{
-        filter: active
-          ? 'drop-shadow(0 0 13px rgba(0,255,168,0.62)) drop-shadow(0 10px 20px rgba(0,0,0,0.45))'
-          : 'drop-shadow(0 0 9px rgba(0,255,168,0.42)) drop-shadow(0 7px 14px rgba(0,0,0,0.38))',
-      }}
+      className="pointer-events-none h-full w-full select-none"
     >
       <defs>
-        <linearGradient id="athena-launcher-body" x1="14" x2="50" y1="8" y2="58" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#28493f" />
-          <stop offset="0.5" stopColor="#10251f" />
+        <linearGradient id="athena-flying-body" x1="18" x2="68" y1="8" y2="78" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#365a4f" />
+          <stop offset="0.42" stopColor="#15332b" />
           <stop offset="1" stopColor="#06100d" />
         </linearGradient>
-        <linearGradient id="athena-launcher-face" x1="20" x2="44" y1="18" y2="38" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#f4fff8" />
-          <stop offset="0.56" stopColor="#b8ffe2" />
-          <stop offset="1" stopColor="#53f3b2" />
+        <linearGradient id="athena-flying-face" x1="22" x2="64" y1="22" y2="50" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#f7fff9" />
+          <stop offset="0.5" stopColor="#b8ffe2" />
+          <stop offset="1" stopColor="#42ebb0" />
         </linearGradient>
-        <radialGradient id="athena-launcher-eye" cx="50%" cy="45%" r="60%">
+        <radialGradient id="athena-flying-eye" cx="50%" cy="42%" r="58%">
           <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.42" stopColor="#8fffd7" />
-          <stop offset="1" stopColor="#00df8d" />
+          <stop offset="0.4" stopColor="#94ffdc" />
+          <stop offset="1" stopColor="#00dd8d" />
         </radialGradient>
+        <filter id="athena-flying-glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="2.3" result="blur" />
+          <feColorMatrix
+            in="blur"
+            result="glow"
+            values="0 0 0 0 0  0 0 0 0 0.92  0 0 0 0 0.58  0 0 0 0.7 0"
+          />
+          <feMerge>
+            <feMergeNode in="glow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
-      <path
-        d="M18.7 18.1 15.7 8.9l10 4.7a20.6 20.6 0 0 1 12.6 0l10-4.7-3 9.2c4 3.6 6.4 8.8 6.4 15.1 0 13.4-8.2 23.9-19.7 23.9S12.3 46.6 12.3 33.2c0-6.3 2.4-11.5 6.4-15.1Z"
-        fill="url(#athena-launcher-body)"
-        stroke="rgba(181,255,223,0.45)"
-        strokeWidth="1.3"
+      <motion.ellipse
+        cx="43"
+        cy="76"
+        rx="19"
+        ry="5"
+        fill="rgba(0,0,0,0.42)"
+        animate={{ opacity: active ? 0.38 : 0.24, scaleX: active ? 0.82 : 1 }}
+        transition={{ duration: 0.45 }}
       />
-      <path
-        d="M20.6 22.9c3.2-4.3 8.8-4.2 11.4-.4 2.6-3.8 8.2-3.9 11.4.4 3.2 4.4.6 11.6-5.1 12.8-2.7.6-5-.3-6.3-2.1-1.3 1.8-3.6 2.7-6.3 2.1-5.7-1.2-8.3-8.4-5.1-12.8Z"
-        fill="url(#athena-launcher-face)"
-      />
-      <path d="M23.8 43.1c2 2 4.7 3.1 8.2 3.1s6.2-1.1 8.2-3.1" fill="none" stroke="rgba(181,255,223,0.55)" strokeLinecap="round" strokeWidth="1.5" />
-      <circle cx="25.4" cy="27" r="6" fill="#06110d" />
-      <circle cx="38.6" cy="27" r="6" fill="#06110d" />
+
+      <motion.g
+        animate={wingMotion}
+        transition={{ duration: gliding ? 0.48 : 1.7, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ transformOrigin: '43px 34px' }}
+      >
+        <path
+          d="M26.5 34.2c-9.2 2.2-15.9 8.6-18.6 17.8 9.4 1 17.8-2.6 23.2-10.6l2.5-4.2-7.1-3Z"
+          fill="rgba(73, 226, 169, 0.22)"
+          stroke="rgba(181,255,223,0.34)"
+          strokeWidth="1.4"
+        />
+        <path
+          d="M59.5 34.2c9.2 2.2 15.9 8.6 18.6 17.8-9.4 1-17.8-2.6-23.2-10.6l-2.5-4.2 7.1-3Z"
+          fill="rgba(73, 226, 169, 0.22)"
+          stroke="rgba(181,255,223,0.34)"
+          strokeWidth="1.4"
+        />
+      </motion.g>
+
+      <g filter="url(#athena-flying-glow)">
+        <path
+          d="M25.2 22.8 21.4 10.9l13 6.2a25.2 25.2 0 0 1 17.2 0l13-6.2-3.8 11.9c5.2 4.5 8.3 11.1 8.3 19 0 17.5-10.8 31.2-26.1 31.2S16.9 59.3 16.9 41.8c0-7.9 3.1-14.5 8.3-19Z"
+          fill="url(#athena-flying-body)"
+          stroke="rgba(181,255,223,0.5)"
+          strokeWidth="1.55"
+        />
+        <path
+          d="M27.2 29.2c4.2-5.8 11.7-5.7 15.8-.4 4.1-5.3 11.6-5.4 15.8.4 4.3 5.9.7 15.4-6.9 16.8-3.7.7-6.8-.6-8.9-3.2-2.1 2.6-5.2 3.9-8.9 3.2-7.6-1.4-11.2-10.9-6.9-16.8Z"
+          fill="url(#athena-flying-face)"
+        />
+        <path d="M31.5 57.7c2.7 2.4 6.5 3.7 11.5 3.7s8.8-1.3 11.5-3.7" fill="none" stroke="rgba(181,255,223,0.58)" strokeLinecap="round" strokeWidth="1.8" />
+      </g>
+
+      <circle cx="34.8" cy="36.2" r="7.9" fill="#06110d" />
+      <circle cx="51.2" cy="36.2" r="7.9" fill="#06110d" />
       {blinking ? (
         <>
-          <path d="M21.2 27h8.4" stroke="#a8ffe0" strokeLinecap="round" strokeWidth="2.1" />
-          <path d="M34.4 27h8.4" stroke="#a8ffe0" strokeLinecap="round" strokeWidth="2.1" />
+          <path d="M29.4 36.2h10.8" stroke="#a8ffe0" strokeLinecap="round" strokeWidth="2.5" />
+          <path d="M45.8 36.2h10.8" stroke="#a8ffe0" strokeLinecap="round" strokeWidth="2.5" />
         </>
       ) : (
         <>
-          <circle cx={active ? '26' : '25.4'} cy="27" r="4.05" fill="url(#athena-launcher-eye)" />
-          <circle cx={active ? '39.2' : '38.6'} cy="27" r="4.05" fill="url(#athena-launcher-eye)" />
-          <circle cx={active ? '26.5' : '25.9'} cy="26.8" r="1.9" fill="#02100b" />
-          <circle cx={active ? '39.7' : '39.1'} cy="26.8" r="1.9" fill="#02100b" />
-          <circle cx="27.3" cy="25.3" r="0.85" fill="#ffffff" opacity="0.95" />
-          <circle cx="40.5" cy="25.3" r="0.85" fill="#ffffff" opacity="0.95" />
+          <circle cx={active ? '35.8' : '34.8'} cy="36.2" r="5.15" fill="url(#athena-flying-eye)" />
+          <circle cx={active ? '52.2' : '51.2'} cy="36.2" r="5.15" fill="url(#athena-flying-eye)" />
+          <circle cx={active ? '36.4' : '35.4'} cy="36" r="2.35" fill="#02100b" />
+          <circle cx={active ? '52.8' : '51.8'} cy="36" r="2.35" fill="#02100b" />
+          <circle cx="37.5" cy="33.9" r="1" fill="#ffffff" opacity="0.95" />
+          <circle cx="53.9" cy="33.9" r="1" fill="#ffffff" opacity="0.95" />
         </>
       )}
-      <path d="M32 30.2 29 34.1h6l-3-3.9Z" fill="#f6bd60" />
+      <path d="M43 40.2 38.9 46h8.2L43 40.2Z" fill="#f6bd60" />
+      <path d="M37.5 68.6h5" stroke="#f6bd60" strokeLinecap="round" strokeWidth="2.8" />
+      <path d="M43.5 68.6h5" stroke="#f6bd60" strokeLinecap="round" strokeWidth="2.8" />
     </svg>
-  );
-}
-
-function Tooltip({ visible }: { visible: boolean }) {
-  return (
-    <AnimatePresence>
-      {visible && (
-        <motion.span
-          aria-hidden
-          initial={{ opacity: 0, y: 6, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 4, scale: 0.96 }}
-          transition={springs.soft}
-          className="pointer-events-none absolute bottom-full right-0 mb-3 hidden whitespace-nowrap rounded-2xl border border-white/10 bg-black/80 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-primary shadow-[0_18px_44px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:block"
-        >
-          Abrir {ATHENA_CONFIG.NAME}
-        </motion.span>
-      )}
-    </AnimatePresence>
   );
 }
 
@@ -94,25 +128,95 @@ export function FloatingAIButton() {
   const [hover, setHover] = React.useState(false);
   const [ripple, setRipple] = React.useState(0);
   const [blink, setBlink] = React.useState(false);
+  const [flight, setFlight] = React.useState<FlightState>({
+    x: 0,
+    y: 0,
+    tilt: 0,
+    flip: 1,
+    burst: 0,
+    gliding: false,
+  });
 
   useEffect(() => {
     if (reduced) return undefined;
-    let timer: ReturnType<typeof setTimeout>;
     let blinkTimer: ReturnType<typeof setTimeout>;
+    let releaseTimer: ReturnType<typeof setTimeout>;
+    let lastScroll = 0;
+    let lastX = 0;
+
+    const main = document.getElementById('app-main-scroll');
+    const getScrollTop = () => main?.scrollTop ?? window.scrollY;
 
     const scheduleBlink = () => {
-      timer = setTimeout(() => {
+      blinkTimer = setTimeout(() => {
         setBlink(true);
-        blinkTimer = setTimeout(() => setBlink(false), 150);
+        window.setTimeout(() => setBlink(false), 150);
         scheduleBlink();
-      }, 5200 + Math.random() * 5200);
+      }, 3600 + Math.random() * 4200);
     };
 
+    const releaseFlight = () => {
+      clearTimeout(releaseTimer);
+      releaseTimer = setTimeout(() => {
+        setFlight((current) => ({
+          ...current,
+          y: Math.round(current.y * 0.18),
+          tilt: 0,
+          gliding: false,
+        }));
+      }, 520);
+    };
+
+    const handleScroll = () => {
+      const scrollTop = getScrollTop();
+      const delta = scrollTop - lastScroll;
+      if (Math.abs(delta) < 2) return;
+
+      const nextX = Math.round(Math.sin(scrollTop / 150) * 42);
+      const horizontal = nextX - lastX;
+      const goingUp = delta < 0;
+      lastScroll = scrollTop;
+      lastX = nextX;
+
+      setFlight((current) => ({
+        x: nextX,
+        y: goingUp ? -58 : 18,
+        tilt: goingUp ? -11 : 9,
+        flip: horizontal < -1 ? -1 : horizontal > 1 ? 1 : current.flip,
+        burst: current.burst + 1,
+        gliding: true,
+      }));
+      releaseFlight();
+    };
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') return;
+      const width = window.innerWidth || 1;
+      const zone = event.clientX / width;
+      if (zone < 0.18 || zone > 0.82) {
+        setFlight((current) => ({
+          ...current,
+          x: zone < 0.18 ? -34 : 18,
+          flip: zone < 0.18 ? -1 : 1,
+          tilt: zone < 0.18 ? -8 : 6,
+          gliding: true,
+        }));
+        releaseFlight();
+      }
+    };
+
+    lastScroll = getScrollTop();
     scheduleBlink();
+    main?.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
 
     return () => {
-      clearTimeout(timer);
       clearTimeout(blinkTimer);
+      clearTimeout(releaseTimer);
+      main?.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('pointermove', handlePointerMove);
     };
   }, [reduced]);
 
@@ -121,10 +225,17 @@ export function FloatingAIButton() {
   const handleOpen = () => {
     if ('vibrate' in navigator) navigator.vibrate(10);
     setRipple((value) => value + 1);
+    setFlight((current) => ({
+      ...current,
+      y: -18,
+      tilt: -7,
+      gliding: true,
+      burst: current.burst + 1,
+    }));
     window.setTimeout(() => {
       setViewMode('sidebar');
       openChat('Geral');
-    }, 110);
+    }, 130);
   };
 
   return (
@@ -134,64 +245,71 @@ export function FloatingAIButton() {
       onClick={handleOpen}
       onHoverStart={() => setHover(true)}
       onHoverEnd={() => setHover(false)}
-      initial={{ scale: 0.82, opacity: 0, y: 12 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{ ...springs.bouncy, delay: 0.12 }}
-      whileTap={{ scale: 0.94, transition: springs.snappy }}
-      className="group fixed right-4 z-[100] h-16 w-16 overflow-visible rounded-[24px] border border-primary/25 bg-[#06100d]/90 shadow-[0_22px_70px_rgba(0,0,0,0.55)] outline-none backdrop-blur-2xl transition-[width,border-color,box-shadow,background] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d] hover:border-primary/45 hover:bg-[#071611]/95 hover:shadow-[0_24px_80px_rgba(0,0,0,0.62),0_0_32px_rgba(var(--hub-primary-rgb),0.22)] sm:w-[12.25rem] sm:rounded-[26px]"
-      style={{ bottom: 'calc(6.05rem + env(safe-area-inset-bottom, 0px))' }}
+      initial={{ opacity: 0, scale: 0.72, y: 24 }}
+      animate={{
+        opacity: 1,
+        scale: hover ? 1.06 : 1,
+        x: flight.x,
+        y: flight.y,
+        rotate: flight.tilt,
+      }}
+      transition={reduced ? { duration: 0.12 } : springs.soft}
+      whileTap={{ scale: 0.9, transition: springs.snappy }}
+      className="fixed right-5 z-[100] h-[5.35rem] w-[5.35rem] overflow-visible rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d]"
+      style={{ bottom: 'calc(5.85rem + env(safe-area-inset-bottom, 0px))' }}
     >
-      <Tooltip visible={hover} />
-
       <AnimatePresence>
         {ripple > 0 && (
           <motion.span
             key={ripple}
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[inherit] border border-primary/60"
-            initial={{ scale: 0.94, opacity: 0.7 }}
-            animate={{ scale: 1.45, opacity: 0 }}
+            className="pointer-events-none absolute inset-2 rounded-full border border-primary/60"
+            initial={{ scale: 0.72, opacity: 0.74 }}
+            animate={{ scale: 1.74, opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.52, ease: 'easeOut' }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {flight.burst > 0 && !reduced && (
+          <motion.span
+            key={flight.burst}
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 h-2 w-10 rounded-full bg-primary/40 blur-sm"
+            initial={{ opacity: 0.45, x: flight.flip === 1 ? -48 : 8, y: 10, scaleX: 0.35 }}
+            animate={{ opacity: 0, x: flight.flip === 1 ? -98 : 58, y: 24, scaleX: 1.5 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.48, ease: 'easeOut' }}
           />
         )}
       </AnimatePresence>
 
-      <span
+      <motion.span
         aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-70 transition-opacity duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-1 rounded-full"
+        animate={reduced ? {} : { opacity: hover || flight.gliding ? [0.45, 0.7, 0.45] : [0.22, 0.38, 0.22] }}
+        transition={{ duration: hover || flight.gliding ? 1.1 : 2.8, repeat: Infinity, ease: 'easeInOut' }}
         style={{
-          background:
-            'linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.18), rgba(96,245,255,0.08) 48%, rgba(167,139,250,0.1))',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.35)',
+          background: 'radial-gradient(circle, rgba(var(--hub-primary-rgb),0.38), rgba(96,245,255,0.16) 42%, transparent 72%)',
+          filter: 'blur(14px)',
         }}
       />
 
-      {!reduced && (
-        <motion.span
-          aria-hidden
-          className="pointer-events-none absolute -inset-1 rounded-[inherit] opacity-55 blur-md"
-          animate={{ opacity: hover ? [0.45, 0.72, 0.45] : [0.22, 0.42, 0.22] }}
-          transition={{ duration: hover ? 1.8 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ background: 'linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.34), rgba(96,245,255,0.16), transparent)' }}
-        />
-      )}
-
-      <span className="relative z-10 flex h-full w-full items-center gap-3 px-2 sm:px-3">
-        <span className="athena-signal flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] border border-primary/25 bg-primary/10 shadow-[0_14px_34px_rgba(var(--hub-primary-rgb),0.16)]">
-          <AthenaOwl blinking={blink} active={hover} />
-        </span>
-
-        <span className="hidden min-w-0 flex-1 text-left sm:block">
-          <span className="block truncate text-[10px] font-black uppercase tracking-widest text-primary/80">Athena online</span>
-          <span className="mt-0.5 flex items-center gap-1.5 truncate text-xs font-bold text-white/80">
-            <Sparkles size={13} className="shrink-0 text-cyan-200" />
-            Abrir assistente
-          </span>
-        </span>
-
-        <span className="absolute right-2 top-2 z-20 h-2.5 w-2.5 rounded-full border-2 border-[#06100d] bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.85)] sm:right-3 sm:top-3" />
-      </span>
+      <motion.span
+        className="relative z-10 flex h-full w-full items-center justify-center rounded-full"
+        animate={{ rotateY: flight.flip === -1 ? 180 : 0 }}
+        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          background:
+            'radial-gradient(circle at 38% 24%, rgba(255,255,255,0.16), rgba(var(--hub-primary-rgb),0.13) 34%, rgba(4,14,12,0.52) 62%, rgba(0,0,0,0.08) 100%)',
+          filter: hover ? 'drop-shadow(0 0 24px rgba(var(--hub-primary-rgb),0.34))' : 'drop-shadow(0 0 16px rgba(var(--hub-primary-rgb),0.22))',
+        }}
+      >
+        <AthenaOwl blinking={blink} active={hover || flight.gliding} gliding={flight.gliding} />
+        <span className="absolute right-3 top-3 h-3 w-3 rounded-full border-2 border-[#06100d] bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.9)]" />
+      </motion.span>
     </motion.button>
   );
 }

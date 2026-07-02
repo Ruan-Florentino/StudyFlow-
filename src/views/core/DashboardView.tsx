@@ -189,7 +189,7 @@ const DashboardView = () => {
                   </NeonBadge>
                   StudyFlow Premium
                 </h4>
-                <p className="text-xs text-text-secondary">Desbloqueie mentoria ilimitada e simulados exclusivos.</p>
+                <p className="text-xs text-text-secondary">Desbloqueie Athena ilimitada e simulados exclusivos.</p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
@@ -228,7 +228,7 @@ const DashboardView = () => {
         >
           {[
             { id: 'focus', path: '/foco', icon: Timer, label: 'Foco', color: 'orange' },
-            { id: 'ai', path: '/ai', icon: MessageSquare, label: 'Mentoria', color: 'purple' },
+            { id: 'ai', path: '/ai', icon: MessageSquare, label: 'Athena', color: 'purple' },
             { id: 'questions', path: '/questoes', icon: BookOpen, label: 'Questões', color: 'blue' },
             { id: 'comunidade', path: '/comunidade', icon: Headset, label: 'Comunidade', color: 'primary' },
           ].map(action => (

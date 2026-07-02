@@ -53,7 +53,7 @@ export function CommandPalette({ isOpen, onClose, onToggle }: CommandPaletteProp
     { path: '/redacao', name: 'Redação', icon: PenTool, shortcut: 'R' },
     { path: '/simulados', name: 'Simulados', icon: FileText, shortcut: 'S' },
     { path: '/comunidade', name: 'Comunidade', icon: Users, shortcut: 'C' },
-    { path: '/ai', name: 'Mentoria', icon: Sparkles, shortcut: 'A' },
+    { path: '/ai', name: 'Athena', icon: Sparkles, shortcut: 'A' },
     { path: '/palacio-memoria', name: 'Memorização Visual', icon: Brain, shortcut: 'M' },
     { path: '/duelo-socratico', name: 'Debate Guiado', icon: ShieldAlert, shortcut: 'D' },
     { path: '/analisador-documentos', name: 'Análise de Documentos', icon: FileText, shortcut: 'D' },

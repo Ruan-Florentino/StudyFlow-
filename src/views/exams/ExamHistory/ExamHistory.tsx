@@ -42,7 +42,7 @@ ${digest}`;
     <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
       <Header
         title="Histórico"
-        subtitle="Últimas tentativas de questões + mentoria"
+        subtitle="Últimas tentativas de questões + Athena"
         icon={History}
         color="blue"
         onBack={onBack}
@@ -104,7 +104,7 @@ ${digest}`;
             sidebarInCompact
             context="questoes"
             systemPrompt={historySystemPrompt}
-            greeting="Mentoria com seu histórico de questões"
+            greeting="Athena com seu histórico de questões"
             placeholder="Ex.: O que revisar primeiro pelos meus erros?"
             showSidebar={false}
           />

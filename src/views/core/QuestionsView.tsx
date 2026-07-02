@@ -772,7 +772,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
               className="p-2 rounded-xl bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,148,0.15)] min-h-11 min-w-11 active:scale-[0.96] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <Bot size={16} />
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em] hidden sm:inline">Mentoria</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] hidden sm:inline">Athena</span>
             </button>
           }
         />

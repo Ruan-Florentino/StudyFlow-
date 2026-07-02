@@ -69,7 +69,7 @@ export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
                 {msg.role === 'model' && (
                   <div className="flex items-center gap-2 mb-4 opacity-30">
                     <Terminal size={12} />
-                    <span className="text-[10px] uppercase tracking-widest font-mono">Mentoria</span>
+                    <span className="text-[10px] uppercase tracking-widest font-mono">Athena</span>
                   </div>
                 )}
                 <div className={`prose prose-invert prose-sm max-w-none ${msg.role === 'model' ? 'font-serif text-xl italic leading-relaxed text-white/80' : 'font-sans text-base'}`}>

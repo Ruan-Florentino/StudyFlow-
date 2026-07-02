@@ -2,13 +2,13 @@ import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { springs } from '../lib/animations/easings';
-import { Home, Compass, Target, PenLine, Users, User, Sparkles } from 'lucide-react';
+import { Home, Compass, Target, PenLine, Users, User } from 'lucide-react';
 import { useStore } from '../store';
 import { useAppNavigation } from '../app/router/useAppNavigation';
 import { preloadRoute } from '../app/router/preload';
 
 type NavItem = {
-  id: 'home' | 'explore' | 'ai' | 'questions' | 'redacao' | 'comunidade' | 'profile';
+  id: 'home' | 'explore' | 'questions' | 'redacao' | 'comunidade' | 'profile';
   /** Rótulo completo (desktop / tablets largos) */
   label: string;
   /** Rótulo curto para caber em telas estreitas sem encavalamento */
@@ -21,7 +21,6 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { id: 'home', label: 'INÍCIO', labelCompact: 'INÍCIO', icon: Home, path: '/' },
   { id: 'explore', label: 'EXPLORAR', labelCompact: 'EXPLORAR', icon: Compass, path: '/explorar' },
-  { id: 'ai', label: 'MENTORIA', labelCompact: 'MENTORIA', icon: Sparkles, path: '/ai' },
   { id: 'questions', label: 'QUESTÕES', labelCompact: 'QUESTÕES', icon: Target, path: '/questoes', badge: true },
   { id: 'redacao', label: 'REDAÇÃO', labelCompact: 'REDAÇÃO', icon: PenLine, path: '/redacao' },
   { id: 'comunidade', label: 'COMUNIDADE', labelCompact: 'COMUNIDADE', icon: Users, path: '/comunidade' },
@@ -78,7 +77,7 @@ export function BottomNav() {
                       className={
                         isActive
                           ? 'text-primary drop-shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.35)]'
-                          : 'text-white/68'
+                          : 'text-white/70'
                       }
                     />
                     {item.badge && (
@@ -90,7 +89,7 @@ export function BottomNav() {
                     className={`relative z-10 hidden md:block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] ${
                       isActive
                         ? 'text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)]'
-                        : 'text-white/62'
+                        : 'text-white/60'
                     }`}
                   >
                     {item.label}
@@ -99,7 +98,7 @@ export function BottomNav() {
                     className={`relative z-10 md:hidden text-center text-[8px] font-bold uppercase leading-[1.15] tracking-tight ${
                       isActive
                         ? 'text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)]'
-                        : 'text-white/62'
+                        : 'text-white/60'
                     }`}
                   >
                     {item.labelCompact}

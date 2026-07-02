@@ -184,7 +184,7 @@ export const routes: RouteConfig[] = [
   { path: '/premium/success', label: 'Premium — Sucesso', Component: PremiumSuccessPage },
   { path: '/explorar', label: 'Explorar', Component: ExploreView },
   { path: '/foco', label: 'Modo Foco', Component: FocusMode },
-  { path: '/ai', label: 'Mentoria', Component: ATHENA_HUB },
+  { path: '/ai', label: 'Athena', Component: ATHENA_HUB },
   { path: '/questoes', label: 'Questões', Component: QuestionsView },
   { path: '/redacao', label: 'Redação', Component: () => <PremiumGate feature="essay"><Redacao onBack={() => {}} /></PremiumGate> },
   { path: '/perfil', label: 'Perfil', Component: ProfileView },
