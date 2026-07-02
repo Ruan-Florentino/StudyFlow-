@@ -175,7 +175,7 @@ export function ComunidadePage() {
   }
 
   return (
-    <div className="app-shell-premium pt-6 md:pt-8 pb-32 md:pb-36 text-white relative overflow-hidden animate-in fade-in duration-500">
+    <div className="app-shell-premium premium-page-stack pt-5 md:pt-8 pb-32 md:pb-36 text-white relative overflow-hidden animate-in fade-in duration-500">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.05]"
         style={{
@@ -189,16 +189,16 @@ export function ComunidadePage() {
       />
 
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[min(100%,520px)] h-72 rounded-full blur-3xl opacity-20 pointer-events-none"
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 opacity-25"
         style={{
           background:
-            'radial-gradient(circle, rgba(var(--hub-primary-rgb),0.35) 0%, rgba(var(--hub-primary-rgb),0.08) 45%, transparent 70%)',
+            'linear-gradient(180deg, rgba(var(--hub-primary-rgb),0.08), transparent 78%)',
         }}
         aria-hidden
       />
 
-      <div className="relative max-w-md mx-auto">
-        <header className="flex items-center justify-between gap-3 mb-6">
+      <div className="relative mx-auto w-full max-w-2xl premium-page-stack">
+        <header className="premium-page-hero flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <motion.button
               type="button"
@@ -231,10 +231,10 @@ export function ComunidadePage() {
           initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={reduceMotion ? { duration: 0.14, ease: [0.22, 1, 0.36, 1] } : springs.card}
-          className="space-y-5"
+          className="premium-page-stack"
         >
           <div
-            className="rounded-3xl p-4 relative overflow-hidden border border-[rgba(var(--hub-primary-rgb),0.22)]"
+            className="premium-list-card rounded-3xl p-4 relative overflow-hidden border border-[rgba(var(--hub-primary-rgb),0.22)]"
             style={{
               background:
                 'linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.12), rgba(var(--hub-primary-rgb),0.04), rgba(0,0,0,0.35))',
@@ -284,7 +284,7 @@ export function ComunidadePage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar matéria..."
-              className="w-full rounded-2xl bg-black/40 border border-white/10 pl-10 pr-10 py-3 text-sm text-white placeholder:text-white/35 outline-none focus:border-[var(--color-primary)]/40 focus:ring-1 focus:ring-[var(--color-primary)]/30 transition-shadow"
+              className="premium-input w-full rounded-2xl border pl-10 pr-10 py-3 text-sm text-white placeholder:text-white/35 outline-none"
               aria-label="Buscar matéria"
             />
             <AnimatePresence>
@@ -352,7 +352,7 @@ export function ComunidadePage() {
                   whileTap={{ scale: 0.98, transition: springs.snappy }}
                   type="button"
                   onClick={() => joinRoom(subject.id)}
-                  className="group relative flex min-h-[5.25rem] w-full flex-shrink-0 flex-row items-center gap-4 overflow-hidden rounded-3xl p-4 text-left sm:min-h-0 sm:aspect-square sm:flex-col sm:items-center sm:justify-center sm:gap-2 sm:p-4"
+                  className="premium-grid-card group relative flex min-h-[5.25rem] w-full flex-shrink-0 flex-row items-center gap-4 overflow-hidden rounded-[22px] p-4 text-left sm:min-h-0 sm:aspect-square sm:flex-col sm:items-center sm:justify-center sm:gap-2 sm:p-4"
                   style={{
                     background: `linear-gradient(145deg, 
                       rgba(${subject.glow},0.2) 0%, 
@@ -364,7 +364,7 @@ export function ComunidadePage() {
                   <div
                     className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                     style={{
-                      background: `radial-gradient(circle at 50% 30%, rgba(${subject.glow},0.35) 0%, transparent 55%)`,
+                      background: `linear-gradient(180deg, rgba(${subject.glow},0.18), transparent 72%)`,
                     }}
                   />
                   <div className="relative flex shrink-0 items-center justify-center text-4xl sm:mb-0.5 sm:transform sm:transition-transform sm:duration-300 sm:group-hover:scale-110">
@@ -412,7 +412,7 @@ function StatCard({
 }) {
   return (
     <div
-      className="rounded-2xl p-3 relative overflow-hidden border border-[rgba(var(--hub-primary-rgb),0.18)]"
+      className="premium-stat-tile rounded-2xl p-3 relative overflow-hidden border border-[rgba(var(--hub-primary-rgb),0.18)]"
       style={{
         background: `linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.1), rgba(var(--hub-primary-rgb),0.02))`,
       }}

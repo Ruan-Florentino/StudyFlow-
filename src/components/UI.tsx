@@ -162,10 +162,10 @@ export const AnimatedButton = ({
 }) => {
   const reduceMotion = useReducedMotion() ?? false;
   const variants = {
-    primary: 'bg-[linear-gradient(135deg,#baffea_0%,var(--hub-primary)_42%,#38dba3_100%)] text-black font-black border border-white/20 hover:brightness-105 shadow-[0_12px_30px_rgba(var(--hub-primary-rgb),0.24)]',
-    secondary: 'bg-white/[0.075] text-white border border-white/[0.12] hover:bg-white/[0.12] hover:border-white/[0.22] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]',
-    ghost: 'bg-transparent text-white hover:bg-white/[0.07] hover:text-primary',
-    danger: 'bg-red-500/10 text-red-400 font-bold hover:bg-red-500/20 border border-red-500/20 backdrop-blur-xl',
+    primary: 'bg-[linear-gradient(135deg,#caffee_0%,var(--hub-primary)_44%,#4ad8ff_140%)] text-black font-black border border-white/25 hover:brightness-105 shadow-[0_14px_34px_rgba(var(--hub-primary-rgb),0.22)]',
+    secondary: 'bg-white/[0.065] text-white border border-white/[0.14] hover:bg-white/[0.105] hover:border-white/[0.24] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]',
+    ghost: 'bg-transparent text-white/85 hover:bg-white/[0.07] hover:text-primary border border-transparent hover:border-white/10',
+    danger: 'bg-red-500/10 text-red-300 font-bold hover:bg-red-500/18 border border-red-500/24 backdrop-blur-xl',
   };
 
   const isBusy = disabled || loading;
@@ -188,7 +188,7 @@ export const AnimatedButton = ({
       onClick={isBusy ? undefined : onClick}
       disabled={isBusy}
       className={cn(
-        'relative isolate min-h-11 px-6 py-3.5 rounded-2xl inline-flex items-center justify-center gap-2 overflow-hidden text-sm shadow-sm',
+        'relative isolate min-h-12 px-5 py-3 rounded-[18px] inline-flex items-center justify-center gap-2 overflow-hidden text-sm shadow-sm',
         'transition-shadow [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-snappy)]',
         variant === 'primary' && !isBusy && 'relative overflow-hidden',
         variant === 'primary' &&
@@ -237,7 +237,7 @@ export const GlassCard = ({
     onClick={onClick}
     style={style}
     className={cn(
-      'liquid-glass glass-sheen p-6 rounded-[24px] relative isolate overflow-hidden transition-[border-color,box-shadow,transform,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35',
+      'liquid-glass glass-sheen p-6 rounded-[22px] relative isolate overflow-hidden transition-[border-color,box-shadow,transform,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/30',
       onClick && 'cursor-pointer',
       glow && 'shadow-[0_0_30px_rgba(var(--hub-primary-rgb),0.14)] border-primary/35 hover:shadow-[0_0_36px_rgba(var(--hub-primary-rgb),0.2)]',
       className
@@ -255,7 +255,7 @@ export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = 
     whileTap={reduceMotion ? undefined : { scale: 0.97, transition: springs.snappy }}
     whileHover={reduceMotion ? undefined : { scale: 1.02, transition: springs.soft }}
     onClick={onClick}
-    className="liquid-glass glass-sheen p-5 rounded-[24px] min-h-[128px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/35 group relative overflow-hidden shadow-lg"
+    className="premium-grid-card liquid-glass glass-sheen p-5 rounded-[22px] min-h-[128px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/30 group relative overflow-hidden shadow-lg"
   >
     <div className={cn(bg, color, "w-12 h-12 rounded-2xl flex items-center justify-center transition-[transform,border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] border border-transparent group-hover:border-primary/30 shadow-inner")}>
       <Icon size={24} strokeWidth={1.5} />
@@ -314,7 +314,7 @@ export const Logo = ({ size = "md", className, showText = false }: { size?: "sm"
         <LogoIcon size={sizes[size].icon} />
       </div>
       {showText && (
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <span className={cn("font-display font-black tracking-tighter text-white italic uppercase", sizes[size].text)}>
             Study<span className="text-primary">Flow</span>
           </span>
@@ -420,22 +420,22 @@ export const Header = ({
   };
 
   return (
-    <header className={cn("flex items-center justify-between relative z-10 w-full", className)}>
-      <div className="flex items-center gap-4">
+    <header className={cn("flex items-center justify-between gap-4 relative z-10 w-full min-w-0", className)}>
+      <div className="flex min-w-0 items-center gap-4">
         {onBack && (
           <AnimatedButton onClick={onBack} variant="secondary" className="p-2 rounded-xl w-10 h-10 shrink-0 border-white/10">
             <ChevronLeft size={20} strokeWidth={2} />
           </AnimatedButton>
         )}
-        <div className={cn("flex items-center gap-3", onClickTitle && "cursor-pointer")} onClick={onClickTitle}>
+        <div className={cn("flex min-w-0 items-center gap-3", onClickTitle && "cursor-pointer")} onClick={onClickTitle}>
           {Icon && <IconTile icon={Icon} color={color} size="md" className="rounded-full" />}
-          <div className="flex flex-col">
+          <div className="flex min-w-0 flex-col">
             {subtitle && (
               <span className={cn("text-[10px] font-premium-mono font-bold uppercase tracking-[0.2em] -mb-1", textColorMap[color])}>
                 {subtitle}
               </span>
             )}
-            <h2 className="text-2xl font-premium-title italic tracking-tight flex items-baseline">
+            <h2 className="text-2xl font-premium-title italic tracking-tight leading-tight flex items-baseline truncate">
               {title}<span className={cn("font-normal not-italic ml-1 text-sm", textColorMap[color])}>.</span>
             </h2>
           </div>

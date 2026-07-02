@@ -11,14 +11,14 @@ import { aiPremiumCopy } from '../lib/productDisclosure';
 export function AIHub() {
   const { isPremium } = useUserAccess();
   return (
-    <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col min-h-0 min-w-0 overflow-x-hidden px-3 sm:px-4 md:px-8 md:pt-8 pt-4">
+    <div className="app-shell-premium relative mx-auto flex w-full max-w-7xl flex-1 flex-col min-h-0 min-w-0 overflow-x-hidden md:pt-8 pt-4">
       <AuroraBackground intensity="subtle" />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
       {/* Header Section */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 flex shrink-0 items-center justify-between gap-3 md:mb-8"
+        className="premium-page-hero mb-4 flex shrink-0 items-center justify-between gap-3 md:mb-6"
       >
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 shadow-lg shadow-emerald-500/5 neon-edge-subtle sm:h-12 sm:w-12">
@@ -47,7 +47,7 @@ export function AIHub() {
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 flex shrink-0 flex-col gap-2 rounded-2xl border border-primary/25 bg-primary/[0.08] px-4 py-3 md:flex-row md:items-center md:justify-between"
+          className="premium-list-card mb-4 flex shrink-0 flex-col gap-2 rounded-2xl border border-primary/25 bg-primary/[0.06] px-4 py-3 md:flex-row md:items-center md:justify-between"
           role="status"
         >
           <div className="flex gap-3 min-w-0">
@@ -81,7 +81,7 @@ export function AIHub() {
         transition={{ delay: 0.5 }}
         className="mt-4 hidden grid-cols-1 gap-4 md:mt-6 md:grid md:grid-cols-3"
       >
-        <div className="p-4 glass-premium rounded-2xl flex items-center gap-3">
+        <div className="premium-list-card p-4 glass-premium rounded-2xl flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
             <Zap size={16} />
           </div>
@@ -91,7 +91,7 @@ export function AIHub() {
           </div>
         </div>
 
-        <div className="p-4 glass-premium rounded-2xl flex items-center gap-3">
+        <div className="premium-list-card p-4 glass-premium rounded-2xl flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
             <Brain size={16} />
           </div>
@@ -101,7 +101,7 @@ export function AIHub() {
           </div>
         </div>
 
-        <div className="p-4 glass-premium rounded-2xl flex items-center gap-3">
+        <div className="premium-list-card p-4 glass-premium rounded-2xl flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
             <Shield size={16} />
           </div>

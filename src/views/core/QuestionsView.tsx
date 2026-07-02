@@ -440,8 +440,8 @@ Alternativas: ${JSON.stringify(q.alternativas)}`;
 
   if (view === 'bank') {
     return (
-      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36">
-        <header className="space-y-6">
+      <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-32 md:pb-36">
+        <header className="premium-page-hero space-y-6">
           <Header 
             title="Banco de Questões"
             subtitle="Reais"
@@ -759,7 +759,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
 
   if (view === 'ai-setup') {
     return (
-      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
+      <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-28">
         <Header 
           title="Gerar Questões"
           subtitle="Personalização"
@@ -777,7 +777,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
           }
         />
 
-        <GlassCard className="p-6 space-y-5" glow>
+        <GlassCard className="premium-list-card p-6 space-y-5" glow>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
               <Brain size={20} className="text-primary" />
@@ -856,7 +856,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
 
   if (view === 'exam-setup') {
     return (
-      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
+      <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-28">
         <Header 
           title="Configurar Prova"
           subtitle="Modo Simulado"
@@ -865,7 +865,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
           onBack={() => setView('bank')}
         />
 
-        <GlassCard className="p-6 space-y-5" glow>
+        <GlassCard className="premium-list-card p-6 space-y-5" glow>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center">
               <Timer size={20} className="text-orange-400" />
@@ -933,7 +933,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
 
   if (view === 'external-banks') {
     return (
-      <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
+      <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-28">
         <Header 
           title="Bancos Externos"
           subtitle="Recursos complementares"
@@ -942,7 +942,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
           onBack={() => setView('bank')}
         />
 
-        <GlassCard className="p-5 space-y-2">
+        <GlassCard className="premium-list-card p-5 space-y-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
               <BookOpen size={20} className="text-cyan-400" />
@@ -964,7 +964,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
             <button
               key={idx}
               onClick={() => window.open(bank.url, '_blank', 'noopener,noreferrer')}
-              className="w-full text-left p-5 rounded-2xl bg-white/10 border border-white/20 hover:border-cyan-500/40 hover:bg-cyan-500/10 transition-all group"
+              className="premium-list-card w-full text-left p-5 rounded-2xl bg-white/[0.06] border border-white/15 hover:border-cyan-500/40 hover:bg-cyan-500/10 transition-all group"
             >
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/40 transition-all">
@@ -990,7 +990,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
         </div>
 
         {EXTERNAL_BANKS.length === 0 && (
-          <GlassCard className="p-8 text-center space-y-2">
+          <GlassCard className="premium-empty-panel p-8 text-center space-y-2">
             <BookOpen size={32} className="text-text-secondary mx-auto opacity-50" />
             <p className="text-sm text-text-secondary">
               Nenhum banco externo cadastrado ainda.
@@ -1025,7 +1025,7 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
     const PerfIcon = perfIcon;
 
     return (
-      <div className="app-shell-premium pt-6 md:pt-8 space-y-5 pb-28">
+      <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-28">
         <Header 
           title="Resultado"
           subtitle="Desempenho na prova"
@@ -1077,24 +1077,24 @@ Retorne APENAS um JSON: [{"id": "ai_1", "pergunta": "...", "alternativas": ["...
         </GlassCard>
 
         <div className="grid grid-cols-3 gap-3">
-          <GlassCard className="p-3 text-center space-y-1">
+          <GlassCard className="premium-stat-tile p-3 text-center space-y-1">
             <CheckCircle2 size={18} className="text-emerald-400 mx-auto" />
             <p className="text-xl font-black text-white">{correct}</p>
             <p className="text-[10px] uppercase tracking-wider text-text-secondary">Acertos</p>
           </GlassCard>
-          <GlassCard className="p-3 text-center space-y-1">
+          <GlassCard className="premium-stat-tile p-3 text-center space-y-1">
             <XCircle size={18} className="text-rose-400 mx-auto" />
             <p className="text-xl font-black text-white">{wrong}</p>
             <p className="text-[10px] uppercase tracking-wider text-text-secondary">Erros</p>
           </GlassCard>
-          <GlassCard className="p-3 text-center space-y-1">
+          <GlassCard className="premium-stat-tile p-3 text-center space-y-1">
             <AlertCircle size={18} className="text-text-secondary mx-auto" />
             <p className="text-xl font-black text-white">{blank}</p>
             <p className="text-[10px] uppercase tracking-wider text-text-secondary">Em branco</p>
           </GlassCard>
         </div>
 
-        <GlassCard className="p-5 space-y-3">
+        <GlassCard className="premium-list-card p-5 space-y-3">
           <div className="flex items-center gap-2">
             <BarChart3 size={16} className="text-purple-400" />
             <h3 className="font-bold text-white text-sm">Por dificuldade</h3>

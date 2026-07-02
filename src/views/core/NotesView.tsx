@@ -116,10 +116,10 @@ const NotesView = () => {
 
   if (selectedNote) {
     return (
-      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 animate-in slide-in-from-right duration-300">
-        <header className="flex items-center justify-between">
+      <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-32 md:pb-36 animate-in slide-in-from-right duration-300">
+        <header className="premium-page-hero flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <button onClick={() => setSelectedNote(null)} className="p-2 bg-white/5 rounded-xl border border-white/10">
+            <button onClick={() => setSelectedNote(null)} className="flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.1] transition-colors">
               <RotateCcw size={20} />
             </button>
             <h2 className="text-2xl font-premium-title italic uppercase">{selectedNote.title}</h2>
@@ -127,14 +127,14 @@ const NotesView = () => {
           <div className="flex items-center gap-2">
             <button 
               onClick={() => exportToPDF('note-content', `Resumo_${selectedNote.title.replace(/\s+/g, '_')}`)}
-              className="p-2 bg-white/5 rounded-xl border border-white/10 text-text-secondary hover:text-primary transition-colors"
+              className="flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-text-secondary hover:bg-white/[0.1] hover:text-primary transition-colors"
               title="Exportar para PDF"
             >
               <Download size={20} />
             </button>
             <button 
               onClick={() => playAudio(selectedNote.content)}
-              className="p-2 bg-white/5 rounded-xl border border-white/10 text-text-secondary hover:text-primary transition-colors"
+              className="flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-text-secondary hover:bg-white/[0.1] hover:text-primary transition-colors"
               disabled={isLoadingAudio || isPlaying}
               title="Ouvir Resumo"
             >
@@ -142,7 +142,7 @@ const NotesView = () => {
             </button>
             <button 
               onClick={() => generatePodcast(selectedNote)}
-              className="p-2 bg-white/5 rounded-xl border border-white/10 text-text-secondary hover:text-primary transition-colors"
+              className="flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-text-secondary hover:bg-white/[0.1] hover:text-primary transition-colors"
               disabled={isLoadingPodcast}
               title="Gerar Podcast IA"
             >
@@ -151,7 +151,7 @@ const NotesView = () => {
           </div>
         </header>
 
-        <GlassCard id="note-content" className="p-6 space-y-6 bg-black/40 border-white/10">
+        <GlassCard id="note-content" className="premium-list-card p-6 space-y-6 bg-black/30 border-white/10">
           <div className="prose prose-invert max-w-none">
             <Markdown>{selectedNote.content}</Markdown>
           </div>
@@ -181,8 +181,8 @@ const NotesView = () => {
   }
 
   return (
-    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36 animate-in fade-in duration-500">
-      <header className="flex justify-between items-center">
+    <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-32 md:pb-36 animate-in fade-in duration-500">
+      <header className="premium-page-hero flex justify-between items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
             <StickyNote size={20} />
@@ -192,7 +192,7 @@ const NotesView = () => {
       </header>
 
       {notes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+        <div className="premium-empty-panel flex flex-col items-center justify-center py-16 text-center space-y-4">
           <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-white/20 border border-white/10">
             <StickyNote size={40} />
           </div>
@@ -207,7 +207,7 @@ const NotesView = () => {
             <GlassCard 
               key={note.id} 
               onClick={() => setSelectedNote(note)}
-              className="p-5 border-white/5 hover:border-primary/30 transition-all group cursor-pointer"
+              className="premium-list-card p-5 border-white/10 hover:border-primary/30 transition-all group cursor-pointer"
             >
               <div className="flex justify-between items-start">
                 <div className="space-y-1">

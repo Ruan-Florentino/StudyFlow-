@@ -170,7 +170,8 @@ const Reports = () => {
   ];
 
   return (
-    <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36">
+    <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-32 md:pb-36">
+      <div className="premium-page-hero">
       <Header 
         title="Estatísticas"
         subtitle="Performance"
@@ -186,9 +187,10 @@ const Reports = () => {
           </div>
         }
       />
+      </div>
 
       <div
-        className="mb-4 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2.5"
+        className="premium-list-card mb-1 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2.5"
         role="note"
         aria-label={statsViewCopy.noteTitle}
       >
@@ -198,7 +200,7 @@ const Reports = () => {
 
       {/* Top Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
-        <GlassCard className="p-4 border-white/5 bg-gradient-to-br from-white/5 to-transparent" glow>
+        <GlassCard className="premium-stat-tile p-4 border-white/10 bg-gradient-to-br from-white/[0.055] to-transparent" glow>
           <div className="flex justify-between items-start mb-2">
             <div className="p-2 bg-primary/10 rounded-lg">
               <Target size={16} className="text-primary" />
@@ -216,7 +218,7 @@ const Reports = () => {
           </div>
         </GlassCard>
 
-        <GlassCard className="p-4 border-white/5 bg-gradient-to-br from-white/5 to-transparent" glow>
+        <GlassCard className="premium-stat-tile p-4 border-white/10 bg-gradient-to-br from-white/[0.055] to-transparent" glow>
           <div className="flex justify-between items-start mb-2">
             <div className="p-2 bg-orange-500/10 rounded-lg">
               <Flame size={16} className="text-orange-500" />
@@ -227,7 +229,7 @@ const Reports = () => {
           <p className="text-[8px] text-orange-500/70 font-bold uppercase mt-1 tracking-wider">Mantenha o fogo aceso!</p>
         </GlassCard>
 
-        <GlassCard className="p-4 border-white/5 bg-gradient-to-br from-white/5 to-transparent" glow>
+        <GlassCard className="premium-stat-tile p-4 border-white/10 bg-gradient-to-br from-white/[0.055] to-transparent" glow>
           <div className="flex justify-between items-start mb-2">
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <Clock size={16} className="text-blue-500" />
@@ -238,7 +240,7 @@ const Reports = () => {
           <p className="text-[8px] text-blue-500/70 font-bold uppercase mt-1 tracking-wider">Tempo médio por questão</p>
         </GlassCard>
 
-        <GlassCard className="p-4 border-white/5 bg-gradient-to-br from-white/5 to-transparent" glow>
+        <GlassCard className="premium-stat-tile p-4 border-white/10 bg-gradient-to-br from-white/[0.055] to-transparent" glow>
           <div className="flex justify-between items-start mb-2">
             <div className="p-2 bg-purple-500/10 rounded-lg">
               <CheckCircle2 size={16} className="text-purple-500" />
@@ -278,7 +280,7 @@ const Reports = () => {
             </button>
           </div>
         </div>
-        <GlassCard className="p-6" glow>
+        <GlassCard className="premium-list-card p-6" glow>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={evolutionData}>
@@ -352,7 +354,7 @@ const Reports = () => {
             <div className="w-1 h-4 bg-primary rounded-full" />
             <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Domínio por Matéria</h3>
           </div>
-          <GlassCard className="p-6" glow>
+          <GlassCard className="premium-list-card p-6" glow>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={subjectData}>
@@ -383,14 +385,14 @@ const Reports = () => {
           <div className="w-1 h-4 bg-primary rounded-full" />
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Frequência de Estudo (90 dias)</h3>
         </div>
-        <GlassCard className="p-4" glow>
+        <GlassCard className="premium-list-card p-4" glow>
           <Heatmap data={heatmapData} />
         </GlassCard>
       </section>
 
       <div className="grid grid-cols-2 gap-4">
         {bestSubject && (
-          <GlassCard className="p-4 border-primary/30 bg-primary/5 relative overflow-hidden" glow>
+          <GlassCard className="premium-stat-tile p-4 border-primary/30 bg-primary/[0.045] relative overflow-hidden" glow>
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-[30px] -mr-12 -mt-12 rounded-full" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2 text-primary">
@@ -404,7 +406,7 @@ const Reports = () => {
         )}
 
         {worstSubject && (
-          <GlassCard className="p-4 border-red-500/30 bg-red-500/5 relative overflow-hidden" glow>
+          <GlassCard className="premium-stat-tile p-4 border-red-500/30 bg-red-500/[0.045] relative overflow-hidden" glow>
             <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 blur-[30px] -mr-12 -mt-12 rounded-full" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2 text-red-500">
@@ -419,7 +421,7 @@ const Reports = () => {
       </div>
 
       {worstSubject && (
-        <GlassCard className="p-5 border-yellow-500/30 bg-yellow-500/5 relative overflow-hidden">
+        <GlassCard className="premium-list-card p-5 border-yellow-500/30 bg-yellow-500/[0.045] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 blur-[40px] -mr-16 -mt-16 rounded-full" />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-3 text-yellow-500">
@@ -440,7 +442,7 @@ const Reports = () => {
           <div className="w-1 h-4 bg-primary rounded-full" />
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Precisão de Respostas</h3>
         </div>
-        <GlassCard className="p-6 relative overflow-hidden" glow>
+        <GlassCard className="premium-list-card p-6 relative overflow-hidden" glow>
           <div className="h-64 flex items-center justify-center relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -497,7 +499,7 @@ const Reports = () => {
           <div className="w-1 h-4 bg-primary rounded-full" />
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Evolução Semanal</h3>
         </div>
-        <GlassCard className="p-6" glow>
+        <GlassCard className="premium-list-card p-6" glow>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={last7Days}>
@@ -548,7 +550,7 @@ const Reports = () => {
           <div className="w-1 h-4 bg-primary rounded-full" />
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Desempenho por Matéria</h3>
         </div>
-        <GlassCard className="p-6" glow>
+        <GlassCard className="premium-list-card p-6" glow>
           <div className="space-y-6">
             {subjectData.map((data, i) => (
               <div key={i} className="space-y-2">
@@ -586,7 +588,7 @@ const Reports = () => {
           <div className="w-1 h-4 bg-primary rounded-full" />
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Top 5 Assuntos</h3>
         </div>
-        <GlassCard className="p-6" glow>
+        <GlassCard className="premium-list-card p-6" glow>
           <div className="space-y-6">
             {topicData.map((data, i) => (
               <div key={i} className="space-y-2">
@@ -625,7 +627,7 @@ const Reports = () => {
             <div className="w-1 h-4 bg-primary rounded-full" />
             <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Distribuição de Dificuldade</h3>
           </div>
-          <GlassCard className="p-6 h-64" glow>
+          <GlassCard className="premium-list-card p-6 h-64" glow>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={difficultyData}>
                 <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} axisLine={false} tickLine={false} />
@@ -652,7 +654,7 @@ const Reports = () => {
             <div className="w-1 h-4 bg-primary rounded-full" />
             <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Heatmap de Estudos</h3>
           </div>
-          <GlassCard className="p-6" glow>
+          <GlassCard className="premium-list-card p-6" glow>
             <Heatmap data={heatmapData} />
             <div className="flex justify-between items-center mt-4 text-[8px] font-premium-mono text-text-secondary uppercase tracking-widest">
               <span>Menos Ativo</span>
@@ -676,12 +678,12 @@ const Reports = () => {
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Insights de Performance</h3>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <GlassCard className="p-4 border-primary/20 bg-primary/5" glow>
+          <GlassCard className="premium-stat-tile p-4 border-primary/20 bg-primary/[0.045]" glow>
             <p className="text-[8px] font-premium-mono text-primary uppercase mb-1">Melhor Matéria</p>
             <p className="text-lg font-bold">{bestSubject?.name || '---'}</p>
             <p className="text-[10px] text-primary/70 font-bold">{bestSubject?.percent || 0}% de acerto</p>
           </GlassCard>
-          <GlassCard className="p-4 border-red-500/20 bg-red-500/5" glow>
+          <GlassCard className="premium-stat-tile p-4 border-red-500/20 bg-red-500/[0.045]" glow>
             <p className="text-[8px] font-premium-mono text-red-500 uppercase mb-1">Precisa de Foco</p>
             <p className="text-lg font-bold">{worstSubject?.name || '---'}</p>
             <p className="text-[10px] text-red-500/70 font-bold">{worstSubject?.percent || 0}% de acerto</p>
@@ -689,7 +691,7 @@ const Reports = () => {
         </div>
         
         {worstSubject && (
-          <GlassCard className="p-5 border-white/10 mt-4">
+          <GlassCard className="premium-list-card p-5 border-white/10 mt-4">
             <div className="flex items-start gap-3">
               <div className="p-2 bg-primary/10 rounded-xl text-primary">
                 <MessageSquare size={16} />

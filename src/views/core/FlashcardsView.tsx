@@ -62,7 +62,7 @@ const FlashcardsView = () => {
     const progress = ((currentCardIdx) / cardsToReview.length) * 100;
 
     if (!card) return (
-      <div className="app-shell-premium pt-6 md:pt-8 h-screen flex flex-col items-center justify-center space-y-6">
+      <div className="app-shell-premium pt-6 md:pt-8 h-screen flex flex-col items-center justify-center premium-page-stack">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-[0_0_30px_rgba(0,255,148,0.2)]">
           <Check size={40} />
         </div>
@@ -75,7 +75,7 @@ const FlashcardsView = () => {
     );
 
     return (
-      <div className="app-shell-premium pt-6 md:pt-8 app-stack-premium h-screen flex flex-col bg-background/50">
+      <div className="app-shell-premium pt-6 md:pt-8 premium-page-stack h-screen flex flex-col bg-background/50">
         <header className="flex justify-between items-center">
           <button onClick={() => setView('list')} className="p-2 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
             <ChevronLeft size={20} />
@@ -125,8 +125,8 @@ const FlashcardsView = () => {
   }
 
   return (
-    <div className="app-shell-premium pt-6 md:pt-8 space-y-6 pb-28">
-      <div className="flex justify-between items-center relative z-10">
+    <div className="app-shell-premium pt-5 md:pt-8 premium-page-stack pb-28">
+      <div className="premium-page-hero flex justify-between items-center relative z-10">
         <Header 
           title={view === 'list' ? 'Meus Decks' : view === 'add-deck' ? 'Novo Deck' : view === 'add-card' ? 'Novo Card' : 'Estudo'}
           icon={Layers}
@@ -138,7 +138,7 @@ const FlashcardsView = () => {
           className="flex-1"
         />
         {view === 'list' && (
-          <button onClick={() => setView('add-deck')} className="p-3 bg-primary text-black rounded-xl shadow-[0_0_15px_rgba(0,255,148,0.3)] hover:scale-105 active:scale-95 transition-all">
+          <button onClick={() => setView('add-deck')} className="flex size-12 items-center justify-center rounded-2xl bg-primary text-black shadow-[0_12px_28px_rgba(var(--hub-primary-rgb),0.22)] hover:scale-105 active:scale-95 transition-all">
             <Plus size={20} strokeWidth={2} />
           </button>
         )}
@@ -146,7 +146,7 @@ const FlashcardsView = () => {
 
       {view === 'add-deck' && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-          <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl text-sm text-primary">
+          <div className="premium-list-card p-4 bg-primary/[0.045] border border-primary/20 rounded-2xl text-sm text-primary">
             Crie um novo conjunto de cards para organizar seus estudos por temas ou matérias.
           </div>
           <div className="space-y-2">
@@ -155,7 +155,7 @@ const FlashcardsView = () => {
               value={newDeckName}
               onChange={(e) => setNewDeckName(e.target.value)}
               placeholder="Ex: Biologia Molecular, Direito Civil..."
-              className="w-full bg-card border border-border rounded-2xl p-4 outline-none focus:border-primary transition-colors"
+              className="premium-input w-full rounded-2xl border p-4 text-white outline-none"
             />
           </div>
           <AnimatedButton onClick={() => {
@@ -191,7 +191,7 @@ const FlashcardsView = () => {
                 value={newCardSubject}
                 onChange={(e) => setNewCardSubject(e.target.value)}
                 placeholder="Ex: Mitocôndrias, Artigo 5º..."
-                className="w-full bg-card border border-border rounded-2xl p-4 outline-none focus:border-primary transition-colors"
+                className="premium-input w-full rounded-2xl border p-4 text-white outline-none"
               />
             </div>
 
@@ -202,7 +202,7 @@ const FlashcardsView = () => {
                 onChange={(e) => setNewCardFront(e.target.value)}
                 placeholder="O que você quer perguntar?"
                 rows={3}
-                className="w-full bg-card border border-border rounded-2xl p-4 outline-none focus:border-primary transition-colors resize-none"
+                className="premium-input w-full rounded-2xl border p-4 text-white outline-none resize-none"
               />
             </div>
 
@@ -213,7 +213,7 @@ const FlashcardsView = () => {
                 onChange={(e) => setNewCardBack(e.target.value)}
                 placeholder="Qual é a resposta correta?"
                 rows={3}
-                className="w-full bg-card border border-border rounded-2xl p-4 outline-none focus:border-primary transition-colors resize-none"
+                className="premium-input w-full rounded-2xl border p-4 text-white outline-none resize-none"
               />
             </div>
           </div>
@@ -256,7 +256,7 @@ const FlashcardsView = () => {
 
           return (
             <motion.div key={deck.id} variants={staggerItem}>
-            <GlassCard enterAnimation={false} className="space-y-4 group relative">
+            <GlassCard enterAnimation={false} className="premium-list-card space-y-4 group relative">
               <button 
                 onClick={() => {
                   if (confirm(`Excluir deck "${deck.name}" e todos os seus cards?`)) {
@@ -318,6 +318,21 @@ const FlashcardsView = () => {
         })}
       </motion.div>
 
+      {view === 'list' && decks.length === 0 && (
+        <GlassCard className="premium-empty-panel border-white/15">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-3xl border border-primary/20 bg-primary/10 text-primary">
+            <Layers size={26} />
+          </div>
+          <h3 className="text-xl font-premium-title italic text-white">Crie seu primeiro deck.</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
+            Organize revisoes por materia, gere cards com IA e mantenha a repeticao espacada em dia.
+          </p>
+          <AnimatedButton onClick={() => setView('add-deck')} className="mx-auto mt-5 min-h-12 text-xs font-black uppercase tracking-widest">
+            <Plus size={18} />
+            Novo deck
+          </AnimatedButton>
+        </GlassCard>
+      )}
       {view === 'ai-generate' && (
         <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
           <motion.div 
@@ -341,11 +356,11 @@ const FlashcardsView = () => {
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
                   placeholder="Ex: Mitocôndrias, Revolução Francesa..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 outline-none focus:border-primary transition-colors"
+                  className="premium-input w-full rounded-2xl border p-4 text-white outline-none"
                 />
               </div>
 
-              <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-[10px] text-primary leading-relaxed">
+              <div className="premium-list-card p-4 bg-primary/[0.045] border border-primary/20 rounded-2xl text-[10px] text-primary leading-relaxed">
                 O sistema irá analisar o tópico e gerar 5 flashcards otimizados para memorização de longo prazo.
               </div>
 

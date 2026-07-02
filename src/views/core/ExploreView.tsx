@@ -126,7 +126,7 @@ function SectionHeading({
 
 function MetricPill({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className='flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3.5 py-3 backdrop-blur-xl'>
+    <div className='premium-list-card flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.055] px-3.5 py-3 backdrop-blur-xl'>
       <div className='flex size-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary'>
         <Icon size={17} />
       </div>
@@ -282,14 +282,14 @@ const ExploreView: React.FC = () => {
   };
 
   return (
-    <div className='app-shell-premium relative isolate space-y-8 overflow-hidden pt-5 pb-32 animate-in fade-in duration-700 md:pt-8 md:pb-36'>
-      <div className='pointer-events-none absolute inset-x-[-20%] top-0 -z-10 h-[520px] bg-[radial-gradient(circle_at_25%_8%,rgba(var(--hub-primary-rgb),0.26),transparent_32%),radial-gradient(circle_at_80%_18%,rgba(59,130,246,0.18),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent_65%)]' />
+    <div className='app-shell-premium premium-page-stack relative isolate overflow-hidden pt-5 pb-32 animate-in fade-in duration-700 md:pt-8 md:pb-36'>
+      <div className='pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(var(--hub-primary-rgb),0.045)_34%,transparent_78%)]' />
 
       <motion.header
         initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
-        className='relative overflow-visible rounded-[32px] border border-white/10 bg-white/[0.045] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:p-6'
+        className='premium-page-hero relative overflow-visible p-4 sm:p-6'
       >
         <div className='pointer-events-none absolute inset-0 overflow-hidden rounded-[32px]'>
           <div className='absolute -right-20 -top-24 size-64 rounded-full bg-primary/20 blur-3xl' />
@@ -368,7 +368,7 @@ const ExploreView: React.FC = () => {
         </div>
       </motion.header>
 
-      <GlassCard className='border-primary/20 bg-primary/[0.04] p-0' glow>
+      <GlassCard className='premium-list-card border-primary/20 bg-primary/[0.04] p-0' glow>
         <AnimatePresence mode='wait'>
           {!sortResult ? (
             <motion.div
@@ -418,7 +418,7 @@ const ExploreView: React.FC = () => {
         />
 
         {weekHighlight.kind === 'empty' ? (
-          <GlassCard className='overflow-hidden border-dashed border-white/15 p-6 text-center'>
+          <GlassCard className='premium-empty-panel overflow-hidden border-dashed border-white/15 p-6 text-center'>
             <div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-3xl border border-primary/20 bg-primary/10 text-primary'>
               <Star size={26} />
             </div>
@@ -490,7 +490,7 @@ const ExploreView: React.FC = () => {
                 <GlassCard
                   enterAnimation={false}
                   onClick={() => handleAreaClick(sub.name)}
-                  className={cn('group min-h-[184px] overflow-hidden border-white/10 p-5 transition-all hover:border-white/25', skin.glow)}
+                  className={cn('premium-grid-card group min-h-[184px] overflow-hidden border-white/10 p-5 transition-all hover:border-white/25', skin.glow)}
                 >
                   <div className={cn('absolute -right-14 -top-16 size-44 rounded-full bg-gradient-to-br blur-2xl transition-opacity group-hover:opacity-90', skin.ring)} />
                   <div className='relative flex h-full flex-col justify-between gap-6'>
@@ -530,7 +530,7 @@ const ExploreView: React.FC = () => {
           icon={Wand2}
         />
 
-        <GlassCard className='border-primary/20 bg-primary/[0.035] p-5 sm:p-6'>
+        <GlassCard className='premium-list-card border-primary/20 bg-primary/[0.035] p-5 sm:p-6'>
           <div className='grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start'>
             <div className='space-y-4'>
               <div className='flex items-center gap-3 text-primary'>
@@ -572,7 +572,7 @@ const ExploreView: React.FC = () => {
           <motion.div className='grid gap-4 lg:grid-cols-2' variants={staggerContainer} initial='hidden' whileInView='show' viewport={{ once: true, margin: '-40px' }}>
             {aiTrails.map((trail) => (
               <motion.div key={trail.id} variants={staggerItem}>
-                <GlassCard enterAnimation={false} className='h-full border-primary/15 p-5'>
+                <GlassCard enterAnimation={false} className='premium-list-card h-full border-primary/15 p-5'>
                   <div className='flex h-full flex-col gap-4'>
                     <div className='flex items-start justify-between gap-4'>
                       <div className='flex min-w-0 items-start gap-3'>
@@ -632,7 +632,7 @@ const ExploreView: React.FC = () => {
         >
           {RECOMMENDED_TRAILS.map((trail) => (
             <motion.div key={trail.id} variants={staggerItem}>
-              <GlassCard enterAnimation={false} className='group h-full border-white/10 p-5 transition-all hover:border-primary/30'>
+              <GlassCard enterAnimation={false} className='premium-list-card group h-full border-white/10 p-5 transition-all hover:border-primary/30'>
                 <div className='flex h-full flex-col gap-4'>
                   <div className='flex items-start justify-between gap-4'>
                     <div className='flex min-w-0 items-start gap-3'>
@@ -692,7 +692,7 @@ const ExploreView: React.FC = () => {
                 variants={staggerItem}
                 onClick={() => handlePopularClick(item)}
                 whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                className='group min-h-[112px] rounded-[24px] border border-white/10 bg-white/[0.05] p-4 text-left shadow-lg backdrop-blur-xl transition-colors hover:border-primary/30 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black'
+                className='premium-grid-card group min-h-[112px] rounded-[22px] border border-white/10 bg-white/[0.05] p-4 text-left shadow-lg backdrop-blur-xl transition-colors hover:border-primary/30 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black'
               >
                 <div className='mb-4 flex items-center justify-between gap-3'>
                   <div className='flex size-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary'>

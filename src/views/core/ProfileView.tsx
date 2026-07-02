@@ -2,17 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { staggerContainer, staggerItem } from '../../lib/animations/variants';
 import { easings, springs } from '../../lib/animations/easings';
-import { 
-  Share2, 
-  Check, 
-  Edit3, 
-  Flame, 
-  Clock, 
-  BookOpen, 
-  Target, 
-  BarChart3, 
-  ChevronRight, 
-  Sparkles, 
+import {
+  Share2,
+  Check,
+  Edit3,
+  Flame,
+  Clock,
+  BookOpen,
+  Target,
+  BarChart3,
+  ChevronRight,
+  Sparkles,
   Bookmark,
   Camera,
   Upload,
@@ -31,11 +31,11 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { toast } from '../../store/useToastStore';
-import { 
-  AnimatedButton, 
-  GlassCard, 
-  Badge, 
-  Header 
+import {
+  AnimatedButton,
+  GlassCard,
+  Badge,
+  Header
 } from '../../components/UI';
 import {
   ResponsiveContainer,
@@ -101,22 +101,22 @@ const ProfileView = () => {
   const { user } = useAuth();
   const { isFree, isSupremo, plan: accessPlan } = useUserAccess();
   const reduceMotion = useReducedMotion() ?? false;
-  const { 
-    name, 
-    bio, 
-    profilePic, 
-    coverPic, 
-    level, 
-    streak, 
-    setName, 
-    setBio, 
-    setProfilePic, 
-    setCoverPic, 
-    history, 
-    sessions, 
+  const {
+    name,
+    bio,
+    profilePic,
+    coverPic,
+    level,
+    streak,
+    setName,
+    setBio,
+    setProfilePic,
+    setCoverPic,
+    history,
+    sessions,
     featureUsage,
-    setThemeColor, 
-    themeColor 
+    setThemeColor,
+    themeColor
   } = useStore();
   const { setShowPrompt, isInstalled } = usePWAInstall();
 
@@ -128,8 +128,8 @@ const ProfileView = () => {
   const stats = useMemo(() => {
     const totalHours = Math.round((sessions || []).reduce((acc, s) => acc + (s.duration || 0), 0) / 60);
     const questionsSolved = (history || []).length;
-    const accuracyRate = questionsSolved > 0 
-      ? Math.round((history || []).filter(h => h.isCorrect).length / questionsSolved * 100) 
+    const accuracyRate = questionsSolved > 0
+      ? Math.round((history || []).filter(h => h.isCorrect).length / questionsSolved * 100)
       : 0;
 
     return { totalHours, questionsSolved, accuracyRate };
@@ -164,9 +164,9 @@ const ProfileView = () => {
     };
 
     return Object.entries(featureUsage || {})
-      .map(([key, count]) => ({ 
-        label: featureLabels[key] || key, 
-        count 
+      .map(([key, count]) => ({
+        label: featureLabels[key] || key,
+        count
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
@@ -271,7 +271,7 @@ const ProfileView = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl min-w-0 pb-32">
+    <div className="mx-auto w-full max-w-6xl min-w-0 premium-page-stack pb-32">
       {/* Hidden share card for html2canvas */}
       <div className="fixed -left-[9999px] top-0">
         <div id="profile-share-card" className="w-[400px] p-8 bg-[#0a0a0a] border-2 border-[#00ff94]/20 rounded-[40px] space-y-6 relative overflow-hidden">
@@ -309,8 +309,8 @@ const ProfileView = () => {
       </div>
 
       {/* Cover Photo — proporção estável no mobile (aspect ratio), capa largura total no md+ */}
-      <div className="relative z-10 mb-14 w-full border-b border-white/10 bg-white/5 aspect-[5/2] max-h-[13rem] sm:mb-12 sm:aspect-auto sm:h-48 sm:max-h-none">
-        <Header 
+      <div className="premium-page-hero relative z-10 mb-14 w-full overflow-hidden border-white/10 bg-white/[0.045] aspect-[5/2] max-h-[13rem] sm:mb-12 sm:aspect-auto sm:h-48 sm:max-h-none">
+        <Header
           title=""
           onBack={goBack}
           className="absolute left-4 top-4 z-20 sm:left-6 sm:top-6"
@@ -335,10 +335,10 @@ const ProfileView = () => {
         <div className="absolute -bottom-9 left-1/2 z-20 -translate-x-1/2 sm:-bottom-10 sm:left-6 sm:translate-x-0">
           <div className="relative group">
             <div className="h-20 w-20 rounded-full border-4 border-background bg-card overflow-hidden sm:h-24 sm:w-24">
-              <img 
-                src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} 
-                alt="Profile" 
-                className="w-full h-full object-cover" 
+              <img
+                src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`}
+                alt="Profile"
+                className="w-full h-full object-cover"
               />
             </div>
             {isEditing && (
@@ -351,19 +351,19 @@ const ProfileView = () => {
         </div>
       </div>
 
-      <div className="app-shell-premium relative">
+      <div className="app-shell-premium relative premium-page-stack">
         {/* Action Buttons */}
-        <div className="flex justify-end pt-4 gap-2">
-          <button 
+        <div className="flex justify-end gap-2">
+          <button
             onClick={shareProfile}
-            className="p-2 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+            className="flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.1] transition-colors"
             title="Compartilhar Progresso"
           >
             <Share2 size={18} className="text-primary" />
           </button>
-          <button 
+          <button
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-            className="px-4 py-2 bg-white/5 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2"
+            className="min-h-11 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-white/[0.1] transition-colors flex items-center gap-2"
           >
             {isEditing ? <><Check size={14} /> Salvar</> : <><Edit3 size={14} /> Editar Perfil</>}
           </button>
@@ -408,13 +408,13 @@ const ProfileView = () => {
 
           {/* Plan Card */}
           {isFree && (
-            <GlassCard className="p-4 border-primary/30 bg-primary/5 flex items-center justify-between" glow>
+            <GlassCard className="premium-list-card p-4 border-primary/30 bg-primary/[0.045] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" glow>
               <div>
                 <p className="text-xs font-bold">Plano Free</p>
                 <p className="text-[10px] text-text-secondary">Acesse todos os recursos agora.</p>
               </div>
-              <AnimatedButton 
-                onClick={() => goTo('/premium')} 
+              <AnimatedButton
+                onClick={() => goTo('/premium')}
                 className="px-4 py-2 text-[10px] font-bold uppercase bg-primary text-black border-primary"
                 glow
               >
@@ -440,7 +440,7 @@ const ProfileView = () => {
               { icon: Target, color: 'text-purple-400', label: 'Precisão', value: `${stats.accuracyRate}%` },
             ].map(({ icon: Icon, iconProps, color, label, value }) => (
               <motion.div key={label} variants={staggerItem}>
-                <GlassCard enterAnimation={false} className="p-4 space-y-1" glow>
+                <GlassCard enterAnimation={false} className="premium-stat-tile p-4 space-y-1" glow>
                   <div className={`flex items-center gap-2 ${color}`}>
                     <Icon size={14} {...(iconProps ?? {})} />
                     <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">{label}</span>
@@ -459,7 +459,7 @@ const ProfileView = () => {
             >
               Atividade (7 dias)
             </h3>
-            <GlassCard className="p-4 flex flex-col gap-2 min-h-[12.5rem]">
+            <GlassCard className="premium-list-card p-4 flex flex-col gap-2 min-h-[12.5rem]">
               <div className="h-40 w-full min-h-[10rem] shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={activityData} margin={{ top: 8, right: 4, left: 4, bottom: 4 }}>
@@ -532,7 +532,7 @@ const ProfileView = () => {
               }
               whileTap={{ scale: reduceMotion ? 1 : 0.97 }}
               transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
-              className="w-full flex items-center justify-between p-4 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
+              className="premium-list-card w-full flex items-center justify-between p-4 rounded-2xl border border-primary/20 bg-primary/[0.045] hover:bg-primary/10 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/20 rounded-xl text-primary">
@@ -547,7 +547,7 @@ const ProfileView = () => {
           {/* Settings (from existing code) */}
           <div className="pt-6 space-y-3">
             <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Configurações</h3>
-            <GlassCard className="p-4 flex flex-col gap-4">
+            <GlassCard className="premium-list-card p-4 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/5 rounded-xl text-white">
@@ -577,10 +577,10 @@ const ProfileView = () => {
                 ))}
               </div>
             </GlassCard>
-            
+
             {!isInstalled && (
-              <GlassCard 
-                className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors" 
+              <GlassCard
+                className="premium-list-card p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => setShowPrompt(true)}
               >
                 <div className="flex items-center gap-3">
@@ -593,7 +593,7 @@ const ProfileView = () => {
               </GlassCard>
             )}
 
-            <GlassCard className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors" onClick={() => {
+            <GlassCard className="premium-list-card p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors" onClick={() => {
               const state = useStore.getState();
               const dataToExport = JSON.stringify(state, null, 2);
               const blob = new Blob([dataToExport], { type: 'application/json' });
@@ -612,7 +612,7 @@ const ProfileView = () => {
               </div>
               <ChevronRight size={16} className="text-white/20" />
             </GlassCard>
-            
+
             <div className="pt-6 space-y-4">
               <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">
                 Privacidade, legal e proteção de dados
@@ -626,7 +626,7 @@ const ProfileView = () => {
               >
                 <GlassCard
                   enterAnimation={false}
-                  className="p-5 md:p-6 border-[rgba(var(--hub-primary-rgb),0.22)] bg-[rgba(var(--hub-primary-rgb),0.06)]"
+                  className="premium-list-card p-5 md:p-6 border-[rgba(var(--hub-primary-rgb),0.22)] bg-[rgba(var(--hub-primary-rgb),0.055)]"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex gap-3">
@@ -716,7 +716,7 @@ const ProfileView = () => {
                 >
                   <GlassCard
                     enterAnimation={false}
-                    className="p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors text-left w-full"
+                    className="premium-list-card p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors text-left w-full"
                     onClick={() => {
                       if ('mailto' in item) {
                         window.location.href = item.mailto;

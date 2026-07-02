@@ -43,11 +43,11 @@ import { QuestionsLoadingSkeleton } from '../../components/shared/QuestionsLoadi
 import { QuestionsLoadError } from '../../components/shared/QuestionsLoadError';
 
 // UI Components + utils
-import { 
-  GlassCard, 
-  AnimatedButton, 
-  ProgressRing, 
-  NeonIcon, 
+import {
+  GlassCard,
+  AnimatedButton,
+  ProgressRing,
+  NeonIcon,
   Badge,
   IconTile,
   cn
@@ -125,15 +125,15 @@ const DashboardView = () => {
   return (
     <div className="relative animate-in fade-in duration-700">
       <AuroraBackground intensity="subtle" />
-      <div className="relative z-10 app-shell-premium pt-6 md:pt-8 app-stack-premium pb-32 md:pb-36">
+      <div className="relative z-10 app-shell-premium pt-5 md:pt-8 premium-page-stack pb-32 md:pb-36">
       {/* Mission Control Header */}
-      <header className="flex justify-between items-start">
+      <header className="premium-page-hero flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <span className="text-[11px] font-premium-mono font-bold text-primary uppercase tracking-[0.22em]">Painel Ativo</span>
           </div>
-          <h1 className="text-3xl font-premium-title italic leading-tight">
+          <h1 className="max-w-3xl text-4xl font-premium-title italic leading-[0.98] md:text-5xl">
             Olá, {name}<span className="text-primary font-normal not-italic ml-1">.</span>
           </h1>
           <div className="flex items-center gap-3 pt-1">
@@ -145,7 +145,7 @@ const DashboardView = () => {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-2">
           <button
             onClick={() => goTo('/estatisticas')}
             className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/40 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
@@ -156,7 +156,7 @@ const DashboardView = () => {
             <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} alt="Profile" className="w-12 h-12 object-cover rounded-2xl" referrerPolicy="no-referrer" />
             {isSupremo && (
               <span
-                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500/90 border border-amber-200/80 flex items-center justify-center text-[11px] shadow-lg animate-breathe-glow"
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500/100 border border-amber-200/100 flex items-center justify-center text-[11px] shadow-lg animate-breathe-glow"
                 title="Modo Supremo ativo"
               >
                 👑
@@ -173,9 +173,9 @@ const DashboardView = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
         >
-          <GlassCard 
-            glow 
-            className="p-5 border-primary/30 bg-primary/5 flex items-center justify-between cursor-pointer group"
+          <GlassCard
+            glow
+            className="premium-list-card p-5 border-primary/25 bg-primary/[0.045] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between cursor-pointer group"
             onClick={() => goTo('/premium')}
           >
             <div className="flex items-center gap-4">
@@ -202,7 +202,7 @@ const DashboardView = () => {
 
       {/* Daily Progress & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GlassCard className="p-6 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
+        <GlassCard className="premium-stat-tile p-6 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-primary">
               <Target size={16} />
@@ -238,11 +238,11 @@ const DashboardView = () => {
                 whileHover={reduceMotion ? { y: 0, scale: 1 } : { y: -3, scale: 1.04 }}
                 transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
                 onClick={() => goTo(action.path)}
-                className="w-full flex flex-col items-center gap-2 p-3 glass rounded-2xl border-white/5 hover:border-white/20 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="premium-grid-card w-full flex min-h-[7.25rem] flex-col items-center justify-center gap-2 p-3 glass rounded-[22px] border-white/10 hover:border-white/20 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
-                <NeonIcon 
-                  icon={action.icon as any} 
-                  color={action.color as any} 
+                <NeonIcon
+                  icon={action.icon as any}
+                  color={action.color as any}
                   size={22}
                   variant="outline"
                   animate="float"
@@ -342,7 +342,7 @@ const DashboardView = () => {
       )}
 
       {/* League Progress — gamificação local (XP Zustand), sem claim de ranking global */}
-      <GlassCard className="p-4 border-white/5 bg-black/20 flex items-center gap-4">
+      <GlassCard className="premium-list-card p-4 border-white/10 bg-black/20 flex items-center gap-4">
         <motion.div
           className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20"
           animate={reduceMotion ? { rotate: 0 } : { rotate: [0, -8, 8, 0] }}
@@ -390,7 +390,7 @@ const DashboardView = () => {
             <span className="text-[10px] font-bold text-primary uppercase tracking-[0.08em]">Foco Ativo</span>
           </div>
         </div>
-        <GlassCard className="p-4 border-primary/20 bg-primary/5 flex items-center gap-4">
+        <GlassCard className="premium-list-card p-4 border-primary/20 bg-primary/[0.045] flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
             <Users size={24} />
           </div>
@@ -411,13 +411,13 @@ const DashboardView = () => {
           </div>
           <button onClick={() => goTo('/estatisticas')} className="inline-flex items-center text-[10px] text-primary font-bold uppercase tracking-widest hover:underline min-h-11 px-2 active:scale-[0.98] active:brightness-110 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">Ver Detalhes</button>
         </div>
-        <GlassCard className="p-4 border-white/5 bg-black/20">
+        <GlassCard className="premium-list-card p-4 border-white/10 bg-black/20">
           <Heatmap data={heatmapData} />
         </GlassCard>
       </section>
 
       {/* Daily Motivation */}
-      <GlassCard className="p-6 bg-gradient-to-br from-primary/20 to-transparent border-primary/30 text-center space-y-4">
+      <GlassCard className="premium-list-card p-6 bg-gradient-to-br from-primary/12 to-transparent border-primary/25 text-center space-y-4">
         <Quote size={32} className="text-primary mx-auto opacity-50" />
         <div className="space-y-2">
           <p className="text-lg font-premium-title italic leading-tight">
@@ -428,8 +428,8 @@ const DashboardView = () => {
       </GlassCard>
 
       <div className="grid grid-cols-1 gap-4">
-        <GlassCard 
-          className="relative overflow-hidden cursor-pointer group p-6 border-primary/20 bg-primary/5" 
+        <GlassCard
+          className="premium-list-card relative overflow-hidden cursor-pointer group p-6 border-primary/20 bg-primary/[0.045]"
           onClick={() => goTo('/foco')}
           glow
         >
@@ -480,8 +480,8 @@ const DashboardView = () => {
           </section>
         )}
 
-        <GlassCard 
-          className="relative overflow-hidden cursor-pointer group p-6 border-orange-500/20 bg-orange-500/5" 
+        <GlassCard
+          className="premium-list-card relative overflow-hidden cursor-pointer group p-6 border-orange-500/20 bg-orange-500/[0.045]"
           onClick={() => goTo('/simulados?treino=estrategico')}
           glow
         >
@@ -511,7 +511,7 @@ const DashboardView = () => {
             <button onClick={() => goTo('/explorar')} className="inline-flex items-center text-[10px] text-primary font-bold uppercase tracking-widest hover:underline min-h-11 px-2 active:scale-[0.98] active:brightness-110 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">Explorar</button>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <GlassCard 
+            <GlassCard
               className="p-5 cursor-pointer hover:border-primary/40 transition-all group relative overflow-hidden"
               onClick={() => goTo('/metodos')}
               glow
@@ -523,7 +523,7 @@ const DashboardView = () => {
               <h4 className="text-sm font-bold mb-1">Métodos</h4>
               <p className="text-[10px] text-text-secondary font-medium uppercase tracking-tighter opacity-60">Técnicas Avançadas</p>
             </GlassCard>
-            <GlassCard 
+            <GlassCard
               className="p-5 cursor-pointer hover:border-primary/40 transition-all group relative overflow-hidden"
               onClick={() => goTo('/notas')}
               glow
@@ -539,8 +539,8 @@ const DashboardView = () => {
         </section>
 
         <div className="grid grid-cols-2 gap-4">
-          <GlassCard 
-            className="p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/5"
+          <GlassCard
+            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
             onClick={() => goTo('/questoes')}
           >
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/20 transition-colors border border-blue-500/10">
@@ -550,8 +550,8 @@ const DashboardView = () => {
             <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-50">Banco Real</p>
           </GlassCard>
 
-          <GlassCard 
-            className="p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/5"
+          <GlassCard
+            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
             onClick={() => goTo('/redacao')}
           >
             <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-5 group-hover:bg-purple-500/20 transition-colors border border-purple-500/10">
@@ -561,8 +561,8 @@ const DashboardView = () => {
             <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-50">Correção Guiada</p>
           </GlassCard>
 
-          <GlassCard 
-            className="p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/5"
+          <GlassCard
+            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
             onClick={() => goTo('/simulados')}
           >
             <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-5 group-hover:bg-orange-500/20 transition-colors border border-orange-500/10">
@@ -572,8 +572,8 @@ const DashboardView = () => {
             <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-50">Provas Completas</p>
           </GlassCard>
 
-          <GlassCard 
-            className="p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/5"
+          <GlassCard
+            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
             onClick={() => {
               useStore.setState({ showOnlyReviewLater: false });
               useStore.getState().setNavFilters({ filterStatus: 'wrong' });
@@ -667,7 +667,7 @@ const DashboardView = () => {
       )}
 
       {/* Daily Study Tip */}
-      <GlassCard className="p-4 border-white/5 bg-white/5 flex items-start gap-3">
+      <GlassCard className="premium-list-card p-4 border-white/10 bg-white/[0.04] flex items-start gap-3">
         <div className="p-2 bg-primary/10 rounded-lg text-primary">
           <Info size={16} />
         </div>
