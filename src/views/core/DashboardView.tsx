@@ -137,7 +137,8 @@ const DashboardView = () => {
   const todayStr = new Date().toISOString().split('T')[0];
   const todaySessions = sessions.filter(s => s.date === todayStr);
   const todayStudyMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
-  const goalProgress = Math.min(100, (todayStudyMinutes / dailyGoalMinutes) * 100);
+  const safeDailyGoalMinutes = Math.max(1, Number(dailyGoalMinutes) || 1);
+  const goalProgress = Math.min(100, Math.max(0, (todayStudyMinutes / safeDailyGoalMinutes) * 100));
 
   const getNextSession = () => {
     if (!routine) return null;
@@ -162,7 +163,8 @@ const DashboardView = () => {
   const dailyTip = studyTips[new Date().getDate() % studyTips.length];
   const todayForQuote = new Date();
   const localDayStart = new Date(todayForQuote.getFullYear(), todayForQuote.getMonth(), todayForQuote.getDate());
-  const dailyQuote = DAILY_QUOTES[Math.floor(localDayStart.getTime() / 86400000) % DAILY_QUOTES.length];
+  const dailyQuoteIndex = Math.floor(localDayStart.getTime() / 86400000) % DAILY_QUOTES.length;
+  const dailyQuote = DAILY_QUOTES[dailyQuoteIndex];
 
   // Heatmap data (last 30 days for dashboard)
   const heatmapData = history.reduce((acc: any[], h) => {
@@ -275,7 +277,7 @@ const DashboardView = () => {
               <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Meta Diária</span>
             </div>
             <div className="space-y-1">
-              <h3 className="text-2xl font-premium-title italic">{todayStudyMinutes} / {dailyGoalMinutes} min</h3>
+              <h3 className="text-2xl font-premium-title italic">{todayStudyMinutes} / {safeDailyGoalMinutes} min</h3>
               <p className="text-xs text-text-secondary">Você completou {Math.round(goalProgress)}% da sua meta hoje.</p>
             </div>
             <AnimatedButton onClick={() => goTo('/foco')} variant="primary" className="py-2 px-4 text-xs mt-2 font-bold uppercase tracking-widest gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
@@ -486,6 +488,9 @@ const DashboardView = () => {
       <GlassCard className="premium-list-card p-6 bg-gradient-to-br from-primary/12 to-transparent border-primary/25 text-center space-y-4">
         <Quote size={32} className="text-primary mx-auto opacity-50" />
         <div className="space-y-2">
+          <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.24em] text-primary/80">
+            Frase do dia {dailyQuoteIndex + 1}/60
+          </p>
           <p className="text-lg font-premium-title italic leading-tight">
             "{dailyQuote.text}"
           </p>

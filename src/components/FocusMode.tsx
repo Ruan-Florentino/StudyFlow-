@@ -163,7 +163,8 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
   };
 
   const modeDuration = mode === 'work' ? WORK_SECONDS : BREAK_SECONDS;
-  const progress = Math.min(100, Math.max(0, ((modeDuration - timeLeft) / modeDuration) * 100));
+  const safeTimeLeft = Number.isFinite(timeLeft) ? Math.max(0, Math.min(timeLeft, modeDuration)) : modeDuration;
+  const progress = Math.min(100, Math.max(0, ((modeDuration - safeTimeLeft) / modeDuration) * 100));
   const ringOffset = TIMER_CIRCUMFERENCE * (1 - progress / 100);
   const minutesFocused = Math.floor(focusScore / 60);
 
@@ -269,7 +270,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </svg>
         <div className="focus-timer-face absolute inset-8 z-20 flex flex-col items-center justify-center rounded-full border border-white/8 bg-black/28 text-center backdrop-blur-xl">
           <span className="text-[3.65rem] font-premium-mono font-extrabold leading-none tracking-[-0.03em] text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.22)] sm:text-6xl">
-            {formatTime(timeLeft)}
+            {formatTime(safeTimeLeft)}
           </span>
           <span className="mt-3 text-[10px] font-premium-mono font-bold uppercase tracking-[0.24em] text-white/42">
             {Math.round(progress)}% concluido

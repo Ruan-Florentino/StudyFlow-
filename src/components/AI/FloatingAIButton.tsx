@@ -336,10 +336,10 @@ export function FloatingAIButton() {
       const viewportWidth = window.innerWidth || 390;
       const progressY = clamp(snapshot.top / snapshot.maxTop, 0, 1);
       const progressX = clamp(snapshot.left / snapshot.maxLeft, 0, 1);
-      const upper = Math.max(66, viewportHeight * 0.09);
-      const lower = Math.max(upper + 300, viewportHeight - 112);
+      const upper = Math.max(54, viewportHeight * 0.075);
+      const lower = Math.max(upper + 330, viewportHeight - 64);
       const mappedY = upper + progressY * (lower - upper);
-      const directY = lastY + deltaTop * 2.55;
+      const directY = lastY + deltaTop * 4.6;
       const y = Math.round(clamp(Math.abs(deltaTop) > 0.05 ? directY : mappedY, upper, lower));
       const maxSideTravel = Math.min(210, viewportWidth * 0.54);
       const sideWave = Math.sin(progressY * Math.PI * 3.4) * Math.min(42, viewportWidth * 0.1);
