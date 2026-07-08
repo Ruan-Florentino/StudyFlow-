@@ -170,7 +170,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className={clsx(
-      'studyflow-focus-mode app-shell-premium pt-4 md:pt-8 flex flex-col items-center justify-start md:justify-center min-h-screen space-y-6 md:space-y-10 pb-40 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden',
+      'studyflow-focus-mode app-shell-premium pt-6 sm:pt-8 md:pt-8 flex flex-col items-center justify-start md:justify-center min-h-screen space-y-5 sm:space-y-6 md:space-y-10 pb-40 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden',
       zenMode && 'bg-black'
     )}>
       {zenMode && (
@@ -185,12 +185,12 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
       )}
 
       <Header
-        title="Foco Profundo"
-        subtitle={mode === 'work' ? 'SESSAO DE ESTUDO' : 'PAUSA CONTROLADA'}
+        title="Foco"
+        subtitle={mode === 'work' ? 'SESSAO' : 'PAUSA'}
         icon={mode === 'work' ? Zap : Coffee}
         color={mode === 'work' ? 'primary' : 'blue'}
         onBack={onBack}
-        className="w-full relative z-10"
+        className="w-full relative z-10 shrink-0"
         rightContent={
           <div className="flex items-center gap-2">
             <button

@@ -316,7 +316,7 @@ const ProfileView = () => {
       </div>
 
       {/* Cover Photo — proporção estável no mobile (aspect ratio), capa largura total no md+ */}
-      <div className="premium-page-hero relative z-10 mb-14 w-full overflow-visible border-white/10 bg-white/[0.045] aspect-[5/2] max-h-[13rem] sm:mb-12 sm:aspect-auto sm:h-48 sm:max-h-none">
+      <div className="studyflow-profile-hero premium-page-hero relative z-10 mb-16 min-h-[9.5rem] w-full overflow-visible border-white/10 bg-white/[0.045] aspect-[3/1] max-h-[13rem] sm:mb-14 sm:aspect-auto sm:h-52 sm:max-h-none">
         <Header
           title=""
           onBack={goBack}
@@ -325,8 +325,23 @@ const ProfileView = () => {
         {coverPic ? (
           <img src={coverPic} alt="Cover" className="absolute inset-0 h-full w-full rounded-[inherit] object-cover" />
         ) : (
-          <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-br from-primary/20 to-transparent" />
+          <div className="absolute inset-0 rounded-[inherit] bg-[radial-gradient(circle_at_18%_18%,rgba(var(--hub-primary-rgb),0.22),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(74,216,255,0.14),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.018)_42%,rgba(0,0,0,0.28))]" />
         )}
+        <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(rgba(var(--hub-primary-rgb),0.065)_1px,transparent_1px),linear-gradient(90deg,rgba(74,216,255,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-35 [mask-image:linear-gradient(180deg,#000,transparent_78%)]" />
+        <div className="pointer-events-none absolute inset-x-5 bottom-5 hidden items-end justify-between gap-5 sm:flex">
+          <div className="ml-28 min-w-0">
+            <span className="inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[9px] font-premium-mono font-black uppercase tracking-[0.2em] text-primary/90 backdrop-blur-xl">
+              Perfil StudyFlow
+            </span>
+            <p className="mt-2 truncate text-2xl font-premium-title font-black tracking-tight text-white/90">
+              {name || 'Estudante'}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/[0.24] px-4 py-3 text-right backdrop-blur-xl">
+            <p className="text-[9px] font-premium-mono font-bold uppercase tracking-[0.2em] text-white/45">Nivel</p>
+            <p className="font-premium-mono text-xl font-black text-white">{level}</p>
+          </div>
+        </div>
 
         {isEditing && (
           <label className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/40 opacity-100 transition-opacity md:opacity-0 md:hover:opacity-100">
@@ -339,9 +354,9 @@ const ProfileView = () => {
         )}
 
         {/* Profile Picture — centralizado no mobile, alinhado à esquerda no sm+ */}
-        <div className="absolute -bottom-9 left-1/2 z-20 -translate-x-1/2 sm:-bottom-10 sm:left-6 sm:translate-x-0">
+        <div className="absolute -bottom-10 left-1/2 z-20 -translate-x-1/2 sm:-bottom-12 sm:left-6 sm:translate-x-0">
           <div className="relative group">
-            <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-background bg-card shadow-[0_18px_40px_rgba(0,0,0,0.38)] ring-1 ring-white/15 sm:h-24 sm:w-24">
+            <div className="profile-avatar-shell h-20 w-20 overflow-hidden rounded-full border-4 border-background bg-card shadow-[0_18px_40px_rgba(0,0,0,0.38)] ring-1 ring-white/15 sm:h-24 sm:w-24">
               <img
                 src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`}
                 alt="Profile"
@@ -360,7 +375,7 @@ const ProfileView = () => {
 
       <div className="app-shell-premium relative premium-page-stack">
         {/* Action Buttons */}
-        <div className="flex justify-end gap-2">
+        <div className="-mt-2 flex justify-end gap-2 sm:-mt-3">
           <button
             onClick={shareProfile}
             className="flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.1] transition-colors"

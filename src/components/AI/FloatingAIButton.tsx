@@ -57,35 +57,35 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
           <stop offset="1" stopColor="#020806" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="athena-body-premium" x1="30" x2="77" y1="13" y2="96" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#f1dec0" />
-          <stop offset="0.18" stopColor="#9a7656" />
-          <stop offset="0.46" stopColor="#4c3425" />
-          <stop offset="0.76" stopColor="#17211b" />
-          <stop offset="1" stopColor="#060706" />
+          <stop offset="0" stopColor="#eefcff" />
+          <stop offset="0.16" stopColor="#8fc6d7" />
+          <stop offset="0.38" stopColor="#6b4a35" />
+          <stop offset="0.7" stopColor="#1b2d35" />
+          <stop offset="1" stopColor="#030608" />
         </linearGradient>
         <linearGradient id="athena-body-side" x1="15" x2="94" y1="23" y2="78" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#251b14" />
-          <stop offset="0.42" stopColor="#75583f" />
-          <stop offset="0.74" stopColor="#193027" />
-          <stop offset="1" stopColor="#070908" />
+          <stop offset="0" stopColor="#141b20" />
+          <stop offset="0.34" stopColor="#6f523c" />
+          <stop offset="0.68" stopColor="#214759" />
+          <stop offset="1" stopColor="#06080a" />
         </linearGradient>
         <linearGradient id="athena-face-premium" x1="24" x2="86" y1="28" y2="61" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#fff8e8" />
-          <stop offset="0.36" stopColor="#f3dfbd" />
-          <stop offset="0.68" stopColor="#d9fff2" />
-          <stop offset="1" stopColor="#40e6b1" />
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.32" stopColor="#d8f7ff" />
+          <stop offset="0.68" stopColor="#73f7ff" />
+          <stop offset="1" stopColor="#12b7c8" />
         </linearGradient>
         <linearGradient id="athena-feather-stroke" x1="16" x2="94" y1="36" y2="82" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#d9fff1" stopOpacity="0.8" />
-          <stop offset="0.44" stopColor="#46f1b9" stopOpacity="0.46" />
-          <stop offset="1" stopColor="#02100c" stopOpacity="0.62" />
+          <stop offset="0" stopColor="#e7fbff" stopOpacity="0.86" />
+          <stop offset="0.46" stopColor="#46d9ff" stopOpacity="0.52" />
+          <stop offset="1" stopColor="#021019" stopOpacity="0.68" />
         </linearGradient>
         <radialGradient id="athena-eye-premium" cx="46%" cy="40%" r="64%">
           <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.22" stopColor="#d9fff3" />
-          <stop offset="0.46" stopColor="#51f2bf" />
-          <stop offset="0.72" stopColor="#0c8f68" />
-          <stop offset="1" stopColor="#04251d" />
+          <stop offset="0.2" stopColor="#c9fbff" />
+          <stop offset="0.42" stopColor="#57e7ff" />
+          <stop offset="0.68" stopColor="#1686ff" />
+          <stop offset="1" stopColor="#03182f" />
         </radialGradient>
         <linearGradient id="athena-beak-premium" x1="51" x2="60" y1="48" y2="61" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#ffe7ae" />
@@ -93,12 +93,23 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
           <stop offset="1" stopColor="#7c3f18" />
         </linearGradient>
         <linearGradient id="athena-chest-plume" x1="37" x2="75" y1="58" y2="89" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#f0d8b6" stopOpacity="0.72" />
-          <stop offset="0.42" stopColor="#7f5f43" stopOpacity="0.52" />
-          <stop offset="1" stopColor="#06100d" stopOpacity="0.18" />
+          <stop offset="0" stopColor="#d8fbff" stopOpacity="0.74" />
+          <stop offset="0.46" stopColor="#7f6046" stopOpacity="0.54" />
+          <stop offset="1" stopColor="#041018" stopOpacity="0.18" />
+        </linearGradient>
+        <linearGradient id="athena-tech-cyan" x1="42" x2="72" y1="58" y2="86" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#e7fbff" />
+          <stop offset="0.42" stopColor="#3ee7ff" />
+          <stop offset="1" stopColor="#1377ff" />
+        </linearGradient>
+        <linearGradient id="athena-shield-glass" x1="43" x2="72" y1="58" y2="87" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#bdfcff" stopOpacity="0.34" />
+          <stop offset="0.48" stopColor="#02d4ff" stopOpacity="0.18" />
+          <stop offset="1" stopColor="#071422" stopOpacity="0.56" />
         </linearGradient>
         <filter id="athena-soft-glow" x="-55%" y="-55%" width="210%" height="210%">
-          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#00e88f" floodOpacity="0.2" />
+          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#41dfff" floodOpacity="0.24" />
+          <feDropShadow dx="0" dy="0" stdDeviation="2.8" floodColor="#00e88f" floodOpacity="0.14" />
           <feDropShadow dx="0" dy="13" stdDeviation="12" floodColor="#020807" floodOpacity="0.66" />
         </filter>
         <filter id="athena-eye-glow" x="-80%" y="-80%" width="260%" height="260%">
@@ -106,7 +117,7 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
           <feColorMatrix
             in="blur"
             result="glow"
-            values="0 0 0 0 0.06  0 0 0 0 0.98  0 0 0 0 0.64  0 0 0 0.7 0"
+            values="0 0 0 0 0.08  0 0 0 0 0.78  0 0 0 0 1  0 0 0 0.76 0"
           />
           <feMerge>
             <feMergeNode in="glow" />
@@ -187,14 +198,28 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
           strokeWidth="1.15"
         />
         <path d="M37.5 31.8c5.6-5.1 12.1-4.7 18.5 1.8 6.4-6.5 12.9-6.9 18.5-1.8" fill="none" stroke="rgba(255,255,255,0.38)" strokeLinecap="round" strokeWidth="1.35" />
+        <path d="M33.8 15.6c3.9 4.7 8.3 7.5 13.1 8.4" fill="none" stroke="rgba(227,251,255,0.62)" strokeLinecap="round" strokeWidth="1.35" />
+        <path d="M78.2 15.6c-3.9 4.7-8.3 7.5-13.1 8.4" fill="none" stroke="rgba(227,251,255,0.62)" strokeLinecap="round" strokeWidth="1.35" />
         <path d="M39.4 60.4c4.9 4 10.4 5.9 16.6 5.9s11.7-1.9 16.6-5.9c-1.2 15.9-7.1 25.8-16.6 25.8S40.6 76.3 39.4 60.4Z" fill="url(#athena-chest-plume)" filter="url(#athena-feather-depth)" opacity="0.88" />
+        <g opacity="0.94" filter="url(#athena-feather-depth)">
+          <path
+            d="M44.8 60.9c3.8 1 7.6 1.5 11.2 1.5s7.4-.5 11.2-1.5c-.4 9.6-4.1 16.2-11.2 20.1-7.1-3.9-10.8-10.5-11.2-20.1Z"
+            fill="url(#athena-shield-glass)"
+            stroke="url(#athena-tech-cyan)"
+            strokeWidth="1.2"
+          />
+          <path d="M48.9 65.8c2.7.8 5 1.2 7.1 1.2s4.4-.4 7.1-1.2" fill="none" stroke="rgba(231,251,255,0.54)" strokeLinecap="round" strokeWidth="0.95" />
+          <path d="M49.8 72.3 54.3 76l8.4-10.2" fill="none" stroke="#7df5ff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" />
+          <circle cx="45.1" cy="65.2" r="1" fill="#72f7ff" opacity="0.76" />
+          <circle cx="66.9" cy="65.2" r="1" fill="#72f7ff" opacity="0.76" />
+        </g>
         <g opacity="0.72" filter="url(#athena-feather-depth)">
           <path d="M43 65.4c3.7 2.8 8 4.2 13 4.2s9.3-1.4 13-4.2" fill="none" stroke="rgba(255,238,204,0.28)" strokeLinecap="round" strokeWidth="1.2" />
           <path d="M45.8 71.3c3 2.1 6.4 3.1 10.2 3.1s7.2-1 10.2-3.1" fill="none" stroke="rgba(255,255,255,0.18)" strokeLinecap="round" strokeWidth="1.05" />
           <path d="M49.5 77.1c2 1.2 4.2 1.8 6.5 1.8s4.5-.6 6.5-1.8" fill="none" stroke="rgba(0,232,143,0.18)" strokeLinecap="round" strokeWidth="1" />
         </g>
-        <path d="M37.6 39.1c4.3-3.8 9.3-4.3 14.9-1.3" fill="none" stroke="rgba(48,28,15,0.52)" strokeLinecap="round" strokeWidth="2.1" />
-        <path d="M74.4 39.1c-4.3-3.8-9.3-4.3-14.9-1.3" fill="none" stroke="rgba(48,28,15,0.52)" strokeLinecap="round" strokeWidth="2.1" />
+        <path d="M37.6 39.1c4.3-3.8 9.3-4.3 14.9-1.3" fill="none" stroke="rgba(6,18,25,0.64)" strokeLinecap="round" strokeWidth="2.1" />
+        <path d="M74.4 39.1c-4.3-3.8-9.3-4.3-14.9-1.3" fill="none" stroke="rgba(6,18,25,0.64)" strokeLinecap="round" strokeWidth="2.1" />
         <path d="M39.5 68.8c4 3.3 9.4 5 16.5 5s12.5-1.7 16.5-5" fill="none" stroke="rgba(221,255,242,0.62)" strokeLinecap="round" strokeWidth="1.8" />
         <path d="M42 62.8c3.7 2.2 8.4 3.4 14 3.4s10.3-1.2 14-3.4" fill="none" stroke="rgba(8,19,15,0.28)" strokeLinecap="round" strokeWidth="1.4" />
         <path d="M48.1 73.8c1.9 1 4.5 1.5 7.9 1.5s6-.5 7.9-1.5" fill="none" stroke="rgba(255,255,255,0.18)" strokeLinecap="round" strokeWidth="1.2" />
@@ -217,10 +242,10 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
       </motion.g>
 
       <g filter="url(#athena-eye-glow)">
-        <ellipse cx="45.1" cy="45.4" rx="10" ry="10.7" fill="#10130f" stroke="rgba(255,240,211,0.44)" strokeWidth="1.15" />
-        <ellipse cx="66.9" cy="45.4" rx="10" ry="10.7" fill="#10130f" stroke="rgba(255,240,211,0.44)" strokeWidth="1.15" />
-        <ellipse cx="45.1" cy="45.4" rx="7.3" ry="7.9" fill="rgba(0,232,143,0.18)" />
-        <ellipse cx="66.9" cy="45.4" rx="7.3" ry="7.9" fill="rgba(0,232,143,0.18)" />
+        <ellipse cx="45.1" cy="45.4" rx="10" ry="10.7" fill="#06131c" stroke="rgba(196,247,255,0.58)" strokeWidth="1.15" />
+        <ellipse cx="66.9" cy="45.4" rx="10" ry="10.7" fill="#06131c" stroke="rgba(196,247,255,0.58)" strokeWidth="1.15" />
+        <ellipse cx="45.1" cy="45.4" rx="7.3" ry="7.9" fill="rgba(0,191,255,0.22)" />
+        <ellipse cx="66.9" cy="45.4" rx="7.3" ry="7.9" fill="rgba(0,191,255,0.22)" />
         {blinking ? (
           <>
             <path d="M38.7 45.2h12.8" stroke="#d7fff1" strokeLinecap="round" strokeWidth="2.8" />
