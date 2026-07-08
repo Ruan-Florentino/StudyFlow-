@@ -268,11 +268,11 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
             transition={{ duration: 0.35, ease: 'easeOut' }}
           />
         </svg>
-        <div className="focus-timer-face absolute inset-8 z-20 flex flex-col items-center justify-center rounded-full border border-white/8 bg-black/28 text-center backdrop-blur-xl">
-          <span className="text-[3.65rem] font-premium-mono font-extrabold leading-none tracking-[-0.03em] text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.22)] sm:text-6xl">
+        <div className="focus-timer-face absolute inset-0 z-20 flex flex-col items-center justify-center text-center">
+          <span className="focus-timer-time text-[3.65rem] font-premium-mono font-extrabold leading-none tracking-[-0.03em] text-white sm:text-6xl">
             {formatTime(safeTimeLeft)}
           </span>
-          <span className="mt-3 text-[10px] font-premium-mono font-bold uppercase tracking-[0.24em] text-white/42">
+          <span className="focus-timer-progress mt-3 text-[10px] font-premium-mono font-bold uppercase tracking-[0.24em] text-white/42">
             {Math.round(progress)}% concluido
           </span>
         </div>
