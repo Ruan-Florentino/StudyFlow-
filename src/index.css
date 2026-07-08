@@ -1904,3 +1904,195 @@ select:focus {
     transition-duration: 1ms !important;
   }
 }
+/* StudyFlow T. aesthetic refinement: owl, focus timer and premium polish. */
+:root {
+  --studyflow-warm: #F0D8B6;
+  --studyflow-ink: #050505;
+  --studyflow-cyan-soft: rgba(74, 216, 255, 0.1);
+  --studyflow-amber-soft: rgba(240, 162, 58, 0.12);
+}
+
+.studyflow-main-surface {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent 18rem),
+    linear-gradient(90deg, rgba(var(--hub-primary-rgb), 0.018), transparent 28%, transparent 72%, rgba(74, 216, 255, 0.018));
+  scroll-behavior: smooth;
+}
+
+.studyflow-app-frame::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(var(--hub-primary-rgb), 0.045), transparent 12%, transparent 88%, rgba(74, 216, 255, 0.035)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 20%);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+
+.studyflow-app-frame > :not(.studyflow-hud-grid):not(.studyflow-edge-rail):not(.studyflow-edge-rail-left):not(.studyflow-edge-rail-right) {
+  position: relative;
+}
+
+.premium-page-stack {
+  animation: studyflow-page-rise 360ms var(--ease-smooth-out) both;
+}
+
+.premium-page-stack :where(h1, h2, h3) {
+  letter-spacing: -0.01em;
+}
+
+.premium-grid-card,
+.premium-list-card,
+.liquid-glass {
+  outline: 1px solid rgba(255, 255, 255, 0.018);
+  outline-offset: -1px;
+}
+
+.premium-grid-card::after,
+.premium-list-card::after,
+.liquid-glass::after {
+  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.1) 44%, transparent 55%);
+  opacity: 0.13;
+}
+
+:where(.premium-grid-card, .premium-list-card, .liquid-glass) :where(.text-text-secondary, .text-white\/60, .text-white\/55) {
+  color: rgba(228, 235, 232, 0.66);
+}
+
+.bottom-nav-dock,
+.studyflow-nav-dock {
+  outline: 1px solid rgba(255, 255, 255, 0.035);
+  outline-offset: -3px;
+}
+
+.athena-floating-button {
+  transform-origin: 78% 50%;
+  touch-action: manipulation;
+  filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.4));
+}
+
+.athena-floating-button::before {
+  content: "";
+  position: absolute;
+  inset: 1.04rem;
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    linear-gradient(150deg, rgba(255, 248, 232, 0.18), rgba(var(--hub-primary-rgb), 0.12) 44%, rgba(74, 216, 255, 0.055)),
+    rgba(5, 5, 5, 0.16);
+  border: 1px solid rgba(255, 244, 218, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 16px 34px rgba(0, 0, 0, 0.36),
+    0 0 32px rgba(var(--hub-primary-rgb), 0.12);
+  backdrop-filter: blur(16px) saturate(150%);
+}
+
+.athena-owl-shell {
+  overflow: visible;
+}
+
+.athena-owl-shell::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 7%;
+  height: 12%;
+  border-radius: 999px;
+  pointer-events: none;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.42), transparent 70%);
+  filter: blur(6px);
+  opacity: 0.48;
+  transform: translateY(5px);
+}
+
+.athena-floating-button:hover .athena-owl-shell {
+  filter: drop-shadow(0 0 28px rgba(var(--hub-primary-rgb), 0.28));
+}
+
+.studyflow-focus-mode {
+  gap: clamp(1.5rem, 4vh, 2.75rem);
+}
+
+.focus-timer-orb {
+  max-width: min(18rem, 74vw);
+  max-height: min(18rem, 74vw);
+}
+
+.focus-timer-orb::before {
+  background:
+    radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.06), transparent 38%),
+    radial-gradient(circle, rgba(var(--hub-primary-rgb), 0.13), transparent 62%);
+  box-shadow:
+    inset 0 0 30px rgba(var(--hub-primary-rgb), 0.055),
+    0 0 46px rgba(var(--hub-primary-rgb), 0.11);
+}
+
+.focus-timer-face {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -18px 40px rgba(0, 0, 0, 0.24),
+    0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.focus-control-button,
+.focus-primary-button {
+  transform: translateZ(0);
+  will-change: transform, border-color, box-shadow;
+}
+
+.focus-control-button:hover,
+.focus-primary-button:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.focus-control-button:active,
+.focus-primary-button:active {
+  transform: scale(0.98);
+}
+
+.studyflow-question-option,
+.athena-message-card,
+.athena-input-shell,
+.premium-page-hero {
+  outline: 1px solid rgba(255, 255, 255, 0.018);
+  outline-offset: -1px;
+}
+
+@keyframes studyflow-page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.996);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 767px) {
+  .studyflow-main-surface {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.016), transparent 16rem),
+      linear-gradient(90deg, rgba(var(--hub-primary-rgb), 0.025), transparent 30%, transparent 70%, rgba(74, 216, 255, 0.02));
+  }
+
+  .athena-floating-button {
+    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.42));
+  }
+
+  .focus-timer-face span:first-child {
+    font-size: clamp(3rem, 14vw, 3.65rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-page-stack {
+    animation: none;
+  }
+}
+/* StudyFlow T. aesthetic refinement end */

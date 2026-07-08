@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ChevronLeft, Play, Pause, RotateCcw, Volume2, VolumeX, Coffee, Brain, Zap } from 'lucide-react';
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Coffee, Zap } from 'lucide-react';
 import { useStore } from '../store';
 import { useUserStore } from '../store/useUserStore';
 import { recordStudySession } from '../lib/persistence';
@@ -9,96 +9,117 @@ import clsx from 'clsx';
 import { playSuccessSound, triggerConfetti } from '../lib/studyUtils';
 import { playInteractionFeedback } from '../lib/feedback';
 
+const WORK_SECONDS = 25 * 60;
+const BREAK_SECONDS = 5 * 60;
+const TIMER_RADIUS = 136;
+const TIMER_CIRCUMFERENCE = 2 * Math.PI * TIMER_RADIUS;
+
 export const FocusMode = ({ onBack }: { onBack: () => void }) => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState(WORK_SECONDS);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<'work' | 'break'>('work');
-  const [sessionGoal, setSessionGoal] = useState(4);
+  const [sessionGoal] = useState(4);
   const [currentSession, setCurrentSession] = useState(1);
   const [ambientSound, setAmbientSound] = useState(false);
   const [zenMode, setZenMode] = useState(false);
   const [focusScore, setFocusScore] = useState(0);
-  const { toggleAppBlocker, isAppBlockerActive, themeColor, addXP, neuralSync, updateNeuralSync } = useStore();
+  const { toggleAppBlocker, isAppBlockerActive, themeColor, addXP } = useStore();
   const userId = useUserStore((s) => s.userId);
-  
-  // Use ref to track the exact end time to prevent drift
+
   const endTimeRef = React.useRef<number | null>(null);
+  const focusSecondsRef = React.useRef(0);
+  const lastRemainingRef = React.useRef(WORK_SECONDS);
 
   useEffect(() => {
-    let animationFrameId: number;
-
-    const tick = () => {
-      if (!isActive || !endTimeRef.current) return;
-
-      const now = Date.now();
-      const remaining = Math.max(0, Math.ceil((endTimeRef.current - now) / 1000));
-
-      setTimeLeft(remaining);
-
-      if (remaining > 0) {
-        animationFrameId = requestAnimationFrame(tick);
-        if (mode === 'work' && isActive) {
-          // Increment focus score every second
-          setFocusScore(s => s + 1);
-          // Increment Neural Sync slowly (up to 100%)
-          if (Math.random() < 0.1 && neuralSync < 100) {
-            updateNeuralSync(Math.min(100, neuralSync + 1));
-          }
-        }
-      } else {
-        // Timer finished
-        setIsActive(false);
-        toggleAppBlocker(false);
-        endTimeRef.current = null;
-        playInteractionFeedback('complete');
-        playSuccessSound();
-        
-        if (mode === 'work') {
-          triggerConfetti();
-          const endedAt = new Date();
-          const elapsedSec = Math.max(1, focusScore);
-          const startedAt = new Date(endedAt.getTime() - elapsedSec * 1000);
-          void recordStudySession({
-            userId: userId || null,
-            startedAt,
-            endedAt,
-            activityType: 'focus',
-            subject: 'Sessão de Foco',
-          });
-          addXP(Math.floor(focusScore / 10)); // Bonus XP for focus score
-          setFocusScore(0);
-          updateNeuralSync(0); // Reset Neural Sync after work session
-          setMode('break');
-          setTimeLeft(5 * 60);
-        } else {
-          setMode('work');
-          setTimeLeft(25 * 60);
-          if (currentSession < sessionGoal) {
-            setCurrentSession(s => s + 1);
-          } else {
-            setCurrentSession(1);
-          }
-        }
-      }
-    };
-
-    if (isActive) {
-      if (!endTimeRef.current) {
-        endTimeRef.current = Date.now() + timeLeft * 1000;
-      }
-      animationFrameId = requestAnimationFrame(tick);
-    } else {
+    if (!isActive) {
       endTimeRef.current = null;
+      return undefined;
     }
 
-    return () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    if (!endTimeRef.current) {
+      endTimeRef.current = Date.now() + lastRemainingRef.current * 1000;
+    }
+
+    const tick = () => {
+      if (!endTimeRef.current) return;
+
+      const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+
+      if (remaining !== lastRemainingRef.current) {
+        const elapsedSeconds = Math.max(0, lastRemainingRef.current - remaining);
+        lastRemainingRef.current = remaining;
+        setTimeLeft(remaining);
+
+        if (mode === 'work' && elapsedSeconds > 0) {
+          focusSecondsRef.current += elapsedSeconds;
+          setFocusScore(focusSecondsRef.current);
+
+          if (Math.random() < 0.1) {
+            const store = useStore.getState();
+            if (store.neuralSync < 100) {
+              store.updateNeuralSync(Math.min(100, store.neuralSync + 1));
+            }
+          }
+        }
+      }
+
+      if (remaining > 0) return;
+
+      setIsActive(false);
+      toggleAppBlocker(false);
+      endTimeRef.current = null;
+      playInteractionFeedback('complete');
+      playSuccessSound();
+
+      if (mode === 'work') {
+        triggerConfetti();
+        const endedAt = new Date();
+        const elapsedSec = Math.max(1, focusSecondsRef.current);
+        const startedAt = new Date(endedAt.getTime() - elapsedSec * 1000);
+
+        void recordStudySession({
+          userId: userId || null,
+          startedAt,
+          endedAt,
+          activityType: 'focus',
+          subject: 'Sessao de Foco',
+        });
+
+        addXP(Math.floor(focusSecondsRef.current / 10));
+        focusSecondsRef.current = 0;
+        setFocusScore(0);
+        useStore.getState().updateNeuralSync(0);
+        setMode('break');
+        lastRemainingRef.current = BREAK_SECONDS;
+        setTimeLeft(BREAK_SECONDS);
+      } else {
+        setMode('work');
+        lastRemainingRef.current = WORK_SECONDS;
+        setTimeLeft(WORK_SECONDS);
+        setCurrentSession((session) => (session < sessionGoal ? session + 1 : 1));
+      }
     };
-  }, [isActive, mode, userId, toggleAppBlocker, currentSession, sessionGoal, timeLeft, neuralSync, updateNeuralSync]);
+
+    const intervalId = window.setInterval(tick, 250);
+    tick();
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [addXP, currentSession, isActive, mode, sessionGoal, toggleAppBlocker, userId]);
 
   const handleToggle = () => {
     const newActive = !isActive;
     playInteractionFeedback(newActive ? 'focusStart' : 'focusPause');
+
+    if (newActive) {
+      lastRemainingRef.current = timeLeft;
+      if (mode === 'work' && timeLeft === WORK_SECONDS) {
+        focusSecondsRef.current = 0;
+        setFocusScore(0);
+      }
+    }
+
     setIsActive(newActive);
     if (mode === 'work') {
       toggleAppBlocker(newActive);
@@ -110,8 +131,12 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
 
   const resetTimer = () => {
     playInteractionFeedback('tap');
+    endTimeRef.current = null;
+    focusSecondsRef.current = 0;
+    setFocusScore(0);
+    lastRemainingRef.current = mode === 'work' ? WORK_SECONDS : BREAK_SECONDS;
     setIsActive(false);
-    setTimeLeft(mode === 'work' ? 25 * 60 : 5 * 60);
+    setTimeLeft(mode === 'work' ? WORK_SECONDS : BREAK_SECONDS);
     toggleAppBlocker(false);
   };
 
@@ -121,48 +146,46 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progress = mode === 'work' 
-    ? ((25 * 60 - timeLeft) / (25 * 60)) * 100 
-    : ((5 * 60 - timeLeft) / (5 * 60)) * 100;
+  const modeDuration = mode === 'work' ? WORK_SECONDS : BREAK_SECONDS;
+  const progress = Math.min(100, Math.max(0, ((modeDuration - timeLeft) / modeDuration) * 100));
+  const ringOffset = TIMER_CIRCUMFERENCE * (1 - progress / 100);
+  const minutesFocused = Math.floor(focusScore / 60);
 
   return (
     <div className={clsx(
-      "studyflow-focus-mode app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-screen space-y-12 pb-32 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden",
-      zenMode && "bg-black"
+      'studyflow-focus-mode app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-screen space-y-10 pb-32 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden',
+      zenMode && 'bg-black'
     )}>
       {zenMode && (
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-black opacity-30" />
-          <motion.div 
-            animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3]
-            }}
+          <motion.div
+            animate={{ scale: [1, 1.12, 1], opacity: [0.26, 0.42, 0.26] }}
             transition={{ duration: 10, repeat: Infinity }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px]"
+            className="absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[100px]"
           />
         </div>
       )}
 
-      <Header 
-        title="Foco Profundo" 
-        subtitle="ESTADO ZEN"
-        icon={mode === 'work' ? Zap : Coffee} 
+      <Header
+        title="Foco Profundo"
+        subtitle={mode === 'work' ? 'SESSAO DE ESTUDO' : 'PAUSA CONTROLADA'}
+        icon={mode === 'work' ? Zap : Coffee}
         color={mode === 'work' ? 'primary' : 'blue'}
         onBack={onBack}
         className="w-full relative z-10"
         rightContent={
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={() => { playInteractionFeedback('soft'); setZenMode(!zenMode); }}
               className={cn(
-                "px-3 py-1 rounded-full text-[10px] font-premium-mono font-bold uppercase tracking-widest border transition-all",
-                zenMode ? "bg-primary text-black border-primary shadow-[0_0_10px_rgba(0,232,143,0.3)]" : "bg-white/5 border-white/10 text-text-secondary hover:bg-white/10"
+                'px-3 py-1 rounded-full text-[10px] font-premium-mono font-bold uppercase tracking-widest border transition-all',
+                zenMode ? 'bg-primary text-black border-primary shadow-[0_0_10px_rgba(0,232,143,0.3)]' : 'bg-white/5 border-white/10 text-text-secondary hover:bg-white/10'
               )}
             >
-              Zen Mode
+              Zen
             </button>
-            <Badge variant={isAppBlockerActive ? 'primary' : 'secondary'} className={cn(isAppBlockerActive && "shadow-[0_0_10px_rgba(0,232,143,0.3)]")}>
+            <Badge variant={isAppBlockerActive ? 'primary' : 'secondary'} className={cn(isAppBlockerActive && 'shadow-[0_0_10px_rgba(0,232,143,0.3)]')}>
               {isAppBlockerActive ? 'Blocker ON' : 'Blocker OFF'}
             </Badge>
           </div>
@@ -170,42 +193,44 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
       />
 
       {ambientSound && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-          <iframe 
-            width="100%" 
-            height="180" 
-            src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&controls=0&showinfo=0&rel=0&loop=1" 
-            title="Lofi Girl" 
-            frameBorder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+          <iframe
+            width="100%"
+            height="180"
+            src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&controls=0&showinfo=0&rel=0&loop=1"
+            title="Lofi Girl"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="pointer-events-none"
-          ></iframe>
+          />
         </motion.div>
       )}
 
-      <div className="text-center space-y-2 relative z-10">
-        <h2 className="text-4xl font-premium-title italic tracking-tight">{mode === 'work' ? 'FOCO PROFUNDO' : 'DESCANSO'}</h2>
-        <div className="flex items-center justify-center gap-4">
-          <p className="text-primary text-xs font-premium-mono font-bold uppercase tracking-[0.2em]">
-            Sessão {currentSession} de {sessionGoal}
-          </p>
+      <div className="relative z-10 text-center space-y-3">
+        <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1 text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-white/55">
+          <span className={clsx('h-1.5 w-1.5 rounded-full', isActive ? 'bg-primary shadow-[0_0_12px_rgba(var(--hub-primary-rgb),0.8)]' : 'bg-white/25')} />
+          {isActive ? 'Rodando' : 'Pronto'}
+        </div>
+        <h2 className="text-4xl font-premium-title tracking-tight sm:text-5xl">{mode === 'work' ? 'Foco Profundo' : 'Descanso'}</h2>
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-premium-mono font-bold uppercase tracking-[0.16em] text-text-secondary">
+          <span className="text-primary">Sessao {currentSession}/{sessionGoal}</span>
+          <span>{minutesFocused} min focados</span>
           {focusScore > 0 && (
-            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-1 text-yellow-500 text-[10px] font-premium-mono font-bold">
-              <Zap size={10} fill="currentColor" />
-              SCORE: {focusScore}
-            </motion.div>
+            <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-1 text-amber-300">
+              <Zap size={11} fill="currentColor" /> {focusScore}s
+            </motion.span>
           )}
         </div>
       </div>
 
-      <div className={clsx("focus-timer-orb relative flex items-center justify-center z-10", isActive && "is-running")}>
-        <div className="absolute w-72 h-72 rounded-full border-[2px] border-white/5" />
-        <svg width="288" height="288" className="transform -rotate-90 relative z-10">
+      <div className={clsx('focus-timer-orb relative z-10 flex h-72 w-72 shrink-0 items-center justify-center', isActive && 'is-running')}>
+        <div className="absolute inset-0 rounded-full border border-white/5" />
+        <svg width="288" height="288" className="absolute inset-0 z-10 -rotate-90 transform" aria-hidden>
           <circle
             cx="144"
             cy="144"
-            r="136"
+            r={TIMER_RADIUS}
             stroke="currentColor"
             strokeWidth="4"
             fill="transparent"
@@ -214,51 +239,56 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
           <motion.circle
             cx="144"
             cy="144"
-            r="136"
+            r={TIMER_RADIUS}
             stroke={themeColor}
             strokeWidth="8"
             fill="transparent"
-            strokeDasharray={2 * Math.PI * 136}
-            strokeDashoffset={2 * Math.PI * 136 * (1 - progress / 100)}
+            strokeDasharray={TIMER_CIRCUMFERENCE}
+            animate={{ strokeDashoffset: ringOffset }}
+            initial={false}
             strokeLinecap="round"
-            className="transition-all duration-1000 ease-linear drop-shadow-[0_0_15px_rgba(0,255,148,0.5)]"
+            className="drop-shadow-[0_0_15px_rgba(0,255,148,0.5)]"
+            transition={{ duration: 0.35, ease: 'easeOut' }}
           />
         </svg>
-        <div className="absolute flex flex-col items-center justify-center">
-          <span className="text-6xl font-premium-mono font-bold tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+        <div className="focus-timer-face absolute inset-8 z-20 flex flex-col items-center justify-center rounded-full border border-white/8 bg-black/28 text-center backdrop-blur-xl">
+          <span className="text-[3.65rem] font-premium-mono font-extrabold leading-none tracking-[-0.03em] text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.22)] sm:text-6xl">
             {formatTime(timeLeft)}
+          </span>
+          <span className="mt-3 text-[10px] font-premium-mono font-bold uppercase tracking-[0.24em] text-white/42">
+            {Math.round(progress)}% concluido
           </span>
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-6 relative z-10 w-full max-w-sm">
-        <div className="flex items-center justify-between w-full gap-4">
-          <button 
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-5">
+        <div className="grid w-full grid-cols-2 gap-3">
+          <button
             onClick={resetTimer}
-            className="flex-1 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 text-text-secondary hover:text-white hover:bg-white/10 transition-all font-bold uppercase tracking-widest text-[10px]"
+            className="focus-control-button flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-text-secondary transition-all hover:bg-white/10 hover:text-white"
           >
             <RotateCcw size={18} strokeWidth={2} />
             Reiniciar
           </button>
 
-          <button 
+          <button
             onClick={() => { playInteractionFeedback('soft'); setAmbientSound(!ambientSound); }}
             className={clsx(
-              "flex-1 h-14 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold uppercase tracking-widest text-[10px]",
-              ambientSound ? "bg-primary/20 border-primary/50 text-primary" : "bg-white/5 border-white/10 text-text-secondary hover:text-white hover:bg-white/10"
+              'focus-control-button flex h-14 items-center justify-center gap-2 rounded-2xl border text-[10px] font-bold uppercase tracking-widest transition-all',
+              ambientSound ? 'bg-primary/20 border-primary/50 text-primary' : 'bg-white/5 border-white/10 text-text-secondary hover:bg-white/10 hover:text-white'
             )}
             title="Tocar Lofi"
           >
             {ambientSound ? <Volume2 size={18} strokeWidth={2} /> : <VolumeX size={18} strokeWidth={2} />}
-            {ambientSound ? 'Som Ativo' : 'Som Inativo'}
+            {ambientSound ? 'Som On' : 'Som Off'}
           </button>
         </div>
-        
-        <button 
+
+        <button
           onClick={handleToggle}
           className={clsx(
-            "w-full h-16 rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer font-bold uppercase tracking-widest text-sm shadow-[0_0_30px_rgba(0,232,143,0.3)] hover:scale-[1.02] active:scale-[0.98]",
-            isActive ? "bg-red-500 text-white shadow-red-500/30 font-bold" : "bg-primary text-black"
+            'focus-primary-button flex h-16 w-full items-center justify-center gap-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all hover:scale-[1.01] active:scale-[0.98]',
+            isActive ? 'bg-red-500 text-white shadow-[0_18px_40px_rgba(239,68,68,0.22)]' : 'bg-primary text-black shadow-[0_18px_44px_rgba(var(--hub-primary-rgb),0.24)]'
           )}
         >
           {isActive ? <Pause size={20} strokeWidth={2} fill="currentColor" /> : <Play size={20} strokeWidth={2} fill="currentColor" />}
@@ -266,24 +296,24 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </button>
       </div>
 
-      <div className="w-full max-w-xs space-y-4 relative z-10">
-        <div className="flex justify-between text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-widest">
-          <span>Progresso Diário</span>
+      <GlassCard className="relative z-10 w-full max-w-xs space-y-4 p-4">
+        <div className="flex justify-between text-xs font-premium-mono font-bold uppercase tracking-widest text-text-secondary">
+          <span>Meta diaria</span>
           <span className="text-primary">{currentSession}/{sessionGoal}</span>
         </div>
         <div className="flex gap-2">
           {Array.from({ length: sessionGoal }).map((_, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className={clsx(
-                "h-2 flex-1 rounded-full transition-all",
-                i < currentSession - 1 ? "bg-primary shadow-[0_0_10px_rgba(0,255,148,0.5)]" : 
-                i === currentSession - 1 ? "bg-primary/50 animate-pulse" : "bg-white/10"
-              )} 
+                'h-2 flex-1 rounded-full transition-all',
+                i < currentSession - 1 ? 'bg-primary shadow-[0_0_10px_rgba(0,255,148,0.5)]' :
+                i === currentSession - 1 ? 'bg-primary/50 animate-pulse' : 'bg-white/10'
+              )}
             />
           ))}
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 };
