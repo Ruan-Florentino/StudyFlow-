@@ -253,6 +253,7 @@ export function FloatingAIButton() {
   const reduced = useReducedMotion() ?? false;
   const [mounted, setMounted] = React.useState(false);
   const [hover, setHover] = React.useState(false);
+  const [isDragging, setIsDragging] = React.useState(false);
   const [ripple, setRipple] = React.useState(0);
   const [blink, setBlink] = React.useState(false);
   const [routeMotion, setRouteMotion] = React.useState<RouteMotion>({ behind: false, pulse: 0 });
@@ -267,6 +268,36 @@ export function FloatingAIButton() {
     gliding: false,
     peek: false,
   });
+  const flightRef = React.useRef(flight);
+  const dragRef = React.useRef<{
+    pointerId: number | null;
+    startClientX: number;
+    startClientY: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  }>({
+    pointerId: null,
+    startClientX: 0,
+    startClientY: 0,
+    startX: 0,
+    startY: 0,
+    moved: false,
+  });
+  const suppressClickRef = React.useRef(false);
+  const lastDragAtRef = React.useRef(0);
+
+  React.useEffect(() => {
+    flightRef.current = flight;
+  }, [flight]);
+
+  const commitFlight = React.useCallback((updater: React.SetStateAction<FlightState>) => {
+    setFlight((current) => {
+      const next = typeof updater === 'function' ? (updater as (value: FlightState) => FlightState)(current) : updater;
+      flightRef.current = next;
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -278,7 +309,7 @@ export function FloatingAIButton() {
 
     if (routeTimerRef.current) clearTimeout(routeTimerRef.current);
     setRouteMotion((current) => ({ behind: true, pulse: current.pulse + 1 }));
-    setFlight((current) => ({
+    commitFlight((current) => ({
       ...current,
       tilt: 0,
       gliding: false,
@@ -288,11 +319,11 @@ export function FloatingAIButton() {
 
     routeTimerRef.current = setTimeout(() => {
       setRouteMotion((current) => ({ behind: false, pulse: current.pulse + 1 }));
-      setFlight((current) => ({ ...current, peek: false }));
+      commitFlight((current) => ({ ...current, peek: false }));
     }, 360);
 
     return undefined;
-  }, [location.pathname]);
+  }, [commitFlight, location.pathname]);
 
   useEffect(() => {
     return () => {
@@ -306,8 +337,6 @@ export function FloatingAIButton() {
     let rafId: number | null = null;
     let lastTop = 0;
     let lastLeft = 0;
-    let lastX = -24;
-    let lastY = Math.round((window.innerHeight || 720) * 0.56);
 
     const getMain = () => document.getElementById('app-main-scroll');
     const readScroll = (): ScrollSnapshot => {
@@ -336,21 +365,21 @@ export function FloatingAIButton() {
       const viewportWidth = window.innerWidth || 390;
       const progressY = clamp(snapshot.top / snapshot.maxTop, 0, 1);
       const progressX = clamp(snapshot.left / snapshot.maxLeft, 0, 1);
-      const upper = Math.max(54, viewportHeight * 0.075);
-      const lower = Math.max(upper + 330, viewportHeight - 64);
+      const upper = Math.max(86, viewportHeight * 0.52);
+      const lower = Math.max(upper + 220, viewportHeight - 92);
+      const currentPosition = flightRef.current;
       const mappedY = upper + progressY * (lower - upper);
-      const directY = lastY + deltaTop * 4.6;
-      const y = Math.round(clamp(Math.abs(deltaTop) > 0.05 ? directY : mappedY, upper, lower));
+      const scrollPush = clamp(deltaTop * 0.72, -52, 52);
+      const followStrength = Math.abs(deltaTop) > 0.05 ? 0.28 : 0.08;
+      const y = Math.round(clamp(currentPosition.y + (mappedY - currentPosition.y) * followStrength + scrollPush, upper, lower));
       const maxSideTravel = Math.min(210, viewportWidth * 0.54);
       const sideWave = Math.sin(progressY * Math.PI * 3.4) * Math.min(42, viewportWidth * 0.1);
       const mappedX = -18 - Math.abs(sideWave) - progressX * Math.min(132, viewportWidth * 0.3);
-      const directX = lastX - deltaLeft * 1.8;
+      const directX = currentPosition.x - deltaLeft * 0.9;
       const x = Math.round(clamp(Math.abs(deltaLeft) > 0.05 ? directX : mappedX, -maxSideTravel, -10));
-      const horizontal = x - lastX;
-      const vertical = y - lastY;
+      const horizontal = x - currentPosition.x;
+      const vertical = y - currentPosition.y;
       const strongMotion = Math.abs(deltaTop) > 0.5 || Math.abs(deltaLeft) > 0.5;
-      lastX = x;
-      lastY = y;
 
       const flip: 1 | -1 = horizontal < -1 ? -1 : 1;
 
@@ -374,7 +403,7 @@ export function FloatingAIButton() {
     const settleFlight = () => {
       clearTimeout(releaseTimer);
       releaseTimer = setTimeout(() => {
-        setFlight((current) => ({
+        commitFlight((current) => ({
           ...current,
           tilt: 0,
           gliding: false,
@@ -393,7 +422,7 @@ export function FloatingAIButton() {
       const next = calculateFlight(snapshot, deltaTop, deltaLeft);
       const activeMotion = Math.abs(deltaTop) > 0.1 || Math.abs(deltaLeft) > 0.1;
 
-      setFlight((current) => ({
+      commitFlight((current) => ({
         x: next.x,
         y: next.y,
         tilt: activeMotion ? next.tilt : current.tilt,
@@ -415,7 +444,7 @@ export function FloatingAIButton() {
       const width = window.innerWidth || 1;
       const zone = event.clientX / width;
       if (zone < 0.18 || zone > 0.82) {
-        setFlight((current) => ({
+        commitFlight((current) => ({
           ...current,
           x: zone < 0.18 ? -154 : -14,
           flip: zone < 0.18 ? -1 : 1,
@@ -429,7 +458,6 @@ export function FloatingAIButton() {
     };
 
     const handleResize = () => {
-      lastY = Math.round((window.innerHeight || 720) * 0.56);
       requestSync();
     };
 
@@ -437,7 +465,7 @@ export function FloatingAIButton() {
     lastTop = initial.top;
     lastLeft = initial.left;
     const initialFlight = calculateFlight(initial, 0, 0);
-    setFlight((current) => ({ ...current, x: initialFlight.x, y: initialFlight.y }));
+    commitFlight((current) => ({ ...current, x: initialFlight.x, y: initialFlight.y }));
     scheduleBlink();
 
     const main = getMain();
@@ -466,14 +494,100 @@ export function FloatingAIButton() {
       visualViewport?.removeEventListener('resize', handleResize);
       window.removeEventListener('pointermove', handlePointerMove);
     };
-  }, [reduced]);
+  }, [commitFlight, reduced]);
 
   if (isOpen) return null;
 
+  const clampDraggedFlight = (x: number, y: number) => {
+    const viewportWidth = window.innerWidth || 390;
+    const viewportHeight = window.innerHeight || 720;
+    const buttonSize = viewportWidth <= 380 ? 98 : 106;
+    const minX = -(viewportWidth - buttonSize - 12);
+    const maxX = -8;
+    const minY = Math.max(44, viewportHeight * 0.06);
+    const maxY = Math.max(minY, viewportHeight - buttonSize - 22);
+
+    return {
+      x: Math.round(clamp(x, minX, maxX)),
+      y: Math.round(clamp(y, minY, maxY)),
+    };
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startX: flightRef.current.x,
+      startY: flightRef.current.y,
+      moved: false,
+    };
+    suppressClickRef.current = false;
+    setHover(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.startClientX;
+    const deltaY = event.clientY - drag.startClientY;
+    const distance = Math.hypot(deltaX, deltaY);
+
+    if (!drag.moved && distance < 7) return;
+
+    drag.moved = true;
+    suppressClickRef.current = true;
+    setIsDragging(true);
+    event.preventDefault();
+
+    const nextPosition = clampDraggedFlight(drag.startX + deltaX, drag.startY + deltaY);
+    commitFlight((current) => ({
+      ...current,
+      x: nextPosition.x,
+      y: nextPosition.y,
+      tilt: clamp(deltaY * 0.08 + deltaX * 0.04, -18, 18),
+      flip: deltaX < -1 ? -1 : 1,
+      gliding: true,
+      peek: true,
+      burst: current.burst + 1,
+    }));
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    dragRef.current.pointerId = null;
+    setIsDragging(false);
+
+    if (drag.moved) {
+      lastDragAtRef.current = Date.now();
+      window.setTimeout(() => {
+        commitFlight((current) => ({ ...current, tilt: 0, gliding: false, peek: false }));
+      }, 180);
+    }
+  };
+
+  const handlePointerCancel = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (dragRef.current.pointerId !== event.pointerId) return;
+    dragRef.current.pointerId = null;
+    setIsDragging(false);
+    commitFlight((current) => ({ ...current, tilt: 0, gliding: false, peek: false }));
+  };
+
   const handleOpen = () => {
+    if (suppressClickRef.current || Date.now() - lastDragAtRef.current < 240) {
+      suppressClickRef.current = false;
+      return;
+    }
+
     if ('vibrate' in navigator) navigator.vibrate(10);
     setRipple((value) => value + 1);
-    setFlight((current) => ({
+    commitFlight((current) => ({
       ...current,
       y: Math.max(88, current.y - 28),
       tilt: -12,
@@ -504,7 +618,12 @@ export function FloatingAIButton() {
       }}
       transition={reduced ? { duration: 0.08 } : { type: 'spring', stiffness: 230, damping: 24, mass: 0.42 }}
       whileTap={{ scale: 0.9, transition: springs.snappy }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       className="athena-floating-button fixed right-0 top-0 z-[100] h-[6.65rem] w-[6.65rem] overflow-visible rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d] max-[380px]:h-[6.15rem] max-[380px]:w-[6.15rem]"
+      data-dragging={isDragging ? 'true' : 'false'}
     >
       <AnimatePresence>
         {ripple > 0 && (
