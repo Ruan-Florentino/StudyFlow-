@@ -29,6 +29,16 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
   const endTimeRef = React.useRef<number | null>(null);
   const focusSecondsRef = React.useRef(0);
   const lastRemainingRef = React.useRef(WORK_SECONDS);
+  const modeRef = React.useRef(mode);
+  const userIdRef = React.useRef(userId);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  useEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
 
   useEffect(() => {
     if (!isActive) {
@@ -50,7 +60,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         lastRemainingRef.current = remaining;
         setTimeLeft(remaining);
 
-        if (mode === 'work' && elapsedSeconds > 0) {
+        if (modeRef.current === 'work' && elapsedSeconds > 0) {
           focusSecondsRef.current += elapsedSeconds;
           setFocusScore(focusSecondsRef.current);
 
@@ -71,14 +81,14 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
       playInteractionFeedback('complete');
       playSuccessSound();
 
-      if (mode === 'work') {
+      if (modeRef.current === 'work') {
         triggerConfetti();
         const endedAt = new Date();
         const elapsedSec = Math.max(1, focusSecondsRef.current);
         const startedAt = new Date(endedAt.getTime() - elapsedSec * 1000);
 
         void recordStudySession({
-          userId: userId || null,
+          userId: userIdRef.current || null,
           startedAt,
           endedAt,
           activityType: 'focus',
@@ -89,10 +99,12 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         focusSecondsRef.current = 0;
         setFocusScore(0);
         useStore.getState().updateNeuralSync(0);
+        modeRef.current = 'break';
         setMode('break');
         lastRemainingRef.current = BREAK_SECONDS;
         setTimeLeft(BREAK_SECONDS);
       } else {
+        modeRef.current = 'work';
         setMode('work');
         lastRemainingRef.current = WORK_SECONDS;
         setTimeLeft(WORK_SECONDS);
@@ -106,7 +118,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [addXP, currentSession, isActive, mode, sessionGoal, toggleAppBlocker, userId]);
+  }, [addXP, isActive, sessionGoal, toggleAppBlocker]);
 
   const handleToggle = () => {
     const newActive = !isActive;
@@ -114,10 +126,14 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
 
     if (newActive) {
       lastRemainingRef.current = timeLeft;
+      endTimeRef.current = Date.now() + timeLeft * 1000;
       if (mode === 'work' && timeLeft === WORK_SECONDS) {
         focusSecondsRef.current = 0;
         setFocusScore(0);
       }
+    } else {
+      endTimeRef.current = null;
+      lastRemainingRef.current = timeLeft;
     }
 
     setIsActive(newActive);
@@ -292,7 +308,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
           )}
         >
           {isActive ? <Pause size={20} strokeWidth={2} fill="currentColor" /> : <Play size={20} strokeWidth={2} fill="currentColor" />}
-          {isActive ? 'Pausar Foco' : 'Iniciar Foco'}
+          {isActive ? 'Pausar' : mode === 'work' ? 'Iniciar foco' : 'Iniciar descanso'}
         </button>
       </div>
 

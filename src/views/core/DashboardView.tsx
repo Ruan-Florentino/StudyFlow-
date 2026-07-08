@@ -64,6 +64,69 @@ import { NeonBadge } from '../../components/fx/NeonBadge';
 
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 
+const DAILY_QUOTES = [
+  { text: 'A jornada de mil milhas começa com um único passo.', author: 'Lao Tzu' },
+  { text: 'Disciplina é liberdade quando você sabe onde quer chegar.', author: 'StudyFlow' },
+  { text: 'O estudo de hoje é a tranquilidade da prova de amanhã.', author: 'StudyFlow' },
+  { text: 'Pequenas sessões bem feitas vencem longas horas sem direção.', author: 'StudyFlow' },
+  { text: 'Consistência transforma dificuldade em rotina.', author: 'StudyFlow' },
+  { text: 'Você não precisa estar perfeito, precisa estar presente.', author: 'StudyFlow' },
+  { text: 'O foco é uma decisão repetida várias vezes no mesmo dia.', author: 'StudyFlow' },
+  { text: 'Revisar é respeitar o esforço que você já fez.', author: 'StudyFlow' },
+  { text: 'A resposta certa começa antes da questão: começa no preparo.', author: 'StudyFlow' },
+  { text: 'Estudar pouco todos os dias ainda é caminhar todos os dias.', author: 'StudyFlow' },
+  { text: 'Quem mede o progresso aprende a acelerar sem se perder.', author: 'StudyFlow' },
+  { text: 'Hoje é um bom dia para ficar um pouco mais forte.', author: 'StudyFlow' },
+  { text: 'O aluno que volta para corrigir cresce mais rápido.', author: 'StudyFlow' },
+  { text: 'Foco não é pressa; foco é direção.', author: 'StudyFlow' },
+  { text: 'Uma questão corrigida vale mais que dez puladas.', author: 'StudyFlow' },
+  { text: 'Você constrói confiança quando cumpre o combinado consigo mesmo.', author: 'StudyFlow' },
+  { text: 'Cada erro encontrado é uma chance de subir de nível.', author: 'StudyFlow' },
+  { text: 'Estudo inteligente é clareza, repetição e ajuste.', author: 'StudyFlow' },
+  { text: 'O começo pode ser lento. O importante é não zerar o dia.', author: 'StudyFlow' },
+  { text: 'A mente aprende melhor quando o plano é simples e constante.', author: 'StudyFlow' },
+  { text: 'Não espere motivação: crie tração.', author: 'StudyFlow' },
+  { text: 'O treino difícil deixa a prova mais familiar.', author: 'StudyFlow' },
+  { text: 'Hoje você não precisa vencer tudo. Precisa vencer a próxima tarefa.', author: 'StudyFlow' },
+  { text: 'O progresso aparece quando você para de negociar com a distração.', author: 'StudyFlow' },
+  { text: 'Uma página entendida muda mais que um capítulo só passado.', author: 'StudyFlow' },
+  { text: 'O melhor plano é aquele que você consegue repetir amanhã.', author: 'StudyFlow' },
+  { text: 'Seu futuro agradece os minutos que você protege hoje.', author: 'StudyFlow' },
+  { text: 'A prova cobra calma; o treino constrói calma.', author: 'StudyFlow' },
+  { text: 'Aprender é voltar ao ponto fraco sem vergonha.', author: 'StudyFlow' },
+  { text: 'Fazer o básico com excelência já coloca você na frente.', author: 'StudyFlow' },
+  { text: 'A concentração cresce quando o ambiente para de mandar em você.', author: 'StudyFlow' },
+  { text: 'Todo simulado é um mapa, não uma sentença.', author: 'StudyFlow' },
+  { text: 'A constância é silenciosa, mas o resultado fala alto.', author: 'StudyFlow' },
+  { text: 'Quem revisa cedo esquece menos tarde.', author: 'StudyFlow' },
+  { text: 'Seu ritmo só precisa ser honesto, não perfeito.', author: 'StudyFlow' },
+  { text: 'O difícil fica menor quando vira rotina.', author: 'StudyFlow' },
+  { text: 'Estudar é transformar ansiedade em ação organizada.', author: 'StudyFlow' },
+  { text: 'O próximo acerto nasce da última correção.', author: 'StudyFlow' },
+  { text: 'A meta do dia é simples: sair melhor do que entrou.', author: 'StudyFlow' },
+  { text: 'Quem treina com atenção ganha tempo na prova.', author: 'StudyFlow' },
+  { text: 'A dúvida não é inimiga; é o começo da clareza.', author: 'StudyFlow' },
+  { text: 'Faça a sessão pequena. Depois faça outra.', author: 'StudyFlow' },
+  { text: 'Conhecimento fica quando você usa, explica e revisa.', author: 'StudyFlow' },
+  { text: 'O seu foco merece proteção ativa.', author: 'StudyFlow' },
+  { text: 'Uma rotina forte reduz a dependência da força de vontade.', author: 'StudyFlow' },
+  { text: 'O estudo certo deixa rastros: notas, revisões e tentativas.', author: 'StudyFlow' },
+  { text: 'Treine como quem está ensinando o cérebro a confiar.', author: 'StudyFlow' },
+  { text: 'A melhor hora para recuperar o atraso é a próxima meia hora.', author: 'StudyFlow' },
+  { text: 'Quem domina o tempo domina a prova antes dela começar.', author: 'StudyFlow' },
+  { text: 'Não subestime uma boa sequência de dias simples.', author: 'StudyFlow' },
+  { text: 'A excelência nasce quando ninguém está olhando.', author: 'StudyFlow' },
+  { text: 'Clareza primeiro. Velocidade depois.', author: 'StudyFlow' },
+  { text: 'Seu caderno de erros é um manual de evolução.', author: 'StudyFlow' },
+  { text: 'A cada treino, você negocia menos com o medo.', author: 'StudyFlow' },
+  { text: 'O estudo fica leve quando a próxima ação está clara.', author: 'StudyFlow' },
+  { text: 'A disciplina começa pequena e termina gigante.', author: 'StudyFlow' },
+  { text: 'Progresso real é repetir mesmo sem plateia.', author: 'StudyFlow' },
+  { text: 'Uma sessão focada muda o tom do dia inteiro.', author: 'StudyFlow' },
+  { text: 'O resultado não vem de um pico. Vem de uma sequência.', author: 'StudyFlow' },
+  { text: 'Hoje é mais uma chance de provar compromisso em silêncio.', author: 'StudyFlow' },
+] as const;
+
 const DashboardView = () => {
   const { questionMap: QUESTION_MAP, loading: qLoading, error: qError } = useQuestionMap();
   const { name, profilePic, level, xp, sessions, history, exams, league, routine, dailyGoalMinutes } = useStore();
@@ -97,6 +160,9 @@ const DashboardView = () => {
     "Varie os assuntos estudados no mesmo dia (Interleaving) para melhorar a flexibilidade mental."
   ];
   const dailyTip = studyTips[new Date().getDate() % studyTips.length];
+  const todayForQuote = new Date();
+  const localDayStart = new Date(todayForQuote.getFullYear(), todayForQuote.getMonth(), todayForQuote.getDate());
+  const dailyQuote = DAILY_QUOTES[Math.floor(localDayStart.getTime() / 86400000) % DAILY_QUOTES.length];
 
   // Heatmap data (last 30 days for dashboard)
   const heatmapData = history.reduce((acc: any[], h) => {
@@ -421,9 +487,9 @@ const DashboardView = () => {
         <Quote size={32} className="text-primary mx-auto opacity-50" />
         <div className="space-y-2">
           <p className="text-lg font-premium-title italic leading-tight">
-            "A jornada de mil milhas começa com um único passo."
+            "{dailyQuote.text}"
           </p>
-          <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">— Lao Tzu</p>
+          <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">- {dailyQuote.author}</p>
         </div>
       </GlassCard>
 

@@ -32,11 +32,11 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 
 function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: boolean; gliding: boolean }) {
   const leftWingMotion = gliding
-    ? { rotate: [-12, 7, -9], x: [-1.4, 1.2, -0.8], y: [1.4, -2.6, 0.8] }
-    : { rotate: [-3.5, 2.2, -2.6], x: [-0.4, 0.25, -0.2], y: [0.2, -0.6, 0.2] };
+    ? { rotate: [-8, 10, -5], x: [-0.8, 1.1, -0.5], y: [1.1, -2.2, 0.5] }
+    : { rotate: [-1.8, 1.2, -1.4], x: [-0.18, 0.16, -0.12], y: [0.1, -0.35, 0.1] };
   const rightWingMotion = gliding
-    ? { rotate: [12, -7, 9], x: [1.4, -1.2, 0.8], y: [1.4, -2.6, 0.8] }
-    : { rotate: [3.5, -2.2, 2.6], x: [0.4, -0.25, 0.2], y: [0.2, -0.6, 0.2] };
+    ? { rotate: [8, -10, 5], x: [0.8, -1.1, 0.5], y: [1.1, -2.2, 0.5] }
+    : { rotate: [1.8, -1.2, 1.4], x: [0.18, -0.16, 0.12], y: [0.1, -0.35, 0.1] };
   const headMotion = gliding
     ? { y: [-0.8, 0.6, -0.4], rotate: [-1.4, 1.1, -0.8] }
     : { y: [0, -0.55, 0], rotate: [-0.5, 0.55, -0.35] };
@@ -206,6 +206,16 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
         </g>
       </motion.g>
 
+      <motion.g
+        animate={gliding ? { y: [0.4, 1.7, 0.4], rotate: [-1, 1.4, -0.8] } : { y: [0, 0.55, 0], rotate: [-0.4, 0.5, -0.3] }}
+        transition={{ duration: gliding ? 0.95 : 2.8, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ transformOrigin: '56px 88px' }}
+        opacity="0.9"
+      >
+        <path d="M48.8 84.5c1.6 5.8 4 9.4 7.2 10.8 3.2-1.4 5.6-5 7.2-10.8-4.6 2.1-9.8 2.1-14.4 0Z" fill="#2b2118" stroke="rgba(255,238,204,0.28)" strokeWidth="1" />
+        <path d="M53.5 86.8c.4 3.2 1.2 5.8 2.5 7.6 1.3-1.8 2.1-4.4 2.5-7.6" fill="none" stroke="rgba(0,232,143,0.2)" strokeLinecap="round" strokeWidth="1" />
+      </motion.g>
+
       <g filter="url(#athena-eye-glow)">
         <ellipse cx="45.1" cy="45.4" rx="10" ry="10.7" fill="#10130f" stroke="rgba(255,240,211,0.44)" strokeWidth="1.15" />
         <ellipse cx="66.9" cy="45.4" rx="10" ry="10.7" fill="#10130f" stroke="rgba(255,240,211,0.44)" strokeWidth="1.15" />
@@ -327,14 +337,14 @@ export function FloatingAIButton() {
       const progressY = clamp(snapshot.top / snapshot.maxTop, 0, 1);
       const progressX = clamp(snapshot.left / snapshot.maxLeft, 0, 1);
       const upper = Math.max(66, viewportHeight * 0.09);
-      const lower = Math.max(upper + 260, viewportHeight - 132);
+      const lower = Math.max(upper + 300, viewportHeight - 112);
       const mappedY = upper + progressY * (lower - upper);
-      const directY = lastY + deltaTop * 1.9;
+      const directY = lastY + deltaTop * 2.55;
       const y = Math.round(clamp(Math.abs(deltaTop) > 0.05 ? directY : mappedY, upper, lower));
       const maxSideTravel = Math.min(210, viewportWidth * 0.54);
       const sideWave = Math.sin(progressY * Math.PI * 3.4) * Math.min(42, viewportWidth * 0.1);
-      const mappedX = -24 - Math.abs(sideWave) - progressX * Math.min(120, viewportWidth * 0.28);
-      const directX = lastX - deltaLeft * 1.45;
+      const mappedX = -18 - Math.abs(sideWave) - progressX * Math.min(132, viewportWidth * 0.3);
+      const directX = lastX - deltaLeft * 1.8;
       const x = Math.round(clamp(Math.abs(deltaLeft) > 0.05 ? directX : mappedX, -maxSideTravel, -10));
       const horizontal = x - lastX;
       const vertical = y - lastY;

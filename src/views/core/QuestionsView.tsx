@@ -321,7 +321,7 @@ function FilterSelect({
 
   const categoryCards = useMemo(() => {
     const base = [
-      { id: 'enem', title: 'ENEM', subtitle: `${QUESTION_BANK_TARGETS.enem.toLocaleString('pt-BR')} itens de pratica selecionados`, filters: { examType: 'enem' as const } },
+      { id: 'enem', title: 'ENEM', subtitle: `${QUESTION_BANK_TARGETS.enem.toLocaleString('pt-BR')} itens selecionados para treino`, filters: { examType: 'enem' as const } },
       { id: 'vestibular', title: 'Vestibulares', subtitle: `${QUESTION_BANK_TARGETS.vestibular.toLocaleString('pt-BR')} itens entre Fuvest, Unicamp, UnB e mais`, filters: { examType: 'vestibular' as const } },
       { id: 'concurso', title: 'Concursos', subtitle: `${QUESTION_BANK_TARGETS.concurso.toLocaleString('pt-BR')} itens para carreiras publicas`, filters: { examType: 'concurso' as const } },
       { id: 'militar', title: 'Militares', subtitle: `${QUESTION_BANK_TARGETS.militar.toLocaleString('pt-BR')} itens para ITA, IME, ESA e estrategia`, filters: { examType: 'militar' as const } },
@@ -441,7 +441,6 @@ function FilterSelect({
                   </div>
                 </div>
                 <p className="text-sm leading-relaxed text-white/78">{currentQuestion.explanation}</p>
-                <p className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 text-[11px] leading-relaxed text-white/55">Fonte: {currentQuestion.source}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -474,8 +473,8 @@ function FilterSelect({
         />
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
           <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-premium-title italic leading-[0.96] text-white sm:text-5xl">Treino serio, filtro real e gabarito honesto.</h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-text-secondary">O banco carrega {QUESTION_BANK_TOTAL_TARGET.toLocaleString('pt-BR')} itens respondiveis em background: ENEM, vestibulares, concursos e militares. Itens legados ficam marcados como pratica StudyFlow; a importacao real por JSON/CSV/API segue pronta para provas oficiais licenciadas.</p>
+            <h1 className="max-w-3xl text-4xl font-premium-title italic leading-[0.96] text-white sm:text-5xl">Treine por prova, materia e dificuldade.</h1>
+            <p className="max-w-2xl text-sm leading-relaxed text-text-secondary">O banco carrega {QUESTION_BANK_TOTAL_TARGET.toLocaleString('pt-BR')} itens em background para ENEM, vestibulares, concursos e militares, com filtros rapidos e treino direto.</p>
             <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
               <div className="relative rounded-[22px] border border-white/12 bg-black/35 p-2 transition-colors focus-within:border-primary/45">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={18} />
@@ -607,7 +606,7 @@ function FilterSelect({
                         {latestAttempt ? <span className={cn('rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest', latestAttempt.isCorrect ? 'bg-emerald-400/10 text-emerald-200' : 'bg-rose-400/10 text-rose-200')}>{latestAttempt.isCorrect ? 'Acertada' : 'Errada'}</span> : null}
                       </div>
                       <h3 className="line-clamp-2 text-base font-bold leading-snug text-white">{question.statement}</h3>
-                      <p className="text-xs text-text-secondary">{question.subject} / {question.topic} / {question.source}</p>
+                      <p className="text-xs text-text-secondary">{question.subject} / {question.topic}</p>
                     </div>
                     <AnimatedButton onClick={() => startPractice([question], question.topic)} variant="secondary" className="shrink-0">Resolver <ChevronRight size={15} /></AnimatedButton>
                   </div>

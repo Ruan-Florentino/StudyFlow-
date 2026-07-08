@@ -1971,7 +1971,8 @@ select:focus {
 .athena-floating-button {
   transform-origin: 78% 50%;
   touch-action: manipulation;
-  filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.46));
+  will-change: transform, filter;
 }
 
 .athena-floating-button::before {
@@ -1981,7 +1982,8 @@ select:focus {
   border-radius: 999px;
   pointer-events: none;
   background:
-    linear-gradient(150deg, rgba(255, 248, 232, 0.18), rgba(var(--hub-primary-rgb), 0.12) 44%, rgba(74, 216, 255, 0.055)),
+    radial-gradient(circle at 42% 25%, rgba(255, 245, 218, 0.2), transparent 34%),
+    linear-gradient(150deg, rgba(255, 248, 232, 0.16), rgba(var(--hub-primary-rgb), 0.11) 44%, rgba(74, 216, 255, 0.055)),
     rgba(5, 5, 5, 0.16);
   border: 1px solid rgba(255, 244, 218, 0.16);
   box-shadow:
@@ -1989,6 +1991,18 @@ select:focus {
     0 16px 34px rgba(0, 0, 0, 0.36),
     0 0 32px rgba(var(--hub-primary-rgb), 0.12);
   backdrop-filter: blur(16px) saturate(150%);
+}
+
+.athena-floating-button::after {
+  content: "";
+  position: absolute;
+  inset: 1.48rem;
+  border-radius: 999px;
+  pointer-events: none;
+  background: conic-gradient(from 90deg, transparent, rgba(var(--hub-primary-rgb), 0.18), transparent 42%, rgba(255, 238, 204, 0.12), transparent 76%);
+  opacity: 0.46;
+  filter: blur(0.5px);
+  animation: athena-orbit-breathe 5.8s linear infinite;
 }
 
 .athena-owl-shell {
@@ -2011,7 +2025,13 @@ select:focus {
 }
 
 .athena-floating-button:hover .athena-owl-shell {
-  filter: drop-shadow(0 0 28px rgba(var(--hub-primary-rgb), 0.28));
+  filter: drop-shadow(0 0 32px rgba(var(--hub-primary-rgb), 0.32));
+}
+
+@keyframes athena-orbit-breathe {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .studyflow-focus-mode {

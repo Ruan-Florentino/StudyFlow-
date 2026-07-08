@@ -146,7 +146,7 @@ const ProfileView = () => {
   }, [sessions, history]);
 
   const activityData = useMemo(() => {
-    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     return Array.from({ length: 7 }, (_, i) => {
@@ -166,11 +166,11 @@ const ProfileView = () => {
 
   const favoriteFeatures = useMemo(() => {
     const featureLabels: Record<string, string> = {
-      pomodoro: '🍅 Pomodoro',
-      flashcards: '📇 Flashcards',
-      aiTutor: '🤖 AI Tutor',
-      redacao: '✍️ Redação',
-      questions: '❓ Questões'
+      pomodoro: 'Pomodoro',
+      flashcards: 'Flashcards',
+      aiTutor: 'Athena',
+      redacao: 'Redacao',
+      questions: 'Questoes'
     };
 
     return Object.entries(featureUsage || {})
@@ -188,14 +188,14 @@ const ProfileView = () => {
 
     const maxBytes = 10 * 1024 * 1024;
     if (file.size > maxBytes) {
-      toast.error('Erro', 'Imagem muito grande (máx. 10 MB).');
+      toast.error('Erro', 'Imagem muito grande (max. 10 MB).');
       e.target.value = '';
       return;
     }
     if (!isProfileImageAllowed(file)) {
       toast.error(
         'Erro',
-        'Formato não suportado. Use JPG, PNG, WebP, GIF, HEIC ou AVIF.'
+        'Formato nao suportado. Use JPG, PNG, WebP, GIF, HEIC ou AVIF.'
       );
       e.target.value = '';
       return;
@@ -234,7 +234,7 @@ const ProfileView = () => {
       toast.success("Sucesso", type === 'profile' ? "Foto de perfil atualizada!" : "Foto de capa atualizada!");
 
     } catch (err) {
-      toast.error('Erro', 'Não foi possível fazer o upload da imagem. Tente outra foto ou formato.');
+      toast.error('Erro', 'Nao foi possivel fazer o upload da imagem. Tente outra foto ou formato.');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -243,7 +243,7 @@ const ProfileView = () => {
 
   const handleSave = async () => {
     if (!editName.trim()) {
-      toast.error("Erro", "O nome não pode ser vazio.");
+      toast.error("Erro", "O nome nao pode ser vazio.");
       return;
     }
     setName(editName);
@@ -256,7 +256,7 @@ const ProfileView = () => {
         toast.success("Sucesso", "Perfil atualizado!");
       } catch(err) {
         console.error('Failed to update profile to Supabase', err);
-        toast.error("Erro", "Não foi possível atualizar o perfil.");
+        toast.error("Erro", "Nao foi possivel atualizar o perfil.");
       }
     }
   };
@@ -292,7 +292,7 @@ const ProfileView = () => {
             </div>
             <div>
               <h2 className="text-2xl font-premium-title italic text-white uppercase">{name}</h2>
-              <p className="text-[#00ff94] font-premium-mono font-bold text-xs">NÍVEL {level} • STUDYFLOW</p>
+              <p className="text-[#00ff94] font-premium-mono font-bold text-xs">NIVEL {level} - STUDYFLOW</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -301,10 +301,10 @@ const ProfileView = () => {
               <p className="text-xl font-bold text-orange-500">{streak} Dias 🔥</p>
             </div>
             <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <p className="text-[10px] font-premium-mono text-text-secondary uppercase">Precisão</p>
+              <p className="text-[10px] font-premium-mono text-text-secondary uppercase">Precisao</p>
               <p
                 className="text-xl font-bold text-[#00ff94]"
-                title="Taxa de acerto nas questões registradas no app neste dispositivo."
+                title="Taxa de acerto nas questoes registradas no app neste dispositivo."
               >
                 {stats.accuracyRate}%
               </p>
@@ -312,23 +312,23 @@ const ProfileView = () => {
           </div>
           <div className="text-center pt-2">
             <p className="text-[8px] font-premium-mono text-text-secondary uppercase tracking-[0.3em]">
-              StudyFlow · resumo do seu progresso no app
+              StudyFlow - resumo do seu progresso no app
             </p>
           </div>
         </div>
       </div>
 
       {/* Cover Photo — proporção estável no mobile (aspect ratio), capa largura total no md+ */}
-      <div className="premium-page-hero relative z-10 mb-14 w-full overflow-hidden border-white/10 bg-white/[0.045] aspect-[5/2] max-h-[13rem] sm:mb-12 sm:aspect-auto sm:h-48 sm:max-h-none">
+      <div className="premium-page-hero relative z-10 mb-14 w-full overflow-visible border-white/10 bg-white/[0.045] aspect-[5/2] max-h-[13rem] sm:mb-12 sm:aspect-auto sm:h-48 sm:max-h-none">
         <Header
           title=""
           onBack={goBack}
           className="absolute left-4 top-4 z-20 sm:left-6 sm:top-6"
         />
         {coverPic ? (
-          <img src={coverPic} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={coverPic} alt="Cover" className="absolute inset-0 h-full w-full rounded-[inherit] object-cover" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
+          <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-br from-primary/20 to-transparent" />
         )}
 
         {isEditing && (
@@ -344,7 +344,7 @@ const ProfileView = () => {
         {/* Profile Picture — centralizado no mobile, alinhado à esquerda no sm+ */}
         <div className="absolute -bottom-9 left-1/2 z-20 -translate-x-1/2 sm:-bottom-10 sm:left-6 sm:translate-x-0">
           <div className="relative group">
-            <div className="h-20 w-20 rounded-full border-4 border-background bg-card overflow-hidden sm:h-24 sm:w-24">
+            <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-background bg-card shadow-[0_18px_40px_rgba(0,0,0,0.38)] ring-1 ring-white/15 sm:h-24 sm:w-24">
               <img
                 src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`}
                 alt="Profile"
@@ -408,7 +408,7 @@ const ProfileView = () => {
                   </Badge>
                 ) : (
                   <Badge variant={accessPlan === 'premium' ? 'primary' : 'warning'} className="text-[8px] tracking-widest uppercase">
-                    {accessPlan === 'premium' ? 'Premium ⭐' : 'Free'}
+                    {accessPlan === 'premium' ? 'Premium' : 'Free'}
                   </Badge>
                 )}
               </div>
@@ -428,14 +428,14 @@ const ProfileView = () => {
                 className="px-4 py-2 text-[10px] font-bold uppercase bg-primary text-black border-primary"
                 glow
               >
-                ⭐ Fazer Upgrade
+                Fazer Upgrade
               </AnimatedButton>
             </GlassCard>
           )}
 
           {/* Stats Grid (2x2 requested) */}
           <p className="text-[10px] font-premium-mono text-text-secondary uppercase tracking-wider">
-            Métricas com base em sessões e questões registradas neste aparelho.
+            Metricas com base em sessoes e questoes registradas neste aparelho.
           </p>
           <motion.div
             className="grid grid-cols-2 gap-3"
@@ -446,8 +446,8 @@ const ProfileView = () => {
             {[
               { icon: Flame, iconProps: { fill: 'currentColor' }, color: 'text-orange-500', label: 'Streak', value: `${streak} Dias` },
               { icon: Clock, color: 'text-primary', label: 'Horas', value: `${stats.totalHours}h` },
-              { icon: BookOpen, color: 'text-blue-400', label: 'Questões', value: String(stats.questionsSolved) },
-              { icon: Target, color: 'text-purple-400', label: 'Precisão', value: `${stats.accuracyRate}%` },
+              { icon: BookOpen, color: 'text-blue-400', label: 'Questoes', value: String(stats.questionsSolved) },
+              { icon: Target, color: 'text-purple-400', label: 'Precisao', value: `${stats.accuracyRate}%` },
             ].map(({ icon: Icon, iconProps, color, label, value }) => (
               <motion.div key={label} variants={staggerItem}>
                 <GlassCard enterAnimation={false} className="premium-stat-tile p-4 space-y-1" glow>
@@ -465,7 +465,7 @@ const ProfileView = () => {
           <div className="pt-6 space-y-3">
             <h3
               className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]"
-              title="Minutos de estudo por dia conforme sessões salvas localmente."
+              title="Minutos de estudo por dia conforme sessoes salvas localmente."
             >
               Atividade (7 dias)
             </h3>
@@ -508,7 +508,7 @@ const ProfileView = () => {
               </div>
               {activityData.every((x) => x.minutos === 0) && (
                 <p className="text-[10px] text-text-secondary text-center font-medium">
-                  Nenhum minuto registrado nos últimos 7 dias. Use o modo Foco para gravar sessões.
+                  Nenhum minuto registrado nos ultimos 7 dias. Use o modo Foco para gravar sessoes.
                 </p>
               )}
             </GlassCard>
@@ -548,7 +548,7 @@ const ProfileView = () => {
                 <div className="p-2 bg-primary/20 rounded-xl text-primary">
                   <BarChart3 size={20} />
                 </div>
-                <span className="font-bold text-white text-sm">Ver estatísticas completas</span>
+                <span className="font-bold text-white text-sm">Ver estatisticas completas</span>
               </div>
               <ChevronRight size={16} className="text-white/40" />
             </motion.button>
@@ -556,7 +556,7 @@ const ProfileView = () => {
 
           {/* Settings (from existing code) */}
           <div className="pt-6 space-y-3">
-            <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Configurações</h3>
+            <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.3em]">Configuracoes</h3>
             <GlassCard className="premium-list-card p-4 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -661,7 +661,7 @@ const ProfileView = () => {
                 <div className="p-2 bg-white/5 rounded-xl text-white">
                   <Bookmark size={20} />
                 </div>
-                <span className="font-bold">Exportar Dados (Backup)</span>
+                <span className="font-bold">Exportar dados (backup)</span>
               </div>
               <ChevronRight size={16} className="text-white/20" />
             </GlassCard>
