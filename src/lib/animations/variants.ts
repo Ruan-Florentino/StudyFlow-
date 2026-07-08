@@ -74,16 +74,16 @@ export const pageShellTransition = springs.page;
  * Y reduzido; transição em tween aplicada no outlet (mobile mais curta).
  */
 export const pageShell = {
-  initial: { opacity: 0, y: 8 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -5 },
+  exit: { opacity: 0, y: -6 },
 } as const;
 
 /** Troca de rota em viewports estreitas — só opacidade */
 export const pageShellTouch = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
 } as const;
 
 /** Troca de rota com prefers-reduced-motion */

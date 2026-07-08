@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { useLocation } from 'react-router-dom';
 import { useAIUI } from '../../hooks/useAIUI';
@@ -18,6 +19,13 @@ type FlightState = {
 type RouteMotion = {
   behind: boolean;
   pulse: number;
+};
+
+type ScrollSnapshot = {
+  top: number;
+  left: number;
+  maxTop: number;
+  maxLeft: number;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -153,6 +161,7 @@ export function FloatingAIButton() {
   const { openChat, isOpen, setViewMode } = useAIUI();
   const location = useLocation();
   const reduced = useReducedMotion() ?? false;
+  const [mounted, setMounted] = React.useState(false);
   const [hover, setHover] = React.useState(false);
   const [ripple, setRipple] = React.useState(0);
   const [blink, setBlink] = React.useState(false);
@@ -161,13 +170,17 @@ export function FloatingAIButton() {
   const routeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [flight, setFlight] = React.useState<FlightState>({
     x: -24,
-    y: 360,
+    y: typeof window === 'undefined' ? 360 : Math.round(window.innerHeight * 0.56),
     tilt: 0,
     flip: 1,
     burst: 0,
     gliding: false,
     peek: false,
   });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (previousPathRef.current === location.pathname) return undefined;
@@ -201,31 +214,51 @@ export function FloatingAIButton() {
     let blinkTimer: ReturnType<typeof setTimeout>;
     let releaseTimer: ReturnType<typeof setTimeout>;
     let rafId: number | null = null;
-    let lastScroll = 0;
+    let lastTop = 0;
+    let lastLeft = 0;
     let lastX = -24;
-    let lastY = Math.round((window.innerHeight || 720) * 0.58);
+    let lastY = Math.round((window.innerHeight || 720) * 0.56);
 
-    const main = document.getElementById('app-main-scroll');
-    const getScrollTop = () => main?.scrollTop ?? window.scrollY;
-    const getScrollMax = () => {
-      if (main) return Math.max(1, main.scrollHeight - main.clientHeight);
-      return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const getMain = () => document.getElementById('app-main-scroll');
+    const readScroll = (): ScrollSnapshot => {
+      const main = getMain();
+      const doc = document.scrollingElement ?? document.documentElement;
+      const body = document.body;
+      const mainTop = main?.scrollTop ?? 0;
+      const docTop = window.scrollY || doc.scrollTop || body.scrollTop || 0;
+      const mainLeft = main?.scrollLeft ?? 0;
+      const docLeft = window.scrollX || doc.scrollLeft || body.scrollLeft || 0;
+      const mainMaxTop = main ? Math.max(0, main.scrollHeight - main.clientHeight) : 0;
+      const docMaxTop = Math.max(0, doc.scrollHeight - window.innerHeight);
+      const mainMaxLeft = main ? Math.max(0, main.scrollWidth - main.clientWidth) : 0;
+      const docMaxLeft = Math.max(0, doc.scrollWidth - window.innerWidth);
+
+      return {
+        top: Math.abs(mainTop) > Math.abs(docTop) ? mainTop : docTop,
+        left: Math.abs(mainLeft) > Math.abs(docLeft) ? mainLeft : docLeft,
+        maxTop: Math.max(1, mainMaxTop, docMaxTop),
+        maxLeft: Math.max(1, mainMaxLeft, docMaxLeft),
+      };
     };
-    const calculateFlight = (scrollTop: number, delta: number) => {
+
+    const calculateFlight = (snapshot: ScrollSnapshot, deltaTop: number, deltaLeft: number) => {
       const viewportHeight = window.innerHeight || 720;
       const viewportWidth = window.innerWidth || 390;
-      const progress = clamp(scrollTop / getScrollMax(), 0, 1);
-      const upper = Math.max(72, viewportHeight * 0.1);
-      const lower = Math.max(upper + 240, viewportHeight - 148);
-      const scrollTrackY = upper + progress * (lower - upper);
-      const followY = lastY + delta * 1.45;
-      const y = Math.round(clamp(delta === 0 ? scrollTrackY : followY * 0.9 + scrollTrackY * 0.1, upper, lower));
-      const wave = Math.sin(progress * Math.PI * 3.6) * Math.min(138, viewportWidth * 0.32);
-      const drift = Math.cos(scrollTop / 160) * 18;
-      const x = Math.round(-28 - Math.abs(wave) - drift);
+      const progressY = clamp(snapshot.top / snapshot.maxTop, 0, 1);
+      const progressX = clamp(snapshot.left / snapshot.maxLeft, 0, 1);
+      const upper = Math.max(66, viewportHeight * 0.09);
+      const lower = Math.max(upper + 260, viewportHeight - 132);
+      const mappedY = upper + progressY * (lower - upper);
+      const directY = lastY + deltaTop * 1.9;
+      const y = Math.round(clamp(Math.abs(deltaTop) > 0.05 ? directY : mappedY, upper, lower));
+      const maxSideTravel = Math.min(210, viewportWidth * 0.54);
+      const sideWave = Math.sin(progressY * Math.PI * 3.4) * Math.min(42, viewportWidth * 0.1);
+      const mappedX = -24 - Math.abs(sideWave) - progressX * Math.min(120, viewportWidth * 0.28);
+      const directX = lastX - deltaLeft * 1.45;
+      const x = Math.round(clamp(Math.abs(deltaLeft) > 0.05 ? directX : mappedX, -maxSideTravel, -10));
       const horizontal = x - lastX;
-      const goingDown = delta > 0;
-      const edgePeek = Math.abs(horizontal) > 10 || Math.abs(delta) > 2;
+      const vertical = y - lastY;
+      const strongMotion = Math.abs(deltaTop) > 0.5 || Math.abs(deltaLeft) > 0.5;
       lastX = x;
       lastY = y;
 
@@ -234,10 +267,9 @@ export function FloatingAIButton() {
       return {
         x,
         y,
-        tilt: clamp((goingDown ? -14 : 12) + horizontal * 0.1, -22, 22),
+        tilt: clamp(vertical * 0.16 + horizontal * 0.08, -24, 24),
         flip,
-        peek: edgePeek,
-        progress,
+        peek: strongMotion,
       };
     };
 
@@ -254,30 +286,33 @@ export function FloatingAIButton() {
       releaseTimer = setTimeout(() => {
         setFlight((current) => ({
           ...current,
-          tilt: current.peek ? -5 * current.flip : 0,
+          tilt: 0,
           gliding: false,
           peek: false,
         }));
-      }, 520);
+      }, 420);
     };
 
     const syncToScroll = () => {
       rafId = null;
-      const scrollTop = getScrollTop();
-      const delta = scrollTop - lastScroll;
-      lastScroll = scrollTop;
-      const next = calculateFlight(scrollTop, delta);
+      const snapshot = readScroll();
+      const deltaTop = snapshot.top - lastTop;
+      const deltaLeft = snapshot.left - lastLeft;
+      lastTop = snapshot.top;
+      lastLeft = snapshot.left;
+      const next = calculateFlight(snapshot, deltaTop, deltaLeft);
+      const activeMotion = Math.abs(deltaTop) > 0.1 || Math.abs(deltaLeft) > 0.1;
 
       setFlight((current) => ({
         x: next.x,
         y: next.y,
-        tilt: Math.abs(delta) > 0.5 ? next.tilt : current.tilt,
+        tilt: activeMotion ? next.tilt : current.tilt,
         flip: next.flip,
-        burst: Math.abs(delta) > 1 ? current.burst + 1 : current.burst,
-        gliding: Math.abs(delta) > 0.25,
+        burst: activeMotion ? current.burst + 1 : current.burst,
+        gliding: activeMotion,
         peek: next.peek,
       }));
-      if (Math.abs(delta) > 0.25) settleFlight();
+      if (activeMotion) settleFlight();
     };
 
     const requestSync = () => {
@@ -289,12 +324,12 @@ export function FloatingAIButton() {
       if (event.pointerType === 'touch') return;
       const width = window.innerWidth || 1;
       const zone = event.clientX / width;
-      if (zone < 0.2 || zone > 0.78) {
+      if (zone < 0.18 || zone > 0.82) {
         setFlight((current) => ({
           ...current,
-          x: zone < 0.2 ? -132 : -14,
-          flip: zone < 0.2 ? -1 : 1,
-          tilt: zone < 0.2 ? -14 : 9,
+          x: zone < 0.18 ? -154 : -14,
+          flip: zone < 0.18 ? -1 : 1,
+          tilt: zone < 0.18 ? -12 : 8,
           gliding: true,
           peek: true,
           burst: current.burst + 1,
@@ -304,17 +339,27 @@ export function FloatingAIButton() {
     };
 
     const handleResize = () => {
-      lastY = Math.round((window.innerHeight || 720) * 0.58);
+      lastY = Math.round((window.innerHeight || 720) * 0.56);
       requestSync();
     };
 
-    lastScroll = getScrollTop();
-    const initial = calculateFlight(lastScroll, 0);
-    setFlight((current) => ({ ...current, x: initial.x, y: initial.y }));
+    const initial = readScroll();
+    lastTop = initial.top;
+    lastLeft = initial.left;
+    const initialFlight = calculateFlight(initial, 0, 0);
+    setFlight((current) => ({ ...current, x: initialFlight.x, y: initialFlight.y }));
     scheduleBlink();
+
+    const main = getMain();
+    const visualViewport = window.visualViewport;
     main?.addEventListener('scroll', requestSync, { passive: true });
+    document.addEventListener('scroll', requestSync, { passive: true, capture: true });
     window.addEventListener('scroll', requestSync, { passive: true });
+    window.addEventListener('wheel', requestSync, { passive: true });
+    window.addEventListener('touchmove', requestSync, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
+    visualViewport?.addEventListener('scroll', requestSync, { passive: true });
+    visualViewport?.addEventListener('resize', handleResize, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
 
     return () => {
@@ -322,8 +367,13 @@ export function FloatingAIButton() {
       clearTimeout(releaseTimer);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
       main?.removeEventListener('scroll', requestSync);
+      document.removeEventListener('scroll', requestSync, true);
       window.removeEventListener('scroll', requestSync);
+      window.removeEventListener('wheel', requestSync);
+      window.removeEventListener('touchmove', requestSync);
       window.removeEventListener('resize', handleResize);
+      visualViewport?.removeEventListener('scroll', requestSync);
+      visualViewport?.removeEventListener('resize', handleResize);
       window.removeEventListener('pointermove', handlePointerMove);
     };
   }, [reduced]);
@@ -347,7 +397,7 @@ export function FloatingAIButton() {
     }, 140);
   };
 
-  return (
+  const button = (
     <motion.button
       type="button"
       aria-label={`Abrir ${ATHENA_CONFIG.NAME}`}
@@ -356,11 +406,11 @@ export function FloatingAIButton() {
       onHoverEnd={() => setHover(false)}
       initial={{ opacity: 0, scale: 0.72, x: -18, y: 460 }}
       animate={{
-        opacity: routeMotion.behind ? 0.18 : flight.peek ? 0.86 : 1,
-        scale: routeMotion.behind ? 0.48 : hover ? 1.06 : flight.peek ? 0.95 : 1,
-        x: flight.x + (routeMotion.behind ? 96 : 0),
-        y: flight.y - (routeMotion.behind ? 18 : 0),
-        rotate: routeMotion.behind ? 8 : flight.tilt,
+        opacity: routeMotion.behind ? 0.42 : flight.peek ? 0.9 : 1,
+        scale: routeMotion.behind ? 0.64 : hover ? 1.06 : flight.peek ? 0.96 : 1,
+        x: flight.x,
+        y: flight.y - (routeMotion.behind ? 34 : 0),
+        rotate: routeMotion.behind ? -4 : flight.tilt,
       }}
       transition={reduced ? { duration: 0.08 } : { type: 'spring', stiffness: 230, damping: 24, mass: 0.42 }}
       whileTap={{ scale: 0.9, transition: springs.snappy }}
@@ -409,7 +459,9 @@ export function FloatingAIButton() {
         className="relative z-10 flex h-full w-full items-center justify-center rounded-full"
         animate={{
           rotateY: routeMotion.behind ? 180 : flight.flip === -1 ? 180 : 0,
-          x: routeMotion.behind ? 18 : flight.peek ? flight.flip * 7 : 0,
+          x: routeMotion.behind ? 0 : flight.peek ? flight.flip * 7 : 0,
+          y: routeMotion.behind ? -12 : 0,
+          scale: routeMotion.behind ? 0.84 : 1,
         }}
         transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
         style={{
@@ -428,4 +480,7 @@ export function FloatingAIButton() {
       </motion.span>
     </motion.button>
   );
+
+  if (typeof document === 'undefined' || !mounted) return button;
+  return createPortal(button, document.body);
 }

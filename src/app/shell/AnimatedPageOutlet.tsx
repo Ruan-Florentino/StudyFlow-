@@ -6,7 +6,7 @@ import {
   pageShellReduced,
   pageShellTouch,
 } from '../../lib/animations/variants';
-import { tweens } from '../../lib/animations/easings';
+import { springs, tweens } from '../../lib/animations/easings';
 import { devAgentLog } from '../../lib/devAgentLog';
 import { debugSessionIngest } from '../../lib/debugSessionIngest';
 
@@ -130,11 +130,11 @@ export function AnimatedPageOutlet() {
   const transition = reduceMotion
     ? tweens.micro
     : isNarrowViewport
-      ? tweens.micro
-      : tweens.fast;
+      ? tweens.fast
+      : springs.page;
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="sync" initial={false}>
       <motion.div
         key={pageKey}
         className="flex w-full min-w-0 flex-col max-md:flex-1"

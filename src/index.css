@@ -1387,3 +1387,16 @@ body {
   }
 }
 /* Athena experience T16 end */
+
+/* StudyFlow motion fluidity pass */
+@media (prefers-reduced-motion: no-preference) {
+  :where(.premium-grid-card, .premium-list-card, .premium-stat-tile, .glass-card, .bottom-nav-item, button, a) {
+    transition-timing-function: var(--ease-smooth-out);
+  }
+
+  .premium-grid-card,
+  .premium-list-card,
+  .glass-card {
+    will-change: transform, border-color, box-shadow;
+  }
+}
