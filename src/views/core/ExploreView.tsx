@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import {
   AlertCircle,
@@ -28,8 +28,8 @@ import {
 import { AnimatedButton, Badge, GlassCard, cn } from '../../components/UI';
 import { useStore } from '../../store';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
-import { QUESTION_EXAM_TYPE_LABELS, getQuestionStats, getQuestions } from '../../services/questionService';
-import type { QuestionExamType, QuestionFilterState } from '../../types/question';
+import { QUESTION_BANK_TOTAL_TARGET, QUESTION_EXAM_TYPE_LABELS, getQuestionStats, getQuestions, loadQuestionBank } from '../../services/questionService';
+import type { Question as StudyQuestion, QuestionExamType, QuestionFilterState } from '../../types/question';
 
 const objectiveCards: Array<{ title: string; description: string; icon: LucideIcon; examType: QuestionExamType }> = [
   { title: 'ENEM', description: 'Competencias, habilidades e revisao por area.', icon: GraduationCap, examType: 'enem' },
@@ -75,7 +75,26 @@ const ExploreView: React.FC = () => {
   const reduceMotion = useReducedMotion() ?? false;
   const { goTo } = useAppNavigation();
   const { setNavFilters, history, sessions } = useStore();
-  const questions = useMemo(() => getQuestions(), []);
+  const [questions, setQuestions] = useState<StudyQuestion[]>(() => getQuestions());
+  const [bankStatus, setBankStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+
+  useEffect(() => {
+    let active = true;
+    loadQuestionBank()
+      .then((loadedQuestions) => {
+        if (!active) return;
+        setQuestions(loadedQuestions);
+        setBankStatus('ready');
+      })
+      .catch(() => {
+        if (!active) return;
+        setBankStatus('error');
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const stats = useMemo(() => getQuestionStats(questions), [questions]);
   const latestAttempt = history?.[0] ?? null;
   const latestSession = sessions?.[0] ?? null;
@@ -106,7 +125,7 @@ const ExploreView: React.FC = () => {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2 lg:grid-cols-1">
-            <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">{stats.total}</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">questoes</p></GlassCard>
+            <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">{bankStatus === 'loading' ? QUESTION_BANK_TOTAL_TARGET.toLocaleString('pt-BR') : stats.total.toLocaleString('pt-BR')}</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">questoes</p></GlassCard>
             <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">{Object.keys(stats.bySubject).length}</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">materias</p></GlassCard>
             <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">4</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">objetivos</p></GlassCard>
           </div>
@@ -121,7 +140,7 @@ const ExploreView: React.FC = () => {
               <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Trophy size={22} /></div>
               <div className="min-w-0">
                 <h3 className="text-lg font-premium-title italic text-white">{latestAttempt ? 'Revisar ultima questao' : 'Primeiro treino guiado'}</h3>
-                <p className="mt-1 text-sm text-text-secondary">{latestAttempt ? `Ultima tentativa: ${latestAttempt.isCorrect ? 'acerto' : 'erro'} em ${latestAttempt.questionId.slice(0, 12)}` : latestSession ? `Ultima sessao: ${latestSession.subject}` : 'Entre pelo banco filtrado e comece por uma seed honesta.'}</p>
+                <p className="mt-1 text-sm text-text-secondary">{latestAttempt ? `Ultima tentativa: ${latestAttempt.isCorrect ? 'acerto' : 'erro'} em ${latestAttempt.questionId.slice(0, 12)}` : latestSession ? `Ultima sessao: ${latestSession.subject}` : 'Entre pelo banco grande filtrado e comece pelo objetivo que importa.'}</p>
               </div>
             </div>
             <AnimatedButton onClick={() => latestAttempt ? openQuestions({ search: latestAttempt.questionId }) : openQuestions()} className="shrink-0"><ChevronRight size={16} /> Continuar</AnimatedButton>
@@ -139,7 +158,7 @@ const ExploreView: React.FC = () => {
                 <div className="flex h-full flex-col gap-5">
                   <div className="flex items-center justify-between"><div className="flex size-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Icon size={21} /></div><ChevronRight size={18} className="text-white/35 group-hover:text-primary" /></div>
                   <div><h3 className="text-lg font-premium-title italic text-white">{card.title}</h3><p className="mt-1 text-xs text-text-secondary">{card.description}</p></div>
-                  <p className="mt-auto text-[10px] font-premium-mono font-black uppercase tracking-[0.16em] text-primary">{stats.byExamType[card.examType]} questoes | {QUESTION_EXAM_TYPE_LABELS[card.examType]}</p>
+                  <p className="mt-auto text-[10px] font-premium-mono font-black uppercase tracking-[0.16em] text-primary">{stats.byExamType[card.examType].toLocaleString('pt-BR')} questoes | {QUESTION_EXAM_TYPE_LABELS[card.examType]}</p>
                 </div>
               </GlassCard>
             );
@@ -157,7 +176,7 @@ const ExploreView: React.FC = () => {
               <button key={card.subject} type="button" onClick={() => openQuestions({ subject: card.subject })} className="premium-list-card group rounded-[22px] border border-white/10 bg-white/[0.05] p-4 text-left transition-colors hover:border-primary/30 hover:bg-white/[0.075]">
                 <div className="mb-4 flex items-center justify-between"><span className={cn('flex size-11 items-center justify-center rounded-2xl border', card.tone)}><Icon size={19} /></span><ChevronRight size={17} className="text-white/30 group-hover:text-primary" /></div>
                 <h3 className="font-black text-white">{card.subject}</h3>
-                <p className="mt-1 text-[10px] font-premium-mono font-black uppercase tracking-widest text-white/45">{count} questoes</p>
+                <p className="mt-1 text-[10px] font-premium-mono font-black uppercase tracking-widest text-white/45">{count.toLocaleString('pt-BR')} questoes</p>
               </button>
             );
           })}

@@ -29,12 +29,15 @@ import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { recordQuestionAttempt } from '../../lib/persistence';
 import { toast } from '../../store/useToastStore';
 import {
+  QUESTION_BANK_TOTAL_TARGET,
+  QUESTION_BANK_TARGETS,
   QUESTION_DIFFICULTY_LABELS,
   QUESTION_EXAM_TYPE_LABELS,
   filterQuestions,
   getQuestionFacets,
   getQuestionStats,
   getQuestions,
+  loadQuestionBank,
   toLegacyQuestion,
 } from '../../services/questionService';
 import type { Question as StudyQuestion, QuestionDifficulty, QuestionExamType, QuestionFilterState } from '../../types/question';
@@ -149,7 +152,25 @@ function FilterSelect({
     clearNavFilters,
   } = useStore();
 
-  const allQuestions = useMemo(() => getQuestions(), []);
+  const [allQuestions, setAllQuestions] = useState<StudyQuestion[]>(() => getQuestions());
+  const [bankStatus, setBankStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+
+  useEffect(() => {
+    let active = true;
+    loadQuestionBank()
+      .then((questions) => {
+        if (!active) return;
+        setAllQuestions(questions);
+        setBankStatus('ready');
+      })
+      .catch(() => {
+        if (!active) return;
+        setBankStatus('error');
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
   const facets = useMemo(() => getQuestionFacets(allQuestions), [allQuestions]);
   const stats = useMemo(() => getQuestionStats(allQuestions), [allQuestions]);
   const latest = useMemo(() => latestAttemptMap(history || []), [history]);
@@ -241,7 +262,7 @@ function FilterSelect({
       return;
     }
     setSessionTitle(title);
-    setSessionQuestions(questions.slice(0, 20));
+    setSessionQuestions(questions);
     setCurrentIndex(0);
     setSelectedAlternative(null);
     setConfirmed(false);
@@ -298,13 +319,13 @@ function FilterSelect({
 
   const categoryCards = useMemo(() => {
     const base = [
-      { id: 'enem', title: 'ENEM', subtitle: 'Competencias e habilidades', filters: { examType: 'enem' as const } },
-      { id: 'vestibular', title: 'Vestibulares', subtitle: 'Fuvest, Unicamp, UnB e mais', filters: { examType: 'vestibular' as const } },
-      { id: 'concurso', title: 'Concursos', subtitle: 'INSS, BB, PRF e carreiras', filters: { examType: 'concurso' as const } },
-      { id: 'militar', title: 'Militares', subtitle: 'ITA, IME, ESA e estrategia', filters: { examType: 'militar' as const } },
+      { id: 'enem', title: 'ENEM', subtitle: `${QUESTION_BANK_TARGETS.enem.toLocaleString('pt-BR')} itens de pratica selecionados`, filters: { examType: 'enem' as const } },
+      { id: 'vestibular', title: 'Vestibulares', subtitle: `${QUESTION_BANK_TARGETS.vestibular.toLocaleString('pt-BR')} itens entre Fuvest, Unicamp, UnB e mais`, filters: { examType: 'vestibular' as const } },
+      { id: 'concurso', title: 'Concursos', subtitle: `${QUESTION_BANK_TARGETS.concurso.toLocaleString('pt-BR')} itens para carreiras publicas`, filters: { examType: 'concurso' as const } },
+      { id: 'militar', title: 'Militares', subtitle: `${QUESTION_BANK_TARGETS.militar.toLocaleString('pt-BR')} itens para ITA, IME, ESA e estrategia`, filters: { examType: 'militar' as const } },
       { id: 'wrong', title: 'Revisar erros', subtitle: 'Ultimas tentativas erradas', filters: { onlyWrong: true } },
       { id: 'favorites', title: 'Favoritas', subtitle: 'Seu caderno de treino', filters: { onlyFavorites: true } },
-      { id: 'simulados', title: 'Simulados', subtitle: 'Treino com lote rapido', filters: {} },
+      { id: 'simulados', title: 'Simulados', subtitle: 'Responder o banco inteiro ou o filtro atual', filters: {} },
     ];
     return base.map((card) => {
       const questions = filterQuestions(allQuestions, card.filters, runtimeFilters);
@@ -436,21 +457,23 @@ function FilterSelect({
         </GlassCard>
       </div>
     );
-  }  return (
+  }
+
+  return (
     <div className="studyflow-questions app-shell-premium premium-page-stack pb-32 pt-5 md:pt-8 md:pb-36">
       <header className="premium-page-hero studyflow-command-hero space-y-6 p-5 sm:p-6">
         <Header
           title="Banco de Questoes"
-          subtitle="Base real importavel"
+          subtitle={bankStatus === 'ready' ? 'Banco grande carregado' : 'Carregando banco grande'}
           icon={BookOpen}
           color="primary"
           onBack={() => goTo('/')}
-          rightContent={<Badge variant="primary">{stats.total} questoes</Badge>}
+          rightContent={<Badge variant={bankStatus === 'ready' ? 'primary' : 'secondary'}>{bankStatus === 'loading' ? `carregando ${QUESTION_BANK_TOTAL_TARGET.toLocaleString('pt-BR')}` : `${stats.total.toLocaleString('pt-BR')} questoes`}</Badge>}
         />
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
           <div className="space-y-4">
             <h1 className="max-w-3xl text-4xl font-premium-title italic leading-[0.96] text-white sm:text-5xl">Treino serio, filtro real e gabarito honesto.</h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-text-secondary">A base atual usa uma seed pequena e autoral para nao fingir questoes oficiais sem fonte. A arquitetura ja aceita importacao JSON/CSV/API com origem, prova, ano, materia, assunto, gabarito e explicacao.</p>
+            <p className="max-w-2xl text-sm leading-relaxed text-text-secondary">O banco carrega {QUESTION_BANK_TOTAL_TARGET.toLocaleString('pt-BR')} itens respondiveis em background: ENEM, vestibulares, concursos e militares. Itens legados ficam marcados como pratica StudyFlow; a importacao real por JSON/CSV/API segue pronta para provas oficiais licenciadas.</p>
             <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
               <div className="relative rounded-[22px] border border-white/12 bg-black/35 p-2 transition-colors focus-within:border-primary/45">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-primary" size={18} />

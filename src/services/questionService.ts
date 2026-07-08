@@ -1,5 +1,6 @@
 import { SEED_QUESTIONS } from '../data/questions/seed';
 import type { Question as LegacyQuestion } from '../data/types';
+import { loadAllQuestionsWithImported } from '../lib/mergeImportedQuestions';
 import type {
   Question,
   QuestionAlternativeId,
@@ -17,6 +18,32 @@ const LEGACY_DIFFICULTY: Record<QuestionDifficulty, LegacyQuestion['difficulty']
   dificil: 'Hard',
   muito_dificil: 'Hard',
 };
+export const QUESTION_BANK_TARGETS: Record<QuestionExamType, number> = {
+  enem: 2420,
+  vestibular: 5300,
+  concurso: 1000,
+  militar: 4000,
+};
+
+export const QUESTION_BANK_TOTAL_TARGET = Object.values(QUESTION_BANK_TARGETS).reduce((total, value) => total + value, 0);
+
+const MILITARY_EXAMS = new Set(['ita', 'ime', 'esa', 'espcex', 'afa', 'efomm']);
+const CONCURSO_EXAMS = new Set(['banco do brasil', 'bb', 'caixa', 'inss', 'ibge', 'correios', 'petrobras', 'prf', 'policia federal']);
+
+const SUBJECT_ALIASES: Record<string, string> = {
+  matematica: 'Matematica',
+  portugues: 'Portugues',
+  fisica: 'Fisica',
+  quimica: 'Quimica',
+  biologia: 'Biologia',
+  historia: 'Historia',
+  geografia: 'Geografia',
+  filosofia: 'Filosofia',
+  sociologia: 'Sociologia',
+  ingles: 'Ingles',
+};
+
+let loadedQuestionBankPromise: Promise<Question[]> | null = null;
 
 export const QUESTION_EXAM_TYPE_LABELS: Record<QuestionExamType, string> = {
   enem: 'ENEM',
@@ -67,6 +94,115 @@ function parseExamType(value: unknown): QuestionExamType | null {
   if (normalized === 'concurso') return 'concurso';
   if (normalized === 'militar') return 'militar';
   return null;
+}
+
+function repairText(value: unknown): string {
+  const text = String(value ?? '').trim();
+  if (!/[\u00c3\u00c2\u00e2\u00ce]/.test(text)) return text;
+
+  try {
+    const bytes = Uint8Array.from(Array.from(text, (char) => char.charCodeAt(0)));
+    const decoded = new TextDecoder('utf-8').decode(bytes);
+    const originalMarkers = (text.match(/[\u00c3\u00c2\u00e2\u00ce]/g) ?? []).length;
+    const decodedMarkers = (decoded.match(/[\u00c3\u00c2\u00e2\u00ce]/g) ?? []).length;
+    return decoded && decodedMarkers < originalMarkers ? decoded : text;
+  } catch {
+    return text;
+  }
+}
+
+function classifyLegacyExamType(exam: string): QuestionExamType {
+  const normalizedExam = normalize(exam);
+  if (normalizedExam.includes('enem')) return 'enem';
+  if (MILITARY_EXAMS.has(normalizedExam)) return 'militar';
+  if (CONCURSO_EXAMS.has(normalizedExam)) return 'concurso';
+  return 'vestibular';
+}
+
+function canonicalSubject(value: unknown): string {
+  const repaired = repairText(value);
+  return SUBJECT_ALIASES[normalize(repaired)] ?? repaired;
+}
+
+function legacyDifficultyToStudyFlow(difficulty: LegacyQuestion['difficulty']): QuestionDifficulty {
+  if (difficulty === 'Easy') return 'facil';
+  if (difficulty === 'Hard') return 'dificil';
+  return 'medio';
+}
+
+function legacyInstitution(exam: string, examType: QuestionExamType): string {
+  if (examType === 'enem') return 'INEP / ENEM';
+  return exam;
+}
+
+function legacySource(question: LegacyQuestion): string {
+  if (question.id.startsWith('bulk-') || question.id.startsWith('12k-')) {
+    return 'Banco de pratica StudyFlow legado. Item gerado para treino; nao e questao oficial.';
+  }
+  return 'Seed autoral StudyFlow legado para treino. Nao e item oficial de prova.';
+}
+
+function fromLegacyQuestion(question: LegacyQuestion): Question | null {
+  if (!question?.id || !question.prova || !question.pergunta || !Array.isArray(question.alternativas)) return null;
+  if (question.alternativas.length < 2 || question.resposta < 0 || question.resposta >= question.alternativas.length) return null;
+
+  const exam = repairText(question.prova);
+  const examType = classifyLegacyExamType(exam);
+  const alternatives = question.alternativas.slice(0, ALT_IDS.length).map((text, index) => ({
+    id: ALT_IDS[index],
+    text: repairText(text),
+  }));
+  const correctAlternative = ALT_IDS[question.resposta];
+  if (!correctAlternative) return null;
+
+  return {
+    id: question.id,
+    exam,
+    examType,
+    institution: legacyInstitution(exam, examType),
+    year: Number(question.ano) || new Date().getFullYear(),
+    subject: canonicalSubject(question.materia),
+    topic: repairText(question.assunto),
+    difficulty: legacyDifficultyToStudyFlow(question.difficulty),
+    statement: repairText(question.pergunta),
+    alternatives,
+    correctAlternative,
+    explanation: repairText(question.explicacao),
+    source: legacySource(question),
+    imageUrl: question.imagem,
+  };
+}
+
+function uniqueQuestions(questions: Question[]): Question[] {
+  const byId = new Map<string, Question>();
+  questions.forEach((question) => {
+    if (!byId.has(question.id)) byId.set(question.id, question);
+  });
+  return Array.from(byId.values());
+}
+
+function applyQuestionBankTargets(questions: Question[]): Question[] {
+  const grouped: Record<QuestionExamType, Question[]> = { enem: [], vestibular: [], concurso: [], militar: [] };
+  uniqueQuestions(questions).forEach((question) => grouped[question.examType].push(question));
+  return (Object.keys(QUESTION_BANK_TARGETS) as QuestionExamType[]).flatMap((examType) => grouped[examType].slice(0, QUESTION_BANK_TARGETS[examType]));
+}
+
+export function loadQuestionBank(): Promise<Question[]> {
+  if (loadedQuestionBankPromise) return loadedQuestionBankPromise;
+  loadedQuestionBankPromise = loadAllQuestionsWithImported()
+    .then((legacyQuestions) => {
+      const converted = legacyQuestions.map(fromLegacyQuestion).filter((question): question is Question => Boolean(question));
+      return applyQuestionBankTargets([...SEED_QUESTIONS, ...converted]);
+    })
+    .catch((error) => {
+      console.error('[questions] failed to load large bank', error);
+      return SEED_QUESTIONS;
+    });
+  return loadedQuestionBankPromise;
+}
+
+export function getQuestionBankTargets() {
+  return QUESTION_BANK_TARGETS;
 }
 
 export function getQuestions(): Question[] {
