@@ -18,6 +18,8 @@ const pathToTabMap: Record<string, NavigationTab> = {
   '/redacao': 'redacao',
   '/comunidade': 'comunidade',
   '/perfil': 'profile',
+  '/ranking': 'ranking',
+  '/foco': 'focus',
   '/metodos': 'methods',
   '/exames': 'exams',
   '/simulados': 'exams',

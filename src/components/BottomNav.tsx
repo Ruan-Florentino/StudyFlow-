@@ -2,17 +2,14 @@ import type { MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { Compass, Home, Target, Timer, Trophy, User } from 'lucide-react';
 import { springs } from '../lib/animations/easings';
-import { Home, Compass, Target, PenLine, Users, User } from 'lucide-react';
-import { useStore } from '../store';
 import { useAppNavigation } from '../app/router/useAppNavigation';
 import { preloadRoute } from '../app/router/preload';
 
 type NavItem = {
-  id: 'home' | 'explore' | 'questions' | 'redacao' | 'comunidade' | 'profile';
-  /** Rótulo completo (desktop / tablets largos) */
+  id: 'home' | 'questions' | 'explore' | 'ranking' | 'focus' | 'profile';
   label: string;
-  /** Rótulo curto para caber em telas estreitas sem encavalamento */
   labelCompact: string;
   icon: typeof Home;
   path: string;
@@ -20,11 +17,11 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'home', label: 'INÍCIO', labelCompact: 'INÍCIO', icon: Home, path: '/' },
+  { id: 'home', label: 'INICIO', labelCompact: 'INICIO', icon: Home, path: '/' },
+  { id: 'questions', label: 'QUESTOES', labelCompact: 'QUEST', icon: Target, path: '/questoes', badge: true },
   { id: 'explore', label: 'EXPLORAR', labelCompact: 'EXPLORAR', icon: Compass, path: '/explorar' },
-  { id: 'questions', label: 'QUESTÕES', labelCompact: 'QUESTÕES', icon: Target, path: '/questoes', badge: true },
-  { id: 'redacao', label: 'REDAÇÃO', labelCompact: 'REDAÇÃO', icon: PenLine, path: '/redacao' },
-  { id: 'comunidade', label: 'COMUNIDADE', labelCompact: 'COMUNIDADE', icon: Users, path: '/comunidade' },
+  { id: 'ranking', label: 'RANKING', labelCompact: 'RANK', icon: Trophy, path: '/ranking' },
+  { id: 'focus', label: 'FOCO', labelCompact: 'FOCO', icon: Timer, path: '/foco' },
   { id: 'profile', label: 'PERFIL', labelCompact: 'PERFIL', icon: User, path: '/perfil' },
 ];
 
@@ -44,18 +41,13 @@ function handleNavClick(event: MouseEvent<HTMLAnchorElement>, isActive: boolean)
   event.preventDefault();
   scrollMainToTop();
 }
+
 export function BottomNav() {
   const { currentTab } = useAppNavigation();
-  const activeRoomId = useStore((s) => s.studyRooms?.activeRoom ?? null);
 
   const nav = (
-    <nav
-      className="bottom-nav-shell studyflow-nav-shell pointer-events-auto fixed bottom-0 left-0 right-0 z-[90] pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2 [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
-      style={{
-        transform: currentTab === 'comunidade' && activeRoomId ? 'translateY(120%)' : 'translateY(0)',
-      }}
-    >
-      <div className="bottom-nav-dock studyflow-nav-dock mx-auto max-w-2xl rounded-[30px] p-2.5 overflow-hidden">
+    <nav className="bottom-nav-shell studyflow-nav-shell pointer-events-auto fixed bottom-0 left-0 right-0 z-[90] pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2">
+      <div className="bottom-nav-dock studyflow-nav-dock mx-auto max-w-2xl overflow-hidden rounded-[30px] p-2.5">
         <div className="relative flex h-[4.05rem] gap-1 overflow-x-auto overflow-y-hidden px-0.5 snap-x snap-mandatory no-scrollbar md:items-center md:justify-around md:gap-1.5 md:overflow-visible md:snap-none">
           {NAV_ITEMS.map((item) => {
             const isActive = currentTab === item.id;
@@ -83,40 +75,12 @@ export function BottomNav() {
                       transition={springs.pill}
                     />
                   )}
-
                   <div className="relative z-10">
-                    <item.icon
-                      size={18}
-                      strokeWidth={isActive ? 2.35 : 2}
-                      className={
-                        isActive
-                          ? 'text-primary drop-shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.35)]'
-                          : 'text-white/70'
-                      }
-                    />
-                    {item.badge && (
-                      <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary" />
-                    )}
+                    <item.icon size={18} strokeWidth={isActive ? 2.35 : 2} className={isActive ? 'text-primary drop-shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.35)]' : 'text-white/70'} />
+                    {item.badge && <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary" />}
                   </div>
-
-                  <span
-                    className={`relative z-10 hidden md:block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] ${
-                      isActive
-                        ? 'text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)]'
-                        : 'text-white/60'
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                  <span
-                    className={`relative z-10 md:hidden text-center text-[8px] font-bold uppercase leading-[1.15] tracking-tight ${
-                      isActive
-                        ? 'text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)]'
-                        : 'text-white/60'
-                    }`}
-                  >
-                    {item.labelCompact}
-                  </span>
+                  <span className={isActive ? 'relative z-10 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)] md:block' : 'relative z-10 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] text-white/60 md:block'}>{item.label}</span>
+                  <span className={isActive ? 'relative z-10 text-center text-[8px] font-bold uppercase leading-[1.15] tracking-tight text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)] md:hidden' : 'relative z-10 text-center text-[8px] font-bold uppercase leading-[1.15] tracking-tight text-white/60 md:hidden'}>{item.labelCompact}</span>
                 </motion.div>
               </NavLink>
             );

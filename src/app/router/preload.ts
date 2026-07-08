@@ -24,12 +24,12 @@ const preloadedRoutes = new Set<string>();
 let coreRoutesQueued = false;
 
 export const CORE_PRELOAD_PATHS = [
-  '/explorar',
   '/questoes',
-  '/redacao',
-  '/ai',
+  '/explorar',
+  '/ranking',
+  '/foco',
+  '/perfil',
   '/simulados',
-  '/metodos',
 ] as const;
 
 function normalizePreloadPath(path: string) {
