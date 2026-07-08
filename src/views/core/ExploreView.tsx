@@ -282,18 +282,16 @@ const ExploreView: React.FC = () => {
   };
 
   return (
-    <div className='app-shell-premium premium-page-stack relative isolate overflow-hidden pt-5 pb-32 animate-in fade-in duration-700 md:pt-8 md:pb-36'>
+    <div className='studyflow-explore app-shell-premium premium-page-stack relative isolate overflow-hidden pt-5 pb-32 animate-in fade-in duration-700 md:pt-8 md:pb-36'>
       <div className='pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(var(--hub-primary-rgb),0.045)_34%,transparent_78%)]' />
 
       <motion.header
         initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
-        className='premium-page-hero relative overflow-visible p-4 sm:p-6'
+        className='premium-page-hero studyflow-command-hero studyflow-explore-hero relative overflow-visible p-4 sm:p-6'
       >
-        <div className='pointer-events-none absolute inset-0 overflow-hidden rounded-[32px]'>
-          <div className='absolute -right-20 -top-24 size-64 rounded-full bg-primary/20 blur-3xl' />
-          <div className='absolute -bottom-28 left-8 size-72 rounded-full bg-blue-500/10 blur-3xl' />
+        <div className='studyflow-hero-map pointer-events-none absolute inset-0 overflow-hidden rounded-[32px]' aria-hidden>
           <div className='absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent' />
         </div>
 

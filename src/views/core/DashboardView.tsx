@@ -123,11 +123,11 @@ const DashboardView = () => {
   if (qError) return <QuestionsLoadError error={qError} />;
 
   return (
-    <div className="relative animate-in fade-in duration-700">
+    <div className="studyflow-dashboard relative animate-in fade-in duration-700">
       <AuroraBackground intensity="subtle" />
       <div className="relative z-10 app-shell-premium pt-5 md:pt-8 premium-page-stack pb-32 md:pb-36">
       {/* Mission Control Header */}
-      <header className="premium-page-hero flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+      <header className="premium-page-hero studyflow-command-hero flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -202,7 +202,7 @@ const DashboardView = () => {
 
       {/* Daily Progress & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GlassCard className="premium-stat-tile p-6 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
+        <GlassCard className="premium-stat-tile studyflow-holo-panel p-6 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-primary">
               <Target size={16} />
@@ -238,7 +238,7 @@ const DashboardView = () => {
                 whileHover={reduceMotion ? { y: 0, scale: 1 } : { y: -3, scale: 1.04 }}
                 transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
                 onClick={() => goTo(action.path)}
-                className="premium-grid-card w-full flex min-h-[7.25rem] flex-col items-center justify-center gap-2 p-3 glass rounded-[22px] border-white/10 hover:border-white/20 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="premium-grid-card studyflow-action-tile w-full flex min-h-[7.25rem] flex-col items-center justify-center gap-2 p-3 glass rounded-[22px] border-white/10 hover:border-white/20 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <NeonIcon
                   icon={action.icon as any}
@@ -263,7 +263,7 @@ const DashboardView = () => {
           }
           whileTap={{ scale: reduceMotion ? 1 : 0.97 }}
           transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
-          className="premium-stats-tile w-full relative overflow-hidden rounded-3xl p-4 border border-primary/20 text-left my-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          className="premium-stats-tile studyflow-holo-panel w-full relative overflow-hidden rounded-3xl p-4 border border-primary/20 text-left my-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           <div className="absolute -top-4 -right-4 opacity-15">
             <BarChart3 size={80} className="text-primary" />

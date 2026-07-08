@@ -37,12 +37,12 @@ export function BottomNav() {
 
   const nav = (
     <nav
-      className="bottom-nav-shell pointer-events-auto fixed bottom-0 left-0 right-0 z-[90] pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2 [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
+      className="bottom-nav-shell studyflow-nav-shell pointer-events-auto fixed bottom-0 left-0 right-0 z-[90] pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2 [transition-property:transform] [transition-duration:var(--duration-slow)] [transition-timing-function:var(--ease-smooth-in-out)]"
       style={{
         transform: currentTab === 'comunidade' && activeRoomId ? 'translateY(120%)' : 'translateY(0)',
       }}
     >
-      <div className="bottom-nav-dock mx-auto max-w-2xl rounded-[30px] p-2.5 overflow-hidden">
+      <div className="bottom-nav-dock studyflow-nav-dock mx-auto max-w-2xl rounded-[30px] p-2.5 overflow-hidden">
         <div className="relative flex h-[4.05rem] gap-1 overflow-x-auto overflow-y-hidden px-0.5 snap-x snap-mandatory no-scrollbar md:items-center md:justify-around md:gap-1.5 md:overflow-visible md:snap-none">
           {NAV_ITEMS.map((item) => {
             const isActive = currentTab === item.id;
@@ -60,7 +60,7 @@ export function BottomNav() {
               >
                 <motion.div
                   whileTap={{ scale: 0.94, transition: springs.snappy }}
-                  className="bottom-nav-item relative flex min-h-[3.5rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 transition-colors duration-200 hover:bg-white/[0.055]"
+                  className="bottom-nav-item studyflow-nav-item relative flex min-h-[3.5rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 transition-colors duration-200 hover:bg-white/[0.055]"
                 >
                   {isActive && (
                     <motion.div

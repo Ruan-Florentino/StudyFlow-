@@ -5,9 +5,9 @@
 
 :root {
   /* ——— Marca ——— */
-  --hub-primary: #00f0a8;
-  --hub-primary-rgb: 0, 240, 168;
-  --hub-primary-deep: #00a86f;
+  --hub-primary: #10f5b0;
+  --hub-primary-rgb: 16, 245, 176;
+  --hub-primary-deep: #00b884;
   --hub-primary-muted: rgba(0, 240, 168, 0.14);
   --hub-primary-glow-halo: rgba(0, 240, 168, 0.25);
   --hub-primary-glow-outer: rgba(0, 240, 168, 0.15);
@@ -23,13 +23,13 @@
   --neon-amber: #f8c66d;
 
   /* ——— Superfícies (profundidade) ——— */
-  --hub-bg-base: #020605;
-  --hub-bg-elevated: #07100f;
-  --hub-bg-overlay: #0c1715;
+  --hub-bg-base: #010504;
+  --hub-bg-elevated: #061311;
+  --hub-bg-overlay: #0a1715;
   --hub-bg-hover: #14231f;
-  --surface-card: rgba(10, 20, 18, 0.84);
-  --surface-card-hover: rgba(15, 28, 25, 0.92);
-  --surface-border: rgba(221, 255, 242, 0.16);
+  --surface-card: rgba(7, 17, 15, 0.88);
+  --surface-card-hover: rgba(12, 28, 24, 0.94);
+  --surface-border: rgba(221, 255, 242, 0.18);
   --surface-border-strong: rgba(221, 255, 242, 0.26);
   --text-muted-premium: rgba(220, 236, 230, 0.68);
 
@@ -74,7 +74,7 @@
   --glass-bg: rgba(9, 19, 17, 0.78);
   --glass-border: rgba(216, 255, 239, 0.16);
   --glass-highlight: rgba(255, 255, 255, 0.28);
-  --glass-shadow: 0 20px 58px rgba(0, 0, 0, 0.48);
+  --glass-shadow: 0 22px 64px rgba(0, 0, 0, 0.54);
   --glass-blur: blur(26px) saturate(175%);
 
   /* ——— Tipografia / seleção ——— */
@@ -105,6 +105,11 @@
 
   /* ——— Shell mobile / PWA (safe-area + scroll pad acima da tab bar) ——— */
   --app-main-scroll-pad-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+
+  --studyflow-grid: rgba(205, 255, 236, 0.035);
+  --studyflow-grid-strong: rgba(var(--hub-primary-rgb), 0.11);
+  --studyflow-rail: rgba(96, 245, 255, 0.28);
+  --studyflow-panel-sheen: rgba(255, 255, 255, 0.11);
 }
 
 /* Auroras orgânicas (blobs com blur no JSX) */

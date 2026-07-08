@@ -1400,3 +1400,224 @@ body {
     will-change: transform, border-color, box-shadow;
   }
 }
+/* StudyFlow high-tech study app pass */
+.app-cinematic-bg {
+  background:
+    linear-gradient(180deg, rgba(1, 5, 4, 0.98), rgba(5, 12, 11, 0.98) 48%, rgba(1, 5, 4, 1)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 96px),
+    repeating-linear-gradient(0deg, rgba(var(--hub-primary-rgb),0.018) 0 1px, transparent 1px 88px),
+    #010504;
+}
+
+.studyflow-app-frame {
+  overflow-x: hidden;
+  background:
+    linear-gradient(180deg, rgba(12, 26, 23, 0.96), rgba(2, 7, 6, 0.995)),
+    linear-gradient(135deg, rgba(var(--hub-primary-rgb), 0.08), rgba(96, 245, 255, 0.035) 34%, rgba(167, 139, 250, 0.045) 68%, rgba(248, 198, 109, 0.025));
+  border-color: rgba(221, 255, 242, 0.2);
+}
+
+.studyflow-app-frame::before {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.075), transparent 13rem),
+    linear-gradient(90deg, rgba(var(--hub-primary-rgb),0.11), transparent 18%, transparent 82%, rgba(96,245,255,0.08));
+  opacity: 0.82;
+}
+
+.studyflow-hud-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--studyflow-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--studyflow-grid) 1px, transparent 1px),
+    linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.04) 44%, transparent 58%);
+  background-size: 44px 44px, 44px 44px, 100% 100%;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.78), rgba(0,0,0,0.28) 58%, transparent 100%);
+  opacity: 0.52;
+}
+
+.studyflow-edge-rail {
+  position: absolute;
+  top: 4.5rem;
+  bottom: 7.25rem;
+  z-index: 0;
+  width: 1px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--studyflow-rail), rgba(var(--hub-primary-rgb),0.2), transparent);
+  opacity: 0.54;
+}
+
+.studyflow-edge-rail-left { left: 0.7rem; }
+.studyflow-edge-rail-right { right: 0.7rem; }
+
+.studyflow-main-surface {
+  position: relative;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.028), transparent 7rem),
+    linear-gradient(0deg, rgba(0,0,0,0.2), transparent 12rem);
+}
+
+.studyflow-command-hero,
+.premium-page-hero {
+  border-color: rgba(221, 255, 242, 0.22);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.095), rgba(255,255,255,0.035) 42%, rgba(var(--hub-primary-rgb),0.06)),
+    linear-gradient(180deg, rgba(96,245,255,0.035), transparent 58%),
+    rgba(5, 13, 12, 0.9);
+  box-shadow:
+    0 26px 80px rgba(0,0,0,0.48),
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    inset 0 1px 0 rgba(255,255,255,0.24);
+}
+
+.studyflow-command-hero::after,
+.premium-page-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, transparent, rgba(255,255,255,0.075), transparent),
+    repeating-linear-gradient(90deg, transparent 0 76px, rgba(var(--hub-primary-rgb),0.045) 76px 77px);
+  opacity: 0.46;
+  mask-image: linear-gradient(180deg, #000, transparent 72%);
+}
+
+.studyflow-command-hero > *,
+.premium-page-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.studyflow-hero-map::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(var(--hub-primary-rgb),0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96,245,255,0.06) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.12), transparent 34%, rgba(167,139,250,0.08));
+  background-size: 38px 38px, 38px 38px, 100% 100%;
+  opacity: 0.58;
+  transform: perspective(900px) rotateX(56deg) translateY(-28%);
+  transform-origin: top center;
+}
+
+.studyflow-holo-panel,
+.premium-grid-card,
+.premium-list-card,
+.premium-stat-tile,
+.premium-stats-tile,
+.glass-card,
+.glass {
+  position: relative;
+  overflow: hidden;
+}
+
+.studyflow-holo-panel::before,
+.premium-grid-card::before,
+.premium-list-card::before,
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, var(--studyflow-panel-sheen), transparent 24%),
+    linear-gradient(180deg, rgba(var(--hub-primary-rgb),0.045), transparent 64%);
+  opacity: 0.4;
+  transition: opacity var(--duration-normal) var(--ease-smooth-out);
+}
+
+.studyflow-holo-panel > *,
+.premium-grid-card > *,
+.premium-list-card > *,
+.glass-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.studyflow-holo-panel:hover::before,
+.premium-grid-card:hover::before,
+.premium-list-card:hover::before,
+.glass-card:hover::before {
+  opacity: 0.68;
+}
+
+.studyflow-action-tile {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.028)),
+    linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.06), rgba(96,245,255,0.025));
+}
+
+.studyflow-nav-shell {
+  filter: drop-shadow(0 -18px 36px rgba(0,0,0,0.48));
+}
+
+.studyflow-nav-dock {
+  border-color: rgba(221,255,242,0.3);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.045)),
+    linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.13), rgba(96,245,255,0.055) 44%, rgba(167,139,250,0.05)),
+    rgba(4, 12, 11, 0.9);
+}
+
+.studyflow-nav-item {
+  isolation: isolate;
+}
+
+.studyflow-nav-item::before {
+  content: '';
+  position: absolute;
+  inset: 0.25rem;
+  z-index: 0;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(var(--hub-primary-rgb),0.12), rgba(96,245,255,0.035));
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity var(--duration-fast) var(--ease-smooth-out),
+    transform var(--duration-fast) var(--ease-smooth-out);
+}
+
+.studyflow-nav-item:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.studyflow-dashboard .premium-section-heading,
+.studyflow-explore .premium-section-heading {
+  letter-spacing: 0.08em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premium-grid-card:hover,
+  .premium-list-card:hover,
+  .glass-card:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 767px) {
+  .studyflow-edge-rail-left { left: 0.35rem; }
+  .studyflow-edge-rail-right { right: 0.35rem; }
+
+  .studyflow-hud-grid {
+    background-size: 34px 34px, 34px 34px, 100% 100%;
+    opacity: 0.38;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-grid-card:hover,
+  .premium-list-card:hover,
+  .glass-card:hover {
+    transform: none;
+  }
+}
+/* StudyFlow high-tech study app pass end */
