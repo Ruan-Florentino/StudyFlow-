@@ -7,6 +7,7 @@ import { recordStudySession } from '../lib/persistence';
 import { GlassCard, Badge, cn, Header } from './UI';
 import clsx from 'clsx';
 import { playSuccessSound, triggerConfetti } from '../lib/studyUtils';
+import { playInteractionFeedback } from '../lib/feedback';
 
 export const FocusMode = ({ onBack }: { onBack: () => void }) => {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -49,6 +50,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         setIsActive(false);
         toggleAppBlocker(false);
         endTimeRef.current = null;
+        playInteractionFeedback('complete');
         playSuccessSound();
         
         if (mode === 'work') {
@@ -96,6 +98,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
 
   const handleToggle = () => {
     const newActive = !isActive;
+    playInteractionFeedback(newActive ? 'focusStart' : 'focusPause');
     setIsActive(newActive);
     if (mode === 'work') {
       toggleAppBlocker(newActive);
@@ -106,6 +109,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
   };
 
   const resetTimer = () => {
+    playInteractionFeedback('tap');
     setIsActive(false);
     setTimeLeft(mode === 'work' ? 25 * 60 : 5 * 60);
     toggleAppBlocker(false);
@@ -123,7 +127,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className={clsx(
-      "app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-screen space-y-12 pb-32 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden",
+      "studyflow-focus-mode app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-screen space-y-12 pb-32 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden",
       zenMode && "bg-black"
     )}>
       {zenMode && (
@@ -150,7 +154,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         rightContent={
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => setZenMode(!zenMode)}
+              onClick={() => { playInteractionFeedback('soft'); setZenMode(!zenMode); }}
               className={cn(
                 "px-3 py-1 rounded-full text-[10px] font-premium-mono font-bold uppercase tracking-widest border transition-all",
                 zenMode ? "bg-primary text-black border-primary shadow-[0_0_10px_rgba(0,232,143,0.3)]" : "bg-white/5 border-white/10 text-text-secondary hover:bg-white/10"
@@ -195,7 +199,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </div>
       </div>
 
-      <div className="relative flex items-center justify-center z-10">
+      <div className={clsx("focus-timer-orb relative flex items-center justify-center z-10", isActive && "is-running")}>
         <div className="absolute w-72 h-72 rounded-full border-[2px] border-white/5" />
         <svg width="288" height="288" className="transform -rotate-90 relative z-10">
           <circle
@@ -238,7 +242,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
           </button>
 
           <button 
-            onClick={() => setAmbientSound(!ambientSound)}
+            onClick={() => { playInteractionFeedback('soft'); setAmbientSound(!ambientSound); }}
             className={clsx(
               "flex-1 h-14 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold uppercase tracking-widest text-[10px]",
               ambientSound ? "bg-primary/20 border-primary/50 text-primary" : "bg-white/5 border-white/10 text-text-secondary hover:text-white hover:bg-white/10"

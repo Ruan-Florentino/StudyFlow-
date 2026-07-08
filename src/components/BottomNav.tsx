@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Compass, Home, Target, Timer, Trophy, User } from 'lucide-react';
 import { springs } from '../lib/animations/easings';
+import { playInteractionFeedback } from '../lib/feedback';
 import { useAppNavigation } from '../app/router/useAppNavigation';
 import { preloadRoute } from '../app/router/preload';
 
@@ -25,9 +26,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'profile', label: 'PERFIL', labelCompact: 'PERFIL', icon: User, path: '/perfil' },
 ];
 
-function triggerHaptic() {
-  if ('vibrate' in navigator) navigator.vibrate(10);
-}
 
 function scrollMainToTop() {
   const main = document.getElementById('app-main-scroll');
@@ -36,7 +34,7 @@ function scrollMainToTop() {
 }
 
 function handleNavClick(event: MouseEvent<HTMLAnchorElement>, isActive: boolean) {
-  triggerHaptic();
+  playInteractionFeedback(isActive ? 'soft' : 'tap');
   if (!isActive) return;
   event.preventDefault();
   scrollMainToTop();
@@ -65,8 +63,8 @@ export function BottomNav() {
                 className="relative flex h-full min-w-[3.85rem] shrink-0 snap-center items-center justify-center no-underline md:min-w-0 md:flex-1 md:snap-none"
               >
                 <motion.div
-                  whileTap={{ scale: 0.94, transition: springs.snappy }}
-                  className="bottom-nav-item studyflow-nav-item relative flex min-h-[3.5rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 transition-colors duration-200 hover:bg-white/[0.055]"
+                  whileTap={{ scale: 0.92, y: 1, transition: springs.snappy }}
+                  className="bottom-nav-item studyflow-nav-item relative flex min-h-[3.5rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 transition-[background-color,transform,color] duration-200 hover:bg-white/[0.055]"
                 >
                   {isActive && (
                     <motion.div

@@ -24,7 +24,9 @@ import {
   Crown,
   Scale,
   ScrollText,
-  ExternalLink
+  ExternalLink,
+  Volume2,
+  Vibrate
 } from 'lucide-react';
 import { useStore } from '../../store';
 import { supabase } from '../../lib/supabase';
@@ -49,6 +51,7 @@ import { clsx } from 'clsx';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { useUserAccess } from '../../hooks/useUserAccess';
 import { calendarDayLocal, sessionMatchesLocalChartDay } from '../../lib/persistence';
+import { getFeedbackSettings, setFeedbackSettings, playInteractionFeedback, type FeedbackSettings } from '../../lib/feedback';
 
 const PROFILE_IMAGE_MIME_ALLOW = new Set([
   'image/jpeg',
@@ -124,6 +127,13 @@ const ProfileView = () => {
   const [uploading, setUploading] = useState(false);
   const [editName, setEditName] = useState(name || '');
   const [editBio, setEditBio] = useState(bio || '');
+  const [feedbackSettings, setFeedbackSettingsState] = useState(() => getFeedbackSettings());
+
+  const updateFeedbackSettings = (next: Partial<FeedbackSettings>) => {
+    const updated = setFeedbackSettings(next);
+    setFeedbackSettingsState(updated);
+    playInteractionFeedback('soft');
+  };
 
   const stats = useMemo(() => {
     const totalHours = Math.round((sessions || []).reduce((acc, s) => acc + (s.duration || 0), 0) / 60);
@@ -578,6 +588,49 @@ const ProfileView = () => {
               </div>
             </GlassCard>
 
+            <GlassCard className="premium-list-card p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-xl text-primary border border-primary/20">
+                    <Volume2 size={20} />
+                  </div>
+                  <div>
+                    <span className="block font-bold">Feedback sensorial</span>
+                    <span className="block text-xs text-text-secondary">Sons discretos e vibracao nos toques importantes</span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  aria-pressed={feedbackSettings.sound}
+                  onClick={() => updateFeedbackSettings({ sound: !feedbackSettings.sound })}
+                  className={clsx(
+                    "flex items-center justify-between rounded-2xl border p-3 text-left transition-all",
+                    feedbackSettings.sound ? "border-primary/40 bg-primary/12 text-white shadow-[0_0_18px_rgba(var(--hub-primary-rgb),0.12)]" : "border-white/10 bg-white/[0.035] text-text-secondary hover:bg-white/[0.06]"
+                  )}
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold"><Volume2 size={16} /> Sons</span>
+                  <span className={clsx("h-5 w-9 rounded-full border p-0.5 transition-colors", feedbackSettings.sound ? "border-primary/60 bg-primary/30" : "border-white/15 bg-white/5")}>
+                    <span className={clsx("block h-3.5 w-3.5 rounded-full bg-white transition-transform", feedbackSettings.sound && "translate-x-4 bg-primary")} />
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={feedbackSettings.haptics}
+                  onClick={() => updateFeedbackSettings({ haptics: !feedbackSettings.haptics })}
+                  className={clsx(
+                    "flex items-center justify-between rounded-2xl border p-3 text-left transition-all",
+                    feedbackSettings.haptics ? "border-primary/40 bg-primary/12 text-white shadow-[0_0_18px_rgba(var(--hub-primary-rgb),0.12)]" : "border-white/10 bg-white/[0.035] text-text-secondary hover:bg-white/[0.06]"
+                  )}
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold"><Vibrate size={16} /> Vibracao</span>
+                  <span className={clsx("h-5 w-9 rounded-full border p-0.5 transition-colors", feedbackSettings.haptics ? "border-primary/60 bg-primary/30" : "border-white/15 bg-white/5")}>
+                    <span className={clsx("block h-3.5 w-3.5 rounded-full bg-white transition-transform", feedbackSettings.haptics && "translate-x-4 bg-primary")} />
+                  </span>
+                </button>
+              </div>
+            </GlassCard>
             {!isInstalled && (
               <GlassCard
                 className="premium-list-card p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors"

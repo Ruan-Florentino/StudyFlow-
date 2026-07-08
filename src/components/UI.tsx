@@ -4,6 +4,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { LucideIcon, ChevronLeft, Flame, Sparkle, Loader2 } from 'lucide-react';
 import { easings, springs, tweens } from '../lib/animations/easings';
+import { playInteractionFeedback } from '../lib/feedback';
 
 const APP_ICON_SRC = '/icons/app-icon.png?v=5';
 
@@ -169,6 +170,11 @@ export const AnimatedButton = ({
   };
 
   const isBusy = disabled || loading;
+  const handleClick = (event?: any) => {
+    if (isBusy) return;
+    playInteractionFeedback(variant === 'danger' ? 'error' : variant === 'primary' ? 'soft' : 'tap');
+    onClick?.(event);
+  };
   const primaryGlow =
     '0 10px 28px rgba(var(--hub-primary-rgb),0.28), 0 0 24px rgba(var(--hub-primary-rgb),0.14)';
 
@@ -176,16 +182,16 @@ export const AnimatedButton = ({
     <motion.button
       type={type}
       transition={reduceMotion ? tweens.micro : springs.soft}
-      whileTap={isBusy || reduceMotion ? undefined : { scale: 0.98 }}
+      whileTap={isBusy || reduceMotion ? undefined : { scale: 0.965, y: 1 }}
       whileHover={
         isBusy || reduceMotion
           ? undefined
           : {
-              scale: 1.02,
+              scale: 1.015,
               ...(variant === 'primary' || glow ? { boxShadow: primaryGlow } : {}),
             }
       }
-      onClick={isBusy ? undefined : onClick}
+      onClick={isBusy ? undefined : handleClick}
       disabled={isBusy}
       className={cn(
         'relative isolate min-h-12 px-5 py-3 rounded-[18px] inline-flex items-center justify-center gap-2 overflow-hidden text-sm shadow-sm',
@@ -226,15 +232,20 @@ export const GlassCard = ({
   enterAnimation?: boolean;
 }) => {
   const reduceMotion = useReducedMotion() ?? false;
+  const handleCardClick = () => {
+    if (!onClick) return;
+    playInteractionFeedback('tap');
+    onClick();
+  };
   return (
   <motion.div
     id={id}
     initial={enterAnimation ? { opacity: 0, scale: reduceMotion ? 1 : 0.988, y: reduceMotion ? 0 : 10 } : false}
     animate={enterAnimation ? { opacity: 1, scale: 1, y: 0 } : undefined}
     transition={reduceMotion ? tweens.micro : springs.card}
-    whileHover={onClick && !reduceMotion ? { y: -4, transition: springs.soft } : undefined}
-    whileTap={onClick && !reduceMotion ? { scale: 0.988, transition: springs.snappy } : undefined}
-    onClick={onClick}
+    whileHover={onClick && !reduceMotion ? { y: -3, scale: 1.006, transition: springs.soft } : undefined}
+    whileTap={onClick && !reduceMotion ? { scale: 0.974, y: 1, transition: springs.snappy } : undefined}
+    onClick={onClick ? handleCardClick : undefined}
     style={style}
     className={cn(
       'liquid-glass glass-sheen p-6 rounded-[22px] relative isolate overflow-hidden transition-[border-color,box-shadow,transform,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/30',
@@ -250,11 +261,16 @@ export const GlassCard = ({
 
 export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = "text-primary", bg = "bg-primary/10" }: { icon: any; title: string; subtitle: string; onClick: () => void; color?: string; bg?: string }) => {
   const reduceMotion = useReducedMotion() ?? false;
+  const handleCardClick = () => {
+    if (!onClick) return;
+    playInteractionFeedback('tap');
+    onClick();
+  };
   return (
   <motion.div
-    whileTap={reduceMotion ? undefined : { scale: 0.97, transition: springs.snappy }}
+    whileTap={reduceMotion ? undefined : { scale: 0.965, y: 1, transition: springs.snappy }}
     whileHover={reduceMotion ? undefined : { scale: 1.02, transition: springs.soft }}
-    onClick={onClick}
+    onClick={onClick ? handleCardClick : undefined}
     className="premium-grid-card liquid-glass glass-sheen p-5 rounded-[22px] min-h-[128px] flex flex-col gap-4 cursor-pointer transition-[transform,box-shadow,border-color,background-color] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] hover:border-white/30 group relative overflow-hidden shadow-lg"
   >
     <div className={cn(bg, color, "w-12 h-12 rounded-2xl flex items-center justify-center transition-[transform,border-color,box-shadow] [transition-duration:var(--duration-normal)] [transition-timing-function:var(--ease-smooth-out)] border border-transparent group-hover:border-primary/30 shadow-inner")}>
@@ -374,9 +390,15 @@ export const Badge = ({ children, variant = "primary", className, onClick }: { c
     success: "bg-green-500/10 text-green-500 border-green-500/20",
   };
 
+  const handleBadgeClick = () => {
+    if (!onClick) return;
+    playInteractionFeedback('tap');
+    onClick();
+  };
+
   return (
     <span 
-      onClick={onClick}
+      onClick={onClick ? handleBadgeClick : undefined}
       className={cn(
         "px-2.5 py-1 text-[9px] font-premium-mono font-bold rounded-full uppercase border tracking-[0.2em] shadow-sm", 
         variants[variant], 

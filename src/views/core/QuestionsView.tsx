@@ -27,6 +27,7 @@ import { useStore } from '../../store';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { recordQuestionAttempt } from '../../lib/persistence';
+import { playInteractionFeedback } from '../../lib/feedback';
 import { toast } from '../../store/useToastStore';
 import {
   QUESTION_BANK_TOTAL_TARGET,
@@ -294,6 +295,7 @@ function FilterSelect({
     const isCorrect = selectedAlternative === currentQuestion.correctAlternative;
     const timeSpentSeconds = Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000));
     setConfirmed(true);
+    playInteractionFeedback(isCorrect ? 'success' : 'error');
     if (isCorrect) setSessionCorrect((value) => value + 1);
     void recordQuestionAttempt({
       userId: user?.id ?? null,
@@ -404,9 +406,9 @@ function FilterSelect({
                   key={alternative.id}
                   type="button"
                   disabled={confirmed}
-                  onClick={() => setSelectedAlternative(alternative.id)}
+                  onClick={() => { playInteractionFeedback('tap'); setSelectedAlternative(alternative.id); }}
                   className={cn(
-                    'w-full rounded-[22px] border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
+                    'studyflow-question-option w-full rounded-[22px] border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                     'bg-white/[0.045] hover:bg-white/[0.07]',
                     isSelected && !confirmed && 'border-primary/55 bg-primary/10 shadow-[0_0_22px_rgba(var(--hub-primary-rgb),0.1)]',
                     isCorrect && 'border-emerald-400/60 bg-emerald-400/12',

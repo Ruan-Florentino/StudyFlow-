@@ -1,16 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "./styles/tokens.css";
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-premium-title: "Outfit", sans-serif;
+  --font-premium-title: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-premium-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-premium-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-premium-body: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-anton: "Outfit", sans-serif;
+  --font-anton: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-accent: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-tech: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
@@ -1621,3 +1621,286 @@ body {
   }
 }
 /* StudyFlow high-tech study app pass end */
+/* StudyFlow T. visual system pass: dark premium, tactile motion and calmer high-tech depth. */
+:root {
+  --hub-primary: #00E88F;
+  --hub-primary-rgb: 0, 232, 143;
+  --hub-primary-deep: #00B875;
+  --hub-primary-muted: rgba(0, 232, 143, 0.12);
+  --hub-primary-glow-halo: rgba(0, 232, 143, 0.2);
+  --hub-primary-glow-outer: rgba(0, 232, 143, 0.1);
+  --hub-bg-base: #050505;
+  --hub-bg-elevated: #0A0A0A;
+  --hub-bg-overlay: #101010;
+  --hub-bg-hover: #141414;
+  --surface-card: rgba(16, 16, 16, 0.86);
+  --surface-card-hover: rgba(20, 20, 20, 0.94);
+  --surface-border: rgba(255, 255, 255, 0.06);
+  --surface-border-strong: rgba(255, 255, 255, 0.12);
+  --text-muted-premium: #A1A1AA;
+  --neon-cyan: #4AD8FF;
+  --neon-purple: #A78BFA;
+  --neon-pink: #FF5C72;
+  --neon-amber: #FFB020;
+  --tok-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.48);
+  --tok-shadow-md: 0 10px 28px rgba(0, 0, 0, 0.38);
+  --tok-shadow-lg: 0 22px 60px rgba(0, 0, 0, 0.46);
+  --tok-shadow-xl: 0 34px 90px rgba(0, 0, 0, 0.58);
+  --tok-glow-primary: 0 18px 48px rgba(var(--hub-primary-rgb), 0.14);
+  --glass-bg: rgba(12, 12, 12, 0.76);
+  --glass-border: rgba(255, 255, 255, 0.075);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+  --selection-bg: rgba(var(--hub-primary-rgb), 0.24);
+  --selection-fg: #ffffff;
+}
+
+html,
+body {
+  background: #050505;
+  letter-spacing: 0;
+  text-rendering: geometricPrecision;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 26rem),
+    radial-gradient(90rem 42rem at 50% -22rem, rgba(var(--hub-primary-rgb), 0.12), transparent 60%),
+    radial-gradient(58rem 40rem at 100% 6rem, rgba(74, 216, 255, 0.075), transparent 64%),
+    #050505;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.42;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.014) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+:where(button, a, [role="button"], input, textarea, select) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, a, [role="button"], .premium-grid-card, .premium-list-card, .liquid-glass) {
+  transition-timing-function: var(--ease-smooth-out);
+}
+
+.app-cinematic-bg {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0) 22%),
+    radial-gradient(76rem 36rem at 50% -10rem, rgba(var(--hub-primary-rgb), 0.12), transparent 62%),
+    radial-gradient(44rem 42rem at 100% 12%, rgba(74, 216, 255, 0.07), transparent 64%),
+    #050505 !important;
+}
+
+.app-shell-premium {
+  background: transparent;
+}
+
+.studyflow-app-frame {
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  box-shadow: 0 38px 110px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.liquid-glass,
+.premium-grid-card,
+.premium-list-card,
+.premium-stat-tile,
+.premium-page-hero {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    linear-gradient(145deg, rgba(16, 16, 16, 0.9), rgba(8, 8, 8, 0.78)) !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(22px) saturate(145%);
+}
+
+.premium-grid-card,
+.premium-list-card,
+.premium-stat-tile {
+  transform: translateZ(0);
+  will-change: transform, border-color, box-shadow;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premium-grid-card:hover,
+  .premium-list-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 24px 68px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(var(--hub-primary-rgb), 0.035), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
+.premium-page-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-page-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.075) 42%, transparent 52%);
+  opacity: 0.16;
+  transform: translateX(-35%);
+  animation: studyflow-scan-sheen 8s var(--ease-smooth-in-out) infinite;
+}
+
+.bottom-nav-dock,
+.studyflow-nav-dock {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.034)),
+    rgba(10, 10, 10, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.105) !important;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 1px rgba(var(--hub-primary-rgb), 0.035);
+  backdrop-filter: blur(30px) saturate(165%);
+}
+
+.studyflow-nav-item {
+  color: rgba(255, 255, 255, 0.68);
+  will-change: transform;
+}
+
+a[aria-current="page"] .studyflow-nav-item {
+  color: var(--hub-primary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.studyflow-question-option {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform, border-color, background-color;
+}
+
+.studyflow-question-option::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(110deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+  transform: translateX(-40%);
+  transition: opacity 180ms var(--ease-smooth-out), transform 520ms var(--ease-smooth-out);
+}
+
+.studyflow-question-option:not(:disabled):hover::after,
+.studyflow-question-option:not(:disabled):focus-visible::after {
+  opacity: 1;
+  transform: translateX(45%);
+}
+
+.studyflow-question-option:not(:disabled):active {
+  transform: scale(0.985);
+}
+
+.studyflow-focus-mode {
+  background:
+    radial-gradient(44rem 28rem at 50% 12%, rgba(var(--hub-primary-rgb), 0.105), transparent 68%),
+    radial-gradient(38rem 32rem at 50% 100%, rgba(74, 216, 255, 0.055), transparent 70%);
+}
+
+.focus-timer-orb {
+  isolation: isolate;
+}
+
+.focus-timer-orb::before,
+.focus-timer-orb::after {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.focus-timer-orb::before {
+  border: 1px solid rgba(var(--hub-primary-rgb), 0.16);
+  background: radial-gradient(circle, rgba(var(--hub-primary-rgb), 0.105), transparent 58%);
+  filter: blur(0.2px);
+  opacity: 0.78;
+}
+
+.focus-timer-orb::after {
+  inset: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.035), transparent 60%);
+}
+
+.focus-timer-orb.is-running::before {
+  animation: studyflow-focus-breathe 3.4s var(--ease-smooth-in-out) infinite;
+}
+
+.focus-timer-orb > * {
+  position: relative;
+  z-index: 1;
+}
+
+:where(.premium-empty-panel, .empty-state, [data-empty-state="true"]) {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, rgba(16, 16, 16, 0.86), rgba(8, 8, 8, 0.76));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+textarea,
+input,
+select {
+  background-color: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.085);
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  border-color: rgba(var(--hub-primary-rgb), 0.5);
+  box-shadow: 0 0 0 4px rgba(var(--hub-primary-rgb), 0.08);
+}
+
+@keyframes studyflow-focus-breathe {
+  0%, 100% {
+    transform: scale(0.985);
+    opacity: 0.62;
+    box-shadow: 0 0 28px rgba(var(--hub-primary-rgb), 0.12);
+  }
+  50% {
+    transform: scale(1.035);
+    opacity: 0.95;
+    box-shadow: 0 0 58px rgba(var(--hub-primary-rgb), 0.2);
+  }
+}
+
+@keyframes studyflow-scan-sheen {
+  0%, 72%, 100% {
+    transform: translateX(-55%);
+    opacity: 0;
+  }
+  82% {
+    opacity: 0.18;
+  }
+  92% {
+    transform: translateX(65%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-page-hero::after,
+  .focus-timer-orb.is-running::before {
+    animation: none !important;
+  }
+
+  .premium-grid-card,
+  .premium-list-card,
+  .premium-stat-tile,
+  .studyflow-question-option {
+    transition-duration: 1ms !important;
+  }
+}
