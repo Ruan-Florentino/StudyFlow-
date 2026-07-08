@@ -6,6 +6,7 @@ import { useUserStore } from '../store/useUserStore';
 import { AppShell, AnimatedPageOutlet } from './shell';
 import { initAudioUnlocker } from '../lib/studyUtils';
 import { devAgentLog } from '../lib/devAgentLog';
+import { preloadCoreRoutes } from './router/preload';
 
 const Onboarding = lazy(() =>
   import('../components/Onboarding').then((module) => ({ default: module.Onboarding }))
@@ -71,6 +72,10 @@ export function AppContent() {
       window.removeEventListener('click', handleInteraction, true);
     };
   }, [checkStreak]);
+
+  useEffect(() => {
+    preloadCoreRoutes();
+  }, []);
 
   useEffect(() => {
     const handleGlobalShortcut = (event: KeyboardEvent) => {

@@ -20,11 +20,56 @@ export const preloadMap = {
   '/rotina': () => import('../../components/SmartSchedule').then(m => m.SmartSchedule),
 } as const;
 
-export function preloadRoute(path: string) {
-  const preload = preloadMap[path as keyof typeof preloadMap];
-  if (preload) {
-    preload().catch(() => {
-      // Silenciar: preload é best-effort
-    });
+const preloadedRoutes = new Set<string>();
+let coreRoutesQueued = false;
+
+export const CORE_PRELOAD_PATHS = [
+  '/explorar',
+  '/questoes',
+  '/redacao',
+  '/ai',
+  '/simulados',
+  '/metodos',
+] as const;
+
+function normalizePreloadPath(path: string) {
+  const [pathname] = path.split('?');
+  if (!pathname || pathname === '/') return '/';
+  return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+}
+
+type WindowWithIdleCallback = Window & typeof globalThis & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+};
+
+function runOnIdle(task: () => void, timeout: number) {
+  const idleWindow = window as WindowWithIdleCallback;
+  if (typeof idleWindow.requestIdleCallback === 'function') {
+    idleWindow.requestIdleCallback(task, { timeout });
+    return;
   }
+  window.setTimeout(task, Math.min(timeout, 800));
+}
+
+export function preloadRoute(path: string) {
+  const normalizedPath = normalizePreloadPath(path);
+  const preload = preloadMap[normalizedPath as keyof typeof preloadMap];
+  if (!preload || preloadedRoutes.has(normalizedPath)) return;
+
+  preloadedRoutes.add(normalizedPath);
+  preload().catch(() => {
+    preloadedRoutes.delete(normalizedPath);
+  });
+}
+
+export function preloadRouteOnIdle(path: string, timeout = 1200) {
+  runOnIdle(() => preloadRoute(path), timeout);
+}
+
+export function preloadCoreRoutes() {
+  if (coreRoutesQueued) return;
+  coreRoutesQueued = true;
+  CORE_PRELOAD_PATHS.forEach((path, index) => {
+    preloadRouteOnIdle(path, 900 + index * 220);
+  });
 }

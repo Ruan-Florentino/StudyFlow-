@@ -1,6 +1,7 @@
 import React, { ReactNode, Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { useSessionStore } from '../../store/useSessionStore';
 import { debugSessionIngest } from '../../lib/debugSessionIngest';
+import { RouteProgress } from './RouteProgress';
 
 const ROOM_AUDIO_SRC: Record<string, string> = {
   library: 'https://ice6.somafm.com/lush-128-mp3',
@@ -170,6 +171,7 @@ export function AppShell({
         <div className="studyflow-edge-rail studyflow-edge-rail-left" aria-hidden />
         <div className="studyflow-edge-rail studyflow-edge-rail-right" aria-hidden />
         <div className="fixed inset-0 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent z-[1000] pointer-events-none" />
+        <RouteProgress />
         
         {isCommandPaletteOpen && (
           <Suspense fallback={null}>

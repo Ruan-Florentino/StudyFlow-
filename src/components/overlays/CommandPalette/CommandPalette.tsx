@@ -27,6 +27,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useAppNavigation } from '../../../app/router/useAppNavigation';
+import { preloadRoute, preloadRouteOnIdle } from '../../../app/router/preload';
 import { springs, staggerContainer, staggerItemTight } from '../../../lib/animations';
 
 type CommandItem = {
@@ -118,6 +119,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   }, [isOpen, normalizedQuery]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    const activeCommand = filtered[activeIndex];
+    if (!activeCommand) return;
+    preloadRouteOnIdle(activeCommand.path, 700);
+  }, [activeIndex, filtered, isOpen]);
+
+  useEffect(() => {
     if (!isOpen) return undefined;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -205,7 +213,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     role="option"
                     aria-selected={selected}
                     variants={reduceMotion ? undefined : staggerItemTight}
-                    onMouseEnter={() => setActiveIndex(index)}
+                    onMouseEnter={() => {
+                      setActiveIndex(index);
+                      preloadRoute(command.path);
+                    }}
                     onClick={() => {
                       goTo(command.path);
                       onClose();
