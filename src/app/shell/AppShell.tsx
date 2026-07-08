@@ -1,4 +1,5 @@
-import React, { ReactNode, Suspense, lazy, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSessionStore } from '../../store/useSessionStore';
 import { debugSessionIngest } from '../../lib/debugSessionIngest';
 import { RouteProgress } from './RouteProgress';
@@ -70,6 +71,7 @@ export function AppShell({
   setIsCommandPaletteOpen,
   isUserInteracted
 }: AppShellProps) {
+  const location = useLocation();
   const studyRooms = useSessionStore((state) => state.studyRooms);
   const activeRoom = studyRooms.activeRoom
     ? studyRooms.rooms.find((room) => room.id === studyRooms.activeRoom)
@@ -80,6 +82,21 @@ export function AppShell({
     : null;
   const nativeAudioRef = useRef<HTMLAudioElement | null>(null);
   const [PlayerComponent, setPlayerComponent] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
+
+  useLayoutEffect(() => {
+    const resetScroll = () => {
+      const main = document.getElementById('app-main-scroll');
+      if (main) {
+        main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.scrollingElement?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    };
+
+    resetScroll();
+    const rafId = window.requestAnimationFrame(resetScroll);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (nativeRoomAudioSrc) return;

@@ -44,9 +44,9 @@ export function BottomNav() {
   const { currentTab } = useAppNavigation();
 
   const nav = (
-    <nav className="bottom-nav-shell studyflow-nav-shell pointer-events-auto fixed bottom-0 left-0 right-0 z-[90] pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2">
-      <div className="bottom-nav-dock studyflow-nav-dock mx-auto max-w-2xl overflow-hidden rounded-[30px] p-2.5">
-        <div className="relative flex h-[4.05rem] gap-1 overflow-x-auto overflow-y-hidden px-0.5 snap-x snap-mandatory no-scrollbar md:items-center md:justify-around md:gap-1.5 md:overflow-visible md:snap-none">
+    <nav className="bottom-nav-shell studyflow-nav-shell pointer-events-auto fixed bottom-0 left-0 right-0 z-[90] pl-[max(0.5rem,env(safe-area-inset-left,0px))] pr-[max(0.5rem,env(safe-area-inset-right,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2">
+      <div className="bottom-nav-dock studyflow-nav-dock mx-auto w-full max-w-2xl overflow-hidden rounded-[28px] p-1.5 md:p-2.5">
+        <div className="relative grid h-[4.05rem] grid-cols-6 gap-0.5 px-0.5 md:gap-1.5">
           {NAV_ITEMS.map((item) => {
             const isActive = currentTab === item.id;
             return (
@@ -60,11 +60,11 @@ export function BottomNav() {
                 title={item.label}
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
-                className="relative flex h-full min-w-[3.85rem] shrink-0 snap-center items-center justify-center no-underline md:min-w-0 md:flex-1 md:snap-none"
+                className="relative flex h-full min-w-0 items-center justify-center no-underline"
               >
                 <motion.div
                   whileTap={{ scale: 0.92, y: 1, transition: springs.snappy }}
-                  className="bottom-nav-item studyflow-nav-item relative flex min-h-[3.5rem] w-[92%] max-md:w-full flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 transition-[background-color,transform,color] duration-200 hover:bg-white/[0.055]"
+                  className="bottom-nav-item studyflow-nav-item relative flex min-h-[3.5rem] w-full flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 transition-[background-color,transform,color] duration-200 hover:bg-white/[0.055] md:rounded-[24px]"
                 >
                   {isActive && (
                     <motion.div
@@ -78,7 +78,7 @@ export function BottomNav() {
                     {item.badge && <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary" />}
                   </div>
                   <span className={isActive ? 'relative z-10 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)] md:block' : 'relative z-10 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] text-white/60 md:block'}>{item.label}</span>
-                  <span className={isActive ? 'relative z-10 text-center text-[8px] font-bold uppercase leading-[1.15] tracking-tight text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)] md:hidden' : 'relative z-10 text-center text-[8px] font-bold uppercase leading-[1.15] tracking-tight text-white/60 md:hidden'}>{item.labelCompact}</span>
+                  <span className={isActive ? 'relative z-10 max-w-full truncate text-center text-[7.5px] font-bold uppercase leading-[1.15] tracking-tight text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)] md:hidden' : 'relative z-10 max-w-full truncate text-center text-[7.5px] font-bold uppercase leading-[1.15] tracking-tight text-white/60 md:hidden'}>{item.labelCompact}</span>
                 </motion.div>
               </NavLink>
             );

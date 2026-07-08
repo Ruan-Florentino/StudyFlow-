@@ -39,14 +39,6 @@ import {
   Badge,
   Header
 } from '../../components/UI';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip
-} from 'recharts';
 import { clsx } from 'clsx';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { useUserAccess } from '../../hooks/useUserAccess';
@@ -163,6 +155,11 @@ const ProfileView = () => {
       };
     });
   }, [sessions]);
+
+  const maxActivityMinutes = useMemo(
+    () => Math.max(1, ...activityData.map((item) => item.minutos)),
+    [activityData]
+  );
 
   const favoriteFeatures = useMemo(() => {
     const featureLabels: Record<string, string> = {
@@ -283,7 +280,7 @@ const ProfileView = () => {
   return (
     <div className="mx-auto w-full max-w-6xl min-w-0 premium-page-stack pb-32">
       {/* Hidden share card for html2canvas */}
-      <div className="fixed -left-[9999px] top-0">
+      <div className="fixed -left-[9999px] top-0" aria-hidden="true">
         <div id="profile-share-card" className="w-[400px] p-8 bg-[#0a0a0a] border-2 border-[#00ff94]/20 rounded-[40px] space-y-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#00ff94]/10 blur-3xl rounded-full" />
           <div className="flex items-center gap-4">
@@ -470,41 +467,26 @@ const ProfileView = () => {
               Atividade (7 dias)
             </h3>
             <GlassCard className="premium-list-card p-4 flex flex-col gap-2 min-h-[12.5rem]">
-              <div className="h-40 w-full min-h-[10rem] shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={activityData} margin={{ top: 8, right: 4, left: 4, bottom: 4 }}>
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 'bold' }}
-                    />
-                    <YAxis hide domain={[0, 'auto']} />
-                    <Tooltip
-                      cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                      contentStyle={{
-                        backgroundColor: '#0a0a0a',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '12px',
-                      }}
-                      labelStyle={{
-                        color: 'rgba(255,255,255,0.5)',
-                        fontSize: '10px',
-                        textTransform: 'uppercase',
-                        marginBottom: '4px',
-                      }}
-                      itemStyle={{ color: themeColor, fontWeight: 'bold', fontSize: '12px' }}
-                      formatter={(value: number) => [`${value} min`, 'Estudo']}
-                    />
-                    <Bar
-                      dataKey="minutos"
-                      fill={themeColor}
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                      minPointSize={4}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="grid h-40 min-h-[10rem] w-full shrink-0 grid-cols-7 items-end gap-2 px-1 pt-2">
+                {activityData.map((item) => {
+                  const height = Math.max(8, Math.round((item.minutos / maxActivityMinutes) * 116));
+                  return (
+                    <div key={item.name} className="flex h-full min-w-0 flex-col items-center justify-end gap-2">
+                      <div className="flex h-[7.25rem] w-full items-end justify-center rounded-xl border border-white/[0.035] bg-white/[0.025] px-1">
+                        <motion.div
+                          initial={{ height: 4, opacity: 0.55 }}
+                          whileInView={{ height, opacity: item.minutos > 0 ? 1 : 0.35 }}
+                          viewport={{ once: true }}
+                          transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.soft}
+                          className="w-full max-w-[1.2rem] rounded-t-lg shadow-[0_0_16px_rgba(var(--hub-primary-rgb),0.18)]"
+                          style={{ backgroundColor: item.minutos > 0 ? themeColor : 'rgba(255,255,255,0.16)' }}
+                          title={`${item.name}: ${item.minutos} min`}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase text-white/45">{item.name}</span>
+                    </div>
+                  );
+                })}
               </div>
               {activityData.every((x) => x.minutos === 0) && (
                 <p className="text-[10px] text-text-secondary text-center font-medium">

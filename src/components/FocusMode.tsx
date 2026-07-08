@@ -170,7 +170,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className={clsx(
-      'studyflow-focus-mode app-shell-premium pt-6 md:pt-8 flex flex-col items-center justify-center min-h-screen space-y-10 pb-32 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden',
+      'studyflow-focus-mode app-shell-premium pt-4 md:pt-8 flex flex-col items-center justify-start md:justify-center min-h-screen space-y-6 md:space-y-10 pb-40 md:pb-36 animate-in fade-in duration-1000 relative overflow-hidden',
       zenMode && 'bg-black'
     )}>
       {zenMode && (
@@ -224,12 +224,12 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </motion.div>
       )}
 
-      <div className="relative z-10 text-center space-y-3">
+      <div className="relative z-10 text-center space-y-2 md:space-y-3">
         <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1 text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-white/55">
           <span className={clsx('h-1.5 w-1.5 rounded-full', isActive ? 'bg-primary shadow-[0_0_12px_rgba(var(--hub-primary-rgb),0.8)]' : 'bg-white/25')} />
           {isActive ? 'Rodando' : 'Pronto'}
         </div>
-        <h2 className="text-4xl font-premium-title tracking-tight sm:text-5xl">{mode === 'work' ? 'Foco Profundo' : 'Descanso'}</h2>
+        <h2 className="text-3xl font-premium-title tracking-tight sm:text-5xl">{mode === 'work' ? 'Foco Profundo' : 'Descanso'}</h2>
         <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-premium-mono font-bold uppercase tracking-[0.16em] text-text-secondary">
           <span className="text-primary">Sessao {currentSession}/{sessionGoal}</span>
           <span>{minutesFocused} min focados</span>
@@ -241,7 +241,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </div>
       </div>
 
-      <div className={clsx('focus-timer-orb relative z-10 flex h-72 w-72 shrink-0 items-center justify-center', isActive && 'is-running')}>
+      <div className={clsx('focus-timer-orb relative z-10 flex h-72 w-72 shrink-0 items-center justify-center max-[430px]:scale-[0.84] max-[430px]:-my-5', isActive && 'is-running')}>
         <div className="absolute inset-0 rounded-full border border-white/5" />
         <svg width="288" height="288" className="absolute inset-0 z-10 -rotate-90 transform" aria-hidden>
           <circle
@@ -278,7 +278,7 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
         </div>
       </div>
 
-      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-5">
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-3 md:gap-5">
         <div className="grid w-full grid-cols-2 gap-3">
           <button
             onClick={resetTimer}
