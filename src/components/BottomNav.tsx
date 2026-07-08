@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -31,6 +32,18 @@ function triggerHaptic() {
   if ('vibrate' in navigator) navigator.vibrate(10);
 }
 
+function scrollMainToTop() {
+  const main = document.getElementById('app-main-scroll');
+  const target = main ?? document.scrollingElement ?? document.documentElement;
+  target.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+}
+
+function handleNavClick(event: MouseEvent<HTMLAnchorElement>, isActive: boolean) {
+  triggerHaptic();
+  if (!isActive) return;
+  event.preventDefault();
+  scrollMainToTop();
+}
 export function BottomNav() {
   const { currentTab } = useAppNavigation();
   const activeRoomId = useStore((s) => s.studyRooms?.activeRoom ?? null);
@@ -50,12 +63,13 @@ export function BottomNav() {
               <NavLink
                 key={item.id}
                 to={item.path}
-                onClick={triggerHaptic}
+                onClick={(event) => handleNavClick(event, isActive)}
                 onMouseEnter={() => preloadRoute(item.path)}
                 onFocus={() => preloadRoute(item.path)}
                 onTouchStart={() => preloadRoute(item.path)}
                 title={item.label}
                 aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
                 className="relative flex h-full min-w-[3.85rem] shrink-0 snap-center items-center justify-center no-underline md:min-w-0 md:flex-1 md:snap-none"
               >
                 <motion.div

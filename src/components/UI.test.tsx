@@ -29,7 +29,8 @@ describe('AnimatedButton', () => {
 
   it('aplica classes de variantes corretamente', () => {
     const { rerender } = render(<AnimatedButton variant="primary">Botao</AnimatedButton>);
-    expect(screen.getByRole('button')).toHaveClass('bg-primary');
+    expect(screen.getByRole('button').className).toContain('bg-[linear-gradient');
+    expect(screen.getByRole('button')).toHaveClass('text-black');
 
     rerender(<AnimatedButton variant="danger">Botao</AnimatedButton>);
     expect(screen.getByRole('button')).toHaveClass('bg-red-500/10');

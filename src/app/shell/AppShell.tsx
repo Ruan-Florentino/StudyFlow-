@@ -176,7 +176,6 @@ export function AppShell({
             <CommandPalette
               isOpen={isCommandPaletteOpen}
               onClose={() => setIsCommandPaletteOpen(false)}
-              onToggle={() => setIsCommandPaletteOpen(!isCommandPaletteOpen)}
             />
           </Suspense>
         )}

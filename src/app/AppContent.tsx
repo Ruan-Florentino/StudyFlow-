@@ -10,6 +10,11 @@ import { devAgentLog } from '../lib/devAgentLog';
 const Onboarding = lazy(() =>
   import('../components/Onboarding').then((module) => ({ default: module.Onboarding }))
 );
+function isEditableShortcutTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  const tagName = target.tagName.toLowerCase();
+  return target.isContentEditable || tagName === 'input' || tagName === 'textarea' || tagName === 'select';
+}
 
 /**
  * AppContent (Layout)
@@ -66,6 +71,17 @@ export function AppContent() {
       window.removeEventListener('click', handleInteraction, true);
     };
   }, [checkStreak]);
+
+  useEffect(() => {
+    const handleGlobalShortcut = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return;
+      if (isEditableShortcutTarget(event.target) && !isCommandPaletteOpen) return;
+      event.preventDefault();
+      setIsCommandPaletteOpen((open) => !open);
+    };
+    window.addEventListener('keydown', handleGlobalShortcut);
+    return () => window.removeEventListener('keydown', handleGlobalShortcut);
+  }, [isCommandPaletteOpen]);
 
   // Theme Sync
   useEffect(() => {

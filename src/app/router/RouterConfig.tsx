@@ -11,7 +11,14 @@ import { AppContent } from '../AppContent';
  */
 
 // Elemento de erro funcional para o roteador
-const ErrorLoader = () => <RouteErrorBoundary><div>Erro Crítico</div></RouteErrorBoundary>;
+const ErrorLoader = () => {
+  const location = useLocation();
+  return (
+    <RouteErrorBoundary resetKey={`${location.pathname}${location.search}`}>
+      <div>Erro Crítico</div>
+    </RouteErrorBoundary>
+  );
+};
 const NotFoundRedirect = () => {
   const location = useLocation();
   useEffect(() => {

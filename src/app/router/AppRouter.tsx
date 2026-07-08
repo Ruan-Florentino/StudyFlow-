@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { routes } from './routes';
 import { RouteFallback } from './RouteFallback';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
@@ -12,8 +12,11 @@ import { RouteErrorBoundary } from './RouteErrorBoundary';
  */
 
 export function AppRouter() {
+  const location = useLocation();
+  const resetKey = `${location.pathname}${location.search}`;
+
   return (
-    <RouteErrorBoundary>
+    <RouteErrorBoundary resetKey={resetKey}>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           {routes.map(({ path, Component }) => (
