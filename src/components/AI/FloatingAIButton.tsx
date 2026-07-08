@@ -29,18 +29,76 @@ type ScrollSnapshot = {
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const smoothstep = (value: number) => value * value * (3 - 2 * value);
+
+const readPageScroll = (): ScrollSnapshot => {
+  const main = document.getElementById('app-main-scroll');
+  const doc = document.scrollingElement ?? document.documentElement;
+  const body = document.body;
+  const mainTop = main?.scrollTop ?? 0;
+  const docTop = window.scrollY || doc.scrollTop || body.scrollTop || 0;
+  const mainLeft = main?.scrollLeft ?? 0;
+  const docLeft = window.scrollX || doc.scrollLeft || body.scrollLeft || 0;
+  const mainMaxTop = main ? Math.max(0, main.scrollHeight - main.clientHeight) : 0;
+  const docMaxTop = Math.max(0, doc.scrollHeight - window.innerHeight);
+  const mainMaxLeft = main ? Math.max(0, main.scrollWidth - main.clientWidth) : 0;
+  const docMaxLeft = Math.max(0, doc.scrollWidth - window.innerWidth);
+
+  return {
+    top: Math.abs(mainTop) > Math.abs(docTop) ? mainTop : docTop,
+    left: Math.abs(mainLeft) > Math.abs(docLeft) ? mainLeft : docLeft,
+    maxTop: Math.max(1, mainMaxTop, docMaxTop),
+    maxLeft: Math.max(1, mainMaxLeft, docMaxLeft),
+  };
+};
+
+const getFlightBounds = () => {
+  const viewportWidth = window.innerWidth || 390;
+  const viewportHeight = window.innerHeight || 720;
+  const buttonSize = viewportWidth <= 380 ? 98 : 106;
+  const bottomInset = viewportWidth < 768 ? 124 : 76;
+  const availableBottom = Math.max(96, viewportHeight - buttonSize - bottomInset);
+  const upper = Math.min(availableBottom, Math.max(86, viewportHeight * 0.16));
+
+  return {
+    viewportWidth,
+    viewportHeight,
+    buttonSize,
+    upper,
+    lower: Math.max(upper + 96, availableBottom),
+    minX: -(viewportWidth - buttonSize - 12),
+    maxX: -8,
+  };
+};
+
+const getFlightTarget = (snapshot: ScrollSnapshot, manualOffset: { x: number; y: number }) => {
+  const bounds = getFlightBounds();
+  const progressY = clamp(snapshot.top / snapshot.maxTop, 0, 1);
+  const progressX = clamp(snapshot.left / snapshot.maxLeft, 0, 1);
+  const easedY = smoothstep(progressY);
+  const sideWave = Math.sin(progressY * Math.PI * 2.25) * Math.min(24, bounds.viewportWidth * 0.055);
+  const baseY = bounds.upper + easedY * (bounds.lower - bounds.upper);
+  const baseX = -18 - progressX * Math.min(132, bounds.viewportWidth * 0.32) + sideWave;
+
+  return {
+    x: Math.round(clamp(baseX + manualOffset.x, bounds.minX, bounds.maxX)),
+    y: Math.round(clamp(baseY + manualOffset.y, bounds.upper, bounds.lower)),
+    bounds,
+  };
+};
 
 function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: boolean; gliding: boolean }) {
+  const alert = active || gliding;
   const leftWingMotion = gliding
-    ? { rotate: [-8, 10, -5], x: [-0.8, 1.1, -0.5], y: [1.1, -2.2, 0.5] }
-    : { rotate: [-1.8, 1.2, -1.4], x: [-0.18, 0.16, -0.12], y: [0.1, -0.35, 0.1] };
+    ? { rotate: [-12, 7, -9, 3], x: [-1.4, 0.8, -0.8, 0.2], y: [1.2, -2.8, 0.6, -1.2] }
+    : { rotate: [-2.2, 0.9, -1.4], x: [-0.12, 0.1, -0.08], y: [0.08, -0.32, 0.08] };
   const rightWingMotion = gliding
-    ? { rotate: [8, -10, 5], x: [0.8, -1.1, 0.5], y: [1.1, -2.2, 0.5] }
-    : { rotate: [1.8, -1.2, 1.4], x: [0.18, -0.16, 0.12], y: [0.1, -0.35, 0.1] };
+    ? { rotate: [12, -7, 9, -3], x: [1.4, -0.8, 0.8, -0.2], y: [1.2, -2.8, 0.6, -1.2] }
+    : { rotate: [2.2, -0.9, 1.4], x: [0.12, -0.1, 0.08], y: [0.08, -0.32, 0.08] };
   const headMotion = gliding
-    ? { y: [-0.8, 0.6, -0.4], rotate: [-1.4, 1.1, -0.8] }
-    : { y: [0, -0.55, 0], rotate: [-0.5, 0.55, -0.35] };
-  const gazeShift = active ? 1.25 : 0;
+    ? { y: [-1.2, 0.45, -0.85, 0.1], rotate: [-1.9, 0.9, -1.2, 0.4] }
+    : { y: [0, -0.5, 0], rotate: [-0.42, 0.48, -0.28] };
+  const gazeShift = alert ? 1.45 : 0.25;
 
   return (
     <svg
@@ -87,6 +145,17 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
           <stop offset="0.68" stopColor="#1686ff" />
           <stop offset="1" stopColor="#03182f" />
         </radialGradient>
+        <radialGradient id="athena-eye-ring" cx="48%" cy="42%" r="58%">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.96" />
+          <stop offset="0.34" stopColor="#7ff8ff" stopOpacity="0.72" />
+          <stop offset="0.68" stopColor="#00d4ff" stopOpacity="0.42" />
+          <stop offset="1" stopColor="#00395e" stopOpacity="0.18" />
+        </radialGradient>
+        <linearGradient id="athena-plume-rim" x1="38" x2="74" y1="55" y2="88" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#fff3d8" stopOpacity="0.5" />
+          <stop offset="0.42" stopColor="#54f2ff" stopOpacity="0.34" />
+          <stop offset="1" stopColor="#00e88f" stopOpacity="0.1" />
+        </linearGradient>
         <linearGradient id="athena-beak-premium" x1="51" x2="60" y1="48" y2="61" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#ffe7ae" />
           <stop offset="0.54" stopColor="#f0a23a" />
@@ -191,16 +260,31 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
           stroke="rgba(255,244,218,0.5)"
           strokeWidth="1.55"
         />
+        <motion.path
+          d="M38.4 28.2c8.2-5.4 21.3-6.2 31.3-1.3 8.8 4.3 13.7 13.5 12.6 25.6-.9 10-4.6 18.7-10.5 25.3 3.2-7.4 4.7-15.5 3.9-23.1-1.3-12.7-8.9-20.3-19.8-20.3S37.7 42 36.4 54.7c-.8 7.6.7 15.7 3.9 23.1-6-6.6-9.6-15.3-10.5-25.3-1.1-10.8 2.3-19.1 8.6-24.3Z"
+          fill="rgba(255,255,255,0.08)"
+          animate={{ opacity: alert ? [0.16, 0.27, 0.16] : [0.08, 0.14, 0.08] }}
+          transition={{ duration: alert ? 1.1 : 3.6, repeat: Infinity, ease: 'easeInOut' }}
+        />
         <path
           d="M34.6 35.3c5.2-8.3 14.7-8.1 21.4-1.7 6.7-6.4 16.2-6.6 21.4 1.7 5.8 9.2.5 21.7-10.4 23.4-4.7.8-8.5-.6-11-3.9-2.5 3.3-6.3 4.7-11 3.9-10.9-1.7-16.2-14.2-10.4-23.4Z"
           fill="url(#athena-face-premium)"
           stroke="rgba(255,255,255,0.34)"
           strokeWidth="1.15"
         />
+        <path d="M39.3 36.4c4.3-5.4 10.3-4.8 16.7 1.4 6.4-6.2 12.4-6.8 16.7-1.4 4.7 5.9 1.5 14.4-6.3 16.2-4.5 1-8-.3-10.4-3.7-2.4 3.4-5.9 4.7-10.4 3.7-7.8-1.8-11-10.3-6.3-16.2Z" fill="rgba(255,255,255,0.18)" />
         <path d="M37.5 31.8c5.6-5.1 12.1-4.7 18.5 1.8 6.4-6.5 12.9-6.9 18.5-1.8" fill="none" stroke="rgba(255,255,255,0.38)" strokeLinecap="round" strokeWidth="1.35" />
         <path d="M33.8 15.6c3.9 4.7 8.3 7.5 13.1 8.4" fill="none" stroke="rgba(227,251,255,0.62)" strokeLinecap="round" strokeWidth="1.35" />
         <path d="M78.2 15.6c-3.9 4.7-8.3 7.5-13.1 8.4" fill="none" stroke="rgba(227,251,255,0.62)" strokeLinecap="round" strokeWidth="1.35" />
         <path d="M39.4 60.4c4.9 4 10.4 5.9 16.6 5.9s11.7-1.9 16.6-5.9c-1.2 15.9-7.1 25.8-16.6 25.8S40.6 76.3 39.4 60.4Z" fill="url(#athena-chest-plume)" filter="url(#athena-feather-depth)" opacity="0.88" />
+        <motion.g
+          animate={{ opacity: alert ? [0.72, 1, 0.72] : [0.46, 0.64, 0.46] }}
+          transition={{ duration: alert ? 1.18 : 3.9, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <path d="M42.7 62.2c3.6 2.3 8 3.5 13.3 3.5s9.7-1.2 13.3-3.5" fill="none" stroke="url(#athena-plume-rim)" strokeLinecap="round" strokeWidth="1.25" />
+          <path d="M44.8 68.2c3.1 2 6.8 3 11.2 3s8.1-1 11.2-3" fill="none" stroke="rgba(221,255,242,0.34)" strokeLinecap="round" strokeWidth="1.05" />
+          <path d="M48.4 74.2c2.1 1.2 4.7 1.8 7.6 1.8s5.5-.6 7.6-1.8" fill="none" stroke="rgba(255,238,204,0.26)" strokeLinecap="round" strokeWidth="1" />
+        </motion.g>
         <g opacity="0.94" filter="url(#athena-feather-depth)">
           <path
             d="M44.8 60.9c3.8 1 7.6 1.5 11.2 1.5s7.4-.5 11.2-1.5c-.4 9.6-4.1 16.2-11.2 20.1-7.1-3.9-10.8-10.5-11.2-20.1Z"
@@ -242,10 +326,28 @@ function AthenaOwl({ blinking, active, gliding }: { blinking: boolean; active: b
       </motion.g>
 
       <g filter="url(#athena-eye-glow)">
-        <ellipse cx="45.1" cy="45.4" rx="10" ry="10.7" fill="#06131c" stroke="rgba(196,247,255,0.58)" strokeWidth="1.15" />
-        <ellipse cx="66.9" cy="45.4" rx="10" ry="10.7" fill="#06131c" stroke="rgba(196,247,255,0.58)" strokeWidth="1.15" />
-        <ellipse cx="45.1" cy="45.4" rx="7.3" ry="7.9" fill="rgba(0,191,255,0.22)" />
-        <ellipse cx="66.9" cy="45.4" rx="7.3" ry="7.9" fill="rgba(0,191,255,0.22)" />
+        <ellipse cx="45.1" cy="45.4" rx="10.4" ry="11" fill="#041018" stroke="rgba(196,247,255,0.5)" strokeWidth="1.15" />
+        <ellipse cx="66.9" cy="45.4" rx="10.4" ry="11" fill="#041018" stroke="rgba(196,247,255,0.5)" strokeWidth="1.15" />
+        <motion.ellipse
+          cx="45.1"
+          cy="45.4"
+          rx="7.75"
+          ry="8.25"
+          fill="url(#athena-eye-ring)"
+          animate={{ opacity: alert ? [0.78, 1, 0.8] : [0.5, 0.72, 0.52], scale: alert ? [1, 1.04, 1] : [0.98, 1.01, 0.99] }}
+          transition={{ duration: alert ? 1.1 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '45.1px 45.4px' }}
+        />
+        <motion.ellipse
+          cx="66.9"
+          cy="45.4"
+          rx="7.75"
+          ry="8.25"
+          fill="url(#athena-eye-ring)"
+          animate={{ opacity: alert ? [0.78, 1, 0.8] : [0.5, 0.72, 0.52], scale: alert ? [1, 1.04, 1] : [0.98, 1.01, 0.99] }}
+          transition={{ duration: alert ? 1.1 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '66.9px 45.4px' }}
+        />
         {blinking ? (
           <>
             <path d="M38.7 45.2h12.8" stroke="#d7fff1" strokeLinecap="round" strokeWidth="2.8" />
@@ -311,6 +413,7 @@ export function FloatingAIButton() {
   });
   const suppressClickRef = React.useRef(false);
   const lastDragAtRef = React.useRef(0);
+  const manualOffsetRef = React.useRef({ x: 0, y: 0 });
 
   React.useEffect(() => {
     flightRef.current = flight;
@@ -363,60 +466,36 @@ export function FloatingAIButton() {
     let lastTop = 0;
     let lastLeft = 0;
 
-    const getMain = () => document.getElementById('app-main-scroll');
-    const readScroll = (): ScrollSnapshot => {
-      const main = getMain();
-      const doc = document.scrollingElement ?? document.documentElement;
-      const body = document.body;
-      const mainTop = main?.scrollTop ?? 0;
-      const docTop = window.scrollY || doc.scrollTop || body.scrollTop || 0;
-      const mainLeft = main?.scrollLeft ?? 0;
-      const docLeft = window.scrollX || doc.scrollLeft || body.scrollLeft || 0;
-      const mainMaxTop = main ? Math.max(0, main.scrollHeight - main.clientHeight) : 0;
-      const docMaxTop = Math.max(0, doc.scrollHeight - window.innerHeight);
-      const mainMaxLeft = main ? Math.max(0, main.scrollWidth - main.clientWidth) : 0;
-      const docMaxLeft = Math.max(0, doc.scrollWidth - window.innerWidth);
-
-      return {
-        top: Math.abs(mainTop) > Math.abs(docTop) ? mainTop : docTop,
-        left: Math.abs(mainLeft) > Math.abs(docLeft) ? mainLeft : docLeft,
-        maxTop: Math.max(1, mainMaxTop, docMaxTop),
-        maxLeft: Math.max(1, mainMaxLeft, docMaxLeft),
-      };
-    };
-
     const calculateFlight = (snapshot: ScrollSnapshot, deltaTop: number, deltaLeft: number) => {
-      const viewportHeight = window.innerHeight || 720;
-      const viewportWidth = window.innerWidth || 390;
-      const progressY = clamp(snapshot.top / snapshot.maxTop, 0, 1);
-      const progressX = clamp(snapshot.left / snapshot.maxLeft, 0, 1);
-      const upper = Math.max(86, viewportHeight * 0.52);
-      const lower = Math.max(upper + 220, viewportHeight - 92);
       const currentPosition = flightRef.current;
-      const mappedY = upper + progressY * (lower - upper);
-      const scrollPush = clamp(deltaTop * 0.72, -52, 52);
-      const followStrength = Math.abs(deltaTop) > 0.05 ? 0.28 : 0.08;
-      const y = Math.round(clamp(currentPosition.y + (mappedY - currentPosition.y) * followStrength + scrollPush, upper, lower));
-      const maxSideTravel = Math.min(210, viewportWidth * 0.54);
-      const sideWave = Math.sin(progressY * Math.PI * 3.4) * Math.min(42, viewportWidth * 0.1);
-      const mappedX = -18 - Math.abs(sideWave) - progressX * Math.min(132, viewportWidth * 0.3);
-      const directX = currentPosition.x - deltaLeft * 0.9;
-      const x = Math.round(clamp(Math.abs(deltaLeft) > 0.05 ? directX : mappedX, -maxSideTravel, -10));
+      const target = getFlightTarget(snapshot, manualOffsetRef.current);
+      const activeMotion = Math.abs(deltaTop) > 0.08 || Math.abs(deltaLeft) > 0.08;
+      const verticalStrength = activeMotion ? 0.18 : 0.1;
+      const horizontalStrength = Math.abs(deltaLeft) > 0.08 ? 0.24 : 0.12;
+      const scrollPush = clamp(deltaTop * 0.14, -22, 22);
+      const lateralPush = clamp(deltaLeft * -0.22, -18, 18);
+      const y = Math.round(clamp(
+        currentPosition.y + (target.y - currentPosition.y) * verticalStrength + scrollPush,
+        target.bounds.upper,
+        target.bounds.lower,
+      ));
+      const x = Math.round(clamp(
+        currentPosition.x + (target.x - currentPosition.x) * horizontalStrength + lateralPush,
+        target.bounds.minX,
+        target.bounds.maxX,
+      ));
       const horizontal = x - currentPosition.x;
       const vertical = y - currentPosition.y;
-      const strongMotion = Math.abs(deltaTop) > 0.5 || Math.abs(deltaLeft) > 0.5;
-
-      const flip: 1 | -1 = horizontal < -1 ? -1 : 1;
+      const flip: 1 | -1 = horizontal < -1.1 ? -1 : horizontal > 1.1 ? 1 : currentPosition.flip;
 
       return {
         x,
         y,
-        tilt: clamp(vertical * 0.16 + horizontal * 0.08, -24, 24),
+        tilt: clamp(vertical * 0.13 + horizontal * 0.07, -18, 18),
         flip,
-        peek: strongMotion,
+        peek: activeMotion,
       };
     };
-
     const scheduleBlink = () => {
       blinkTimer = setTimeout(() => {
         setBlink(true);
@@ -439,7 +518,7 @@ export function FloatingAIButton() {
 
     const syncToScroll = () => {
       rafId = null;
-      const snapshot = readScroll();
+      const snapshot = readPageScroll();
       const deltaTop = snapshot.top - lastTop;
       const deltaLeft = snapshot.left - lastLeft;
       lastTop = snapshot.top;
@@ -486,14 +565,14 @@ export function FloatingAIButton() {
       requestSync();
     };
 
-    const initial = readScroll();
+    const initial = readPageScroll();
     lastTop = initial.top;
     lastLeft = initial.left;
-    const initialFlight = calculateFlight(initial, 0, 0);
+    const initialFlight = getFlightTarget(initial, manualOffsetRef.current);
     commitFlight((current) => ({ ...current, x: initialFlight.x, y: initialFlight.y }));
     scheduleBlink();
 
-    const main = getMain();
+    const main = document.getElementById('app-main-scroll');
     const visualViewport = window.visualViewport;
     main?.addEventListener('scroll', requestSync, { passive: true });
     document.addEventListener('scroll', requestSync, { passive: true, capture: true });
@@ -524,17 +603,11 @@ export function FloatingAIButton() {
   if (isOpen) return null;
 
   const clampDraggedFlight = (x: number, y: number) => {
-    const viewportWidth = window.innerWidth || 390;
-    const viewportHeight = window.innerHeight || 720;
-    const buttonSize = viewportWidth <= 380 ? 98 : 106;
-    const minX = -(viewportWidth - buttonSize - 12);
-    const maxX = -8;
-    const minY = Math.max(44, viewportHeight * 0.06);
-    const maxY = Math.max(minY, viewportHeight - buttonSize - 22);
+    const bounds = getFlightBounds();
 
     return {
-      x: Math.round(clamp(x, minX, maxX)),
-      y: Math.round(clamp(y, minY, maxY)),
+      x: Math.round(clamp(x, bounds.minX, bounds.maxX)),
+      y: Math.round(clamp(y, bounds.upper, bounds.lower)),
     };
   };
 
@@ -551,6 +624,13 @@ export function FloatingAIButton() {
     suppressClickRef.current = false;
     setHover(true);
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    commitFlight((current) => ({
+      ...current,
+      tilt: current.flip === -1 ? -8 : 8,
+      gliding: true,
+      peek: true,
+      burst: current.burst + 1,
+    }));
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -569,6 +649,11 @@ export function FloatingAIButton() {
     event.preventDefault();
 
     const nextPosition = clampDraggedFlight(drag.startX + deltaX, drag.startY + deltaY);
+    const neutralTarget = getFlightTarget(readPageScroll(), { x: 0, y: 0 });
+    manualOffsetRef.current = {
+      x: clamp(nextPosition.x - neutralTarget.x, -neutralTarget.bounds.viewportWidth * 0.44, 18),
+      y: clamp(nextPosition.y - neutralTarget.y, -neutralTarget.bounds.viewportHeight * 0.36, neutralTarget.bounds.viewportHeight * 0.36),
+    };
     commitFlight((current) => ({
       ...current,
       x: nextPosition.x,
@@ -635,13 +720,13 @@ export function FloatingAIButton() {
       onHoverEnd={() => setHover(false)}
       initial={{ opacity: 0, scale: 0.72, x: -18, y: 460 }}
       animate={{
-        opacity: routeMotion.behind ? 0.42 : flight.peek ? 0.9 : 1,
-        scale: routeMotion.behind ? 0.64 : hover ? 1.06 : flight.peek ? 0.96 : 1,
+        opacity: routeMotion.behind ? 0.38 : flight.peek ? 0.94 : 1,
+        scale: routeMotion.behind ? 0.72 : isDragging ? 1.08 : hover ? 1.07 : flight.peek ? 0.985 : 1,
         x: flight.x,
-        y: flight.y - (routeMotion.behind ? 34 : 0),
-        rotate: routeMotion.behind ? -4 : flight.tilt,
+        y: flight.y - (routeMotion.behind ? 22 : 0),
+        rotate: routeMotion.behind ? (flight.flip === -1 ? -8 : 8) : flight.tilt,
       }}
-      transition={reduced ? { duration: 0.08 } : { type: 'spring', stiffness: 230, damping: 24, mass: 0.42 }}
+      transition={reduced ? { duration: 0.08 } : { type: 'spring', stiffness: 170, damping: 22, mass: 0.58 }}
       whileTap={{ scale: 0.9, transition: springs.snappy }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -649,6 +734,8 @@ export function FloatingAIButton() {
       onPointerCancel={handlePointerCancel}
       className="athena-floating-button fixed right-0 top-0 z-[100] h-[6.65rem] w-[6.65rem] overflow-visible rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d] max-[380px]:h-[6.15rem] max-[380px]:w-[6.15rem]"
       data-dragging={isDragging ? 'true' : 'false'}
+      data-gliding={flight.gliding ? 'true' : 'false'}
+      data-route-motion={routeMotion.behind ? 'behind' : 'idle'}
     >
       <AnimatePresence>
         {ripple > 0 && (
@@ -703,15 +790,28 @@ export function FloatingAIButton() {
         transition={{ duration: hover || flight.gliding ? 3.8 : 7.5, repeat: Infinity, ease: 'linear' }}
       />
 
+      <AnimatePresence>
+        {routeMotion.behind && !reduced && (
+          <motion.span
+            key={`route-${routeMotion.pulse}`}
+            aria-hidden
+            className="athena-route-warp pointer-events-none absolute inset-4 rounded-full"
+            initial={{ opacity: 0.54, scale: 0.72, rotate: -20 }}
+            animate={{ opacity: 0, scale: 1.36, rotate: 18 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.42, ease: 'easeOut' }}
+          />
+        )}
+      </AnimatePresence>
       <motion.span
         className="athena-owl-shell relative z-10 flex h-full w-full items-center justify-center rounded-full p-[0.12rem]"
         animate={{
-          rotateY: routeMotion.behind ? 180 : flight.flip === -1 ? 180 : 0,
-          x: routeMotion.behind ? 0 : flight.peek ? flight.flip * 7 : 0,
-          y: routeMotion.behind ? -12 : 0,
-          scale: routeMotion.behind ? 0.84 : 1,
+          rotateY: routeMotion.behind ? 176 : flight.flip === -1 ? 180 : 0,
+          x: routeMotion.behind ? 0 : flight.peek ? flight.flip * 4 : 0,
+          y: routeMotion.behind ? -10 : flight.gliding ? -2 : 0,
+          scale: routeMotion.behind ? 0.86 : flight.gliding ? 1.025 : 1,
         }}
-        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: routeMotion.behind ? 0.34 : 0.46, ease: [0.22, 1, 0.36, 1] }}
         style={{
           transformPerspective: 760,
           background:
