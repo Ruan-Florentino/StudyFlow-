@@ -1,753 +1,652 @@
-// External libs
+import type { ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { staggerContainer, staggerItem } from '../../lib/animations/variants';
-import { easings, springs } from '../../lib/animations/easings';
-
-// Lucide icons
+import type { LucideIcon } from 'lucide-react';
 import {
+  ArrowRight,
   BarChart3,
-  Target,
-  Play,
-  Users,
   BookOpen,
-  Clock,
-  Trophy,
-  Brain,
   Calendar,
-  TrendingUp,
-  CheckCircle2,
-  ArrowUpRight,
-  MessageSquare,
-  Timer,
-  Headset,
-  BrainCircuit,
-  BookOpenCheck,
-  Swords,
+  ChevronRight,
+  Clock3,
+  Compass,
   Crown,
-  Layers,
-  Quote,
-  XCircle,
   FileText,
-  PenTool,
+  Flame,
+  LineChart,
+  MessageSquare,
+  PenLine,
+  Play,
+  Quote,
   RotateCcw,
-  Info
+  Search,
+  Sparkles,
+  Target,
+  Timer,
+  Trophy,
+  Zap,
 } from 'lucide-react';
 
-// Stores
-import { useStore } from '../../store';
-import { useUserAccess } from '../../hooks/useUserAccess';
-
-// Data
-import { useQuestionMap } from '../../hooks/useQuestions';
-import { QuestionsLoadingSkeleton } from '../../components/shared/QuestionsLoadingSkeleton';
-import { QuestionsLoadError } from '../../components/shared/QuestionsLoadError';
-
-// UI Components + utils
-import {
-  GlassCard,
-  AnimatedButton,
-  ProgressRing,
-  NeonIcon,
-  Badge,
-  IconTile,
-  cn
-} from '../../components/UI';
-
-// Utils
-import { calculateDaysLeft } from '../../lib/studyUtils';
-import { leagueTierProgressPercent } from '../../lib/leagueThresholds';
-
-// Cross-view import
+import { useAppNavigation } from '../../app/router/useAppNavigation';
 import { Heatmap } from '../../components/Heatmap';
 import { AuroraBackground } from '../../components/fx/AuroraBackground';
 import { NeonBadge } from '../../components/fx/NeonBadge';
+import { AnimatedButton, Badge, GlassCard, IconTile, ProgressRing, cn } from '../../components/UI';
+import { useQuestionMap } from '../../hooks/useQuestions';
+import { useUserAccess } from '../../hooks/useUserAccess';
+import { easings } from '../../lib/animations/easings';
+import { staggerContainer, staggerItem } from '../../lib/animations/variants';
+import { leagueTierProgressPercent } from '../../lib/leagueThresholds';
+import { calculateDaysLeft } from '../../lib/studyUtils';
+import { useStore } from '../../store';
 
-import { useAppNavigation } from '../../app/router/useAppNavigation';
+const formatNumber = new Intl.NumberFormat('pt-BR');
 
 const DAILY_QUOTES = [
-  { text: 'A jornada de mil milhas começa com um único passo.', author: 'Lao Tzu' },
-  { text: 'Disciplina é liberdade quando você sabe onde quer chegar.', author: 'StudyFlow' },
-  { text: 'O estudo de hoje é a tranquilidade da prova de amanhã.', author: 'StudyFlow' },
-  { text: 'Pequenas sessões bem feitas vencem longas horas sem direção.', author: 'StudyFlow' },
-  { text: 'Consistência transforma dificuldade em rotina.', author: 'StudyFlow' },
-  { text: 'Você não precisa estar perfeito, precisa estar presente.', author: 'StudyFlow' },
-  { text: 'O foco é uma decisão repetida várias vezes no mesmo dia.', author: 'StudyFlow' },
-  { text: 'Revisar é respeitar o esforço que você já fez.', author: 'StudyFlow' },
-  { text: 'A resposta certa começa antes da questão: começa no preparo.', author: 'StudyFlow' },
-  { text: 'Estudar pouco todos os dias ainda é caminhar todos os dias.', author: 'StudyFlow' },
-  { text: 'Quem mede o progresso aprende a acelerar sem se perder.', author: 'StudyFlow' },
-  { text: 'Hoje é um bom dia para ficar um pouco mais forte.', author: 'StudyFlow' },
-  { text: 'O aluno que volta para corrigir cresce mais rápido.', author: 'StudyFlow' },
-  { text: 'Foco não é pressa; foco é direção.', author: 'StudyFlow' },
-  { text: 'Uma questão corrigida vale mais que dez puladas.', author: 'StudyFlow' },
-  { text: 'Você constrói confiança quando cumpre o combinado consigo mesmo.', author: 'StudyFlow' },
-  { text: 'Cada erro encontrado é uma chance de subir de nível.', author: 'StudyFlow' },
-  { text: 'Estudo inteligente é clareza, repetição e ajuste.', author: 'StudyFlow' },
-  { text: 'O começo pode ser lento. O importante é não zerar o dia.', author: 'StudyFlow' },
-  { text: 'A mente aprende melhor quando o plano é simples e constante.', author: 'StudyFlow' },
-  { text: 'Não espere motivação: crie tração.', author: 'StudyFlow' },
-  { text: 'O treino difícil deixa a prova mais familiar.', author: 'StudyFlow' },
-  { text: 'Hoje você não precisa vencer tudo. Precisa vencer a próxima tarefa.', author: 'StudyFlow' },
-  { text: 'O progresso aparece quando você para de negociar com a distração.', author: 'StudyFlow' },
-  { text: 'Uma página entendida muda mais que um capítulo só passado.', author: 'StudyFlow' },
-  { text: 'O melhor plano é aquele que você consegue repetir amanhã.', author: 'StudyFlow' },
-  { text: 'Seu futuro agradece os minutos que você protege hoje.', author: 'StudyFlow' },
-  { text: 'A prova cobra calma; o treino constrói calma.', author: 'StudyFlow' },
-  { text: 'Aprender é voltar ao ponto fraco sem vergonha.', author: 'StudyFlow' },
-  { text: 'Fazer o básico com excelência já coloca você na frente.', author: 'StudyFlow' },
-  { text: 'A concentração cresce quando o ambiente para de mandar em você.', author: 'StudyFlow' },
-  { text: 'Todo simulado é um mapa, não uma sentença.', author: 'StudyFlow' },
-  { text: 'A constância é silenciosa, mas o resultado fala alto.', author: 'StudyFlow' },
-  { text: 'Quem revisa cedo esquece menos tarde.', author: 'StudyFlow' },
-  { text: 'Seu ritmo só precisa ser honesto, não perfeito.', author: 'StudyFlow' },
-  { text: 'O difícil fica menor quando vira rotina.', author: 'StudyFlow' },
-  { text: 'Estudar é transformar ansiedade em ação organizada.', author: 'StudyFlow' },
-  { text: 'O próximo acerto nasce da última correção.', author: 'StudyFlow' },
-  { text: 'A meta do dia é simples: sair melhor do que entrou.', author: 'StudyFlow' },
-  { text: 'Quem treina com atenção ganha tempo na prova.', author: 'StudyFlow' },
-  { text: 'A dúvida não é inimiga; é o começo da clareza.', author: 'StudyFlow' },
-  { text: 'Faça a sessão pequena. Depois faça outra.', author: 'StudyFlow' },
-  { text: 'Conhecimento fica quando você usa, explica e revisa.', author: 'StudyFlow' },
-  { text: 'O seu foco merece proteção ativa.', author: 'StudyFlow' },
-  { text: 'Uma rotina forte reduz a dependência da força de vontade.', author: 'StudyFlow' },
-  { text: 'O estudo certo deixa rastros: notas, revisões e tentativas.', author: 'StudyFlow' },
-  { text: 'Treine como quem está ensinando o cérebro a confiar.', author: 'StudyFlow' },
-  { text: 'A melhor hora para recuperar o atraso é a próxima meia hora.', author: 'StudyFlow' },
-  { text: 'Quem domina o tempo domina a prova antes dela começar.', author: 'StudyFlow' },
-  { text: 'Não subestime uma boa sequência de dias simples.', author: 'StudyFlow' },
-  { text: 'A excelência nasce quando ninguém está olhando.', author: 'StudyFlow' },
-  { text: 'Clareza primeiro. Velocidade depois.', author: 'StudyFlow' },
-  { text: 'Seu caderno de erros é um manual de evolução.', author: 'StudyFlow' },
-  { text: 'A cada treino, você negocia menos com o medo.', author: 'StudyFlow' },
-  { text: 'O estudo fica leve quando a próxima ação está clara.', author: 'StudyFlow' },
-  { text: 'A disciplina começa pequena e termina gigante.', author: 'StudyFlow' },
-  { text: 'Progresso real é repetir mesmo sem plateia.', author: 'StudyFlow' },
-  { text: 'Uma sessão focada muda o tom do dia inteiro.', author: 'StudyFlow' },
-  { text: 'O resultado não vem de um pico. Vem de uma sequência.', author: 'StudyFlow' },
-  { text: 'Hoje é mais uma chance de provar compromisso em silêncio.', author: 'StudyFlow' },
+  'A jornada de mil milhas começa com um único passo.',
+  'Disciplina é liberdade quando você sabe onde quer chegar.',
+  'O estudo de hoje é a tranquilidade da prova de amanhã.',
+  'Pequenas sessões bem feitas vencem horas sem direção.',
+  'Consistência transforma dificuldade em rotina.',
+  'Você não precisa estar perfeito, precisa estar presente.',
+  'Foco é uma decisão repetida várias vezes no mesmo dia.',
+  'Revisar é respeitar o esforço que você já fez.',
+  'A resposta certa começa antes da questão: começa no preparo.',
+  'Estudar pouco todos os dias ainda é caminhar todos os dias.',
+  'Quem mede o progresso aprende a acelerar sem se perder.',
+  'Hoje é um bom dia para ficar um pouco mais forte.',
+  'O aluno que volta para corrigir cresce mais rápido.',
+  'Foco não é pressa; foco é direção.',
+  'Uma questão corrigida vale mais que dez puladas.',
+  'Você constrói confiança quando cumpre o combinado consigo mesmo.',
+  'Cada erro encontrado é uma chance de subir de nível.',
+  'Estudo inteligente é clareza, repetição e ajuste.',
+  'O começo pode ser lento. O importante é não zerar o dia.',
+  'A mente aprende melhor quando o plano é simples e constante.',
+  'Não espere motivação: crie tração.',
+  'O treino difícil deixa a prova mais familiar.',
+  'Hoje você só precisa vencer a próxima tarefa.',
+  'O progresso aparece quando a distração perde espaço.',
+  'Uma página entendida muda mais que um capítulo só passado.',
+  'O melhor plano é aquele que você consegue repetir amanhã.',
+  'Seu futuro agradece os minutos que você protege hoje.',
+  'A prova cobra calma; o treino constrói calma.',
+  'Aprender é voltar ao ponto fraco sem vergonha.',
+  'Fazer o básico com excelência já coloca você na frente.',
+  'A concentração cresce quando o ambiente para de mandar em você.',
+  'Todo simulado é um mapa, não uma sentença.',
+  'A constância é silenciosa, mas o resultado fala alto.',
+  'Quem revisa cedo esquece menos tarde.',
+  'Seu ritmo só precisa ser honesto, não perfeito.',
+  'O difícil fica menor quando vira rotina.',
+  'Estudar é transformar ansiedade em ação organizada.',
+  'O próximo acerto nasce da última correção.',
+  'A meta do dia é simples: sair melhor do que entrou.',
+  'Quem treina com atenção ganha tempo na prova.',
+  'A dúvida não é inimiga; é o começo da clareza.',
+  'Faça a sessão pequena. Depois faça outra.',
+  'Conhecimento fica quando você usa, explica e revisa.',
+  'O seu foco merece proteção ativa.',
+  'Uma rotina forte reduz a dependência da força de vontade.',
+  'O estudo certo deixa rastros: notas, revisões e tentativas.',
+  'Treine como quem ensina o cérebro a confiar.',
+  'A melhor hora para recuperar o atraso é a próxima meia hora.',
+  'Quem domina o tempo domina a prova antes dela começar.',
+  'Não subestime uma boa sequência de dias simples.',
+  'A excelência nasce quando ninguém está olhando.',
+  'Clareza primeiro. Velocidade depois.',
+  'Seu caderno de erros é um manual de evolução.',
+  'A cada treino, você negocia menos com o medo.',
+  'O estudo fica leve quando a próxima ação está clara.',
+  'A disciplina começa pequena e termina gigante.',
+  'Progresso real é repetir mesmo sem plateia.',
+  'Uma sessão focada muda o tom do dia inteiro.',
+  'O resultado não vem de um pico. Vem de uma sequência.',
+  'Hoje é mais uma chance de provar compromisso em silêncio.',
 ] as const;
 
+const STUDY_TIPS = [
+  'Comece pela tarefa mais curta para ganhar tração.',
+  'Corrija erros no mesmo dia em que eles aparecem.',
+  'Use blocos de 25 minutos quando o foco estiver baixo.',
+  'Explique o tema em voz alta para testar se entendeu.',
+  'Misture teoria, questões e revisão para fixar melhor.',
+  'Pausas pequenas protegem energia para a próxima sessão.',
+  'Antes de reler, tente lembrar o conteúdo de cabeça.',
+] as const;
+
+type IconTone = 'primary' | 'orange' | 'blue' | 'purple' | 'rose' | 'amber' | 'cyan' | 'violet';
+
+type TileProps = {
+  icon: LucideIcon;
+  tone: IconTone;
+  title: string;
+  subtitle: string;
+  metric: string;
+  onClick: () => void;
+};
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatMinutes(minutes: number) {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}h ${rest}m` : `${hours}h`;
+}
+
+function SectionHeader({ eyebrow, title, action }: { eyebrow: string; title: string; action?: ReactNode }) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <div className="min-w-0">
+        <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.24em] text-primary/80">{eyebrow}</p>
+        <h2 className="mt-1 text-xl font-premium-title italic tracking-tight text-white md:text-2xl">{title}</h2>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function StatPill({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.045] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+      <div className="flex items-center gap-2 text-white/60">
+        <Icon size={14} />
+        <span className="text-[9px] font-premium-mono font-bold uppercase tracking-[0.18em]">{label}</span>
+      </div>
+      <p className="mt-2 font-premium-title text-lg font-black leading-none text-white">{value}</p>
+    </div>
+  );
+}
+function HomeTile({ icon, tone, title, subtitle, metric, onClick }: TileProps) {
+  return (
+    <GlassCard
+      enterAnimation={false}
+      onClick={onClick}
+      className="group min-h-[168px] border-white/10 bg-white/[0.035] p-5 hover:border-primary/35"
+    >
+      <div className="flex h-full flex-col justify-between gap-5">
+        <div className="flex items-start justify-between gap-3">
+          <IconTile icon={icon} color={tone} size="md" glow={tone === 'primary'} />
+          <ChevronRight className="mt-2 size-5 text-white/30 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+        </div>
+        <div>
+          <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.2em] text-white/45">{metric}</p>
+          <h3 className="mt-2 text-lg font-premium-title italic leading-tight text-white">{title}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-text-secondary">{subtitle}</p>
+        </div>
+      </div>
+    </GlassCard>
+  );
+}
+
+function TimelineBlock({ label, value, active }: { label: string; value: string; active?: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className={cn(
+          'size-2.5 rounded-full border',
+          active ? 'border-primary bg-primary shadow-[0_0_18px_rgba(var(--hub-primary-rgb),0.5)]' : 'border-white/20 bg-white/10'
+        )}
+      />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold text-white">{label}</p>
+        <p className="truncate text-[10px] font-premium-mono font-bold uppercase tracking-[0.16em] text-text-secondary">{value}</p>
+      </div>
+    </div>
+  );
+}
+
 const DashboardView = () => {
-  const { questionMap: QUESTION_MAP, loading: qLoading, error: qError } = useQuestionMap();
-  const { name, profilePic, level, xp, sessions, history, exams, league, routine, dailyGoalMinutes } = useStore();
+  const { questionMap, loading: qLoading, error: qError } = useQuestionMap();
+  const {
+    name,
+    profilePic,
+    level,
+    xp,
+    streak,
+    sessions,
+    history,
+    exams,
+    league,
+    routine,
+    dailyGoalMinutes,
+  } = useStore();
   const { isFree, isSupremo } = useUserAccess();
   const { goTo } = useAppNavigation();
   const reduceMotion = useReducedMotion() ?? false;
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todaySessions = sessions.filter(s => s.date === todayStr);
-  const todayStudyMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
+  const todayKey = localDateKey();
+  const todaySessions = sessions.filter(session => session.date === todayKey);
+  const todayStudyMinutes = todaySessions.reduce((acc, session) => acc + session.duration, 0);
   const safeDailyGoalMinutes = Math.max(1, Number(dailyGoalMinutes) || 1);
   const goalProgress = Math.min(100, Math.max(0, (todayStudyMinutes / safeDailyGoalMinutes) * 100));
+  const answeredCount = history.length;
+  const correctCount = history.filter(item => item.isCorrect).length;
+  const wrongCount = Math.max(0, answeredCount - correctCount);
+  const accuracy = answeredCount ? Math.round((correctCount / answeredCount) * 100) : 0;
+  const questionCount = questionMap?.size ?? 0;
+  const leagueProgress = leagueTierProgressPercent(xp);
 
-  const getNextSession = () => {
-    if (!routine) return null;
-    const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-    const today = days[new Date().getDay()];
-    const todaySchedule = routine.schedule.find(s => s.day === today);
-    if (!todaySchedule || todaySchedule.blocks.length === 0) return null;
-    return todaySchedule.blocks[0];
+  const today = new Date();
+  const todayLabel = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][today.getDay()];
+  const todayRoutine = routine?.schedule.find(item => item.day === todayLabel || item.day.startsWith(todayLabel.slice(0, 3)));
+  const routineMinutes = todayRoutine?.blocks.reduce((acc, block) => acc + block.duration, 0) ?? 0;
+  const nextBlock = todayRoutine?.blocks[0] ?? null;
+  const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const dailyQuoteIndex = Math.floor(dayStart.getTime() / 86400000) % DAILY_QUOTES.length;
+  const dailyQuote = DAILY_QUOTES[dailyQuoteIndex];
+  const dailyTip = STUDY_TIPS[today.getDate() % STUDY_TIPS.length];
+
+  const heatmapData = Object.entries(
+    history.reduce<Record<string, number>>((acc, item) => {
+      const date = item.timestamp.split('T')[0];
+      acc[date] = (acc[date] ?? 0) + 1;
+      return acc;
+    }, {})
+  )
+    .map(([date, count]) => ({ date, count }))
+    .slice(-30);
+
+  const recentActivity = history.slice(0, 4).map(item => {
+    const question = questionMap?.get(item.questionId);
+    return {
+      id: `${item.questionId}-${item.timestamp}`,
+      title: question?.materia || 'Questão resolvida',
+      subtitle: question?.assunto || 'Banco de questões',
+      isCorrect: item.isCorrect,
+    };
+  });
+  const upcomingExam = exams
+    .map(exam => ({ ...exam, daysLeft: calculateDaysLeft(exam.data) }))
+    .filter(exam => exam.daysLeft === null || exam.daysLeft >= 0)
+    .sort((a, b) => (a.daysLeft ?? 9999) - (b.daysLeft ?? 9999))[0];
+
+  const openWrongReview = () => {
+    useStore.setState({ showOnlyReviewLater: false });
+    useStore.getState().setNavFilters({ filterStatus: 'wrong' });
+    goTo('/questoes');
   };
 
-  const nextSession = getNextSession();
-
-  const studyTips = [
-    "A técnica Pomodoro ajuda a manter o foco e evitar a fadiga mental.",
-    "Tente explicar o que aprendeu para alguém (Técnica de Feynman) para consolidar o conhecimento.",
-    "A repetição espaçada é a chave para a memória de longo prazo.",
-    "Mantenha-se hidratado e faça pequenas pausas para alongar o corpo.",
-    "O sono é fundamental para a consolidação da memória. Durma bem!",
-    "Pratique o 'Active Recall' testando-se antes de reler o conteúdo.",
-    "Varie os assuntos estudados no mesmo dia (Interleaving) para melhorar a flexibilidade mental."
+  const questionMetric = qLoading ? 'Carregando' : qError ? 'Modo offline' : `${formatNumber.format(questionCount)} itens`;
+  const primaryCards: TileProps[] = [
+    {
+      icon: BookOpen,
+      tone: 'blue',
+      title: 'Banco de Questões',
+      subtitle: 'Treine ENEM, vestibulares, concursos e militares.',
+      metric: questionMetric,
+      onClick: () => goTo('/questoes'),
+    },
+    {
+      icon: Timer,
+      tone: 'orange',
+      title: 'Foco Profundo',
+      subtitle: 'Entre em uma sessão limpa, rápida e sem distração.',
+      metric: `${Math.round(goalProgress)}% da meta`,
+      onClick: () => goTo('/foco'),
+    },
+    {
+      icon: PenLine,
+      tone: 'purple',
+      title: 'Redação',
+      subtitle: 'Abra temas, rascunhos e correção guiada.',
+      metric: 'ENEM 1000',
+      onClick: () => goTo('/redacao'),
+    },
+    {
+      icon: MessageSquare,
+      tone: 'primary',
+      title: 'Athena V3',
+      subtitle: 'Tire dúvidas e transforme assuntos em treino.',
+      metric: isFree ? 'Limite diário' : 'Ilimitada',
+      onClick: () => goTo('/ai'),
+    },
   ];
-  const dailyTip = studyTips[new Date().getDate() % studyTips.length];
-  const todayForQuote = new Date();
-  const localDayStart = new Date(todayForQuote.getFullYear(), todayForQuote.getMonth(), todayForQuote.getDate());
-  const dailyQuoteIndex = Math.floor(localDayStart.getTime() / 86400000) % DAILY_QUOTES.length;
-  const dailyQuote = DAILY_QUOTES[dailyQuoteIndex];
 
-  // Heatmap data (last 30 days for dashboard)
-  const heatmapData = history.reduce((acc: any[], h) => {
-    const date = h.timestamp.split('T')[0];
-    const existing = acc.find(d => d.date === date);
-    if (existing) {
-      existing.count++;
-    } else {
-      acc.push({ date, count: 1 });
-    }
-    return acc;
-  }, []);
-
-  const recentActivity = history.slice(0, 3).map(h => ({
-    id: h.questionId,
-    type: 'question',
-    title: QUESTION_MAP?.get(h.questionId)?.materia || 'Questão',
-    subtitle: QUESTION_MAP?.get(h.questionId)?.assunto || 'Tópico',
-    isCorrect: h.isCorrect,
-    timestamp: h.timestamp
-  }));
-
-  if (qLoading) return <QuestionsLoadingSkeleton />;
-  if (qError) return <QuestionsLoadError error={qError} />;
+  const tacticalCards = [
+    { icon: RotateCcw, label: 'Revisar erros', value: `${wrongCount} pontos fracos`, tone: 'rose' as IconTone, onClick: openWrongReview },
+    { icon: FileText, label: 'Simulados', value: 'Prova completa', tone: 'amber' as IconTone, onClick: () => goTo('/simulados') },
+    { icon: Compass, label: 'Explorar', value: 'Rotas de estudo', tone: 'cyan' as IconTone, onClick: () => goTo('/explorar') },
+    { icon: Trophy, label: 'Ranking', value: `${formatNumber.format(xp)} XP`, tone: 'primary' as IconTone, onClick: () => goTo('/ranking') },
+  ];
 
   return (
-    <div className="studyflow-dashboard relative animate-in fade-in duration-700">
+    <div className="studyflow-dashboard relative min-h-full animate-in fade-in duration-700">
       <AuroraBackground intensity="subtle" />
-      <div className="relative z-10 app-shell-premium pt-5 md:pt-8 premium-page-stack pb-32 md:pb-36">
-      {/* Mission Control Header */}
-      <header className="premium-page-hero studyflow-command-hero flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-[11px] font-premium-mono font-bold text-primary uppercase tracking-[0.22em]">Painel Ativo</span>
-          </div>
-          <h1 className="max-w-3xl text-4xl font-premium-title italic leading-[0.98] md:text-5xl">
-            Olá, {name}<span className="text-primary font-normal not-italic ml-1">.</span>
-          </h1>
-          <div className="flex items-center gap-3 pt-1">
-            <p
-              className="text-xs text-text-secondary font-premium-mono uppercase tracking-widest"
-              title="Nível e liga com base no XP salvo neste aparelho."
-            >
-              Nível {level} • Liga {league}
-            </p>
-          </div>
-        </div>
-        <div className="flex shrink-0 gap-2">
-          <button
-            onClick={() => goTo('/estatisticas')}
-            className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/40 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-          >
-            <BarChart3 size={20} className="text-primary" />
-          </button>
-          <AnimatedButton onClick={() => goTo('/perfil')} variant="secondary" className="relative p-0 rounded-2xl overflow-visible border-2 border-primary/20 hover:border-primary transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
-            <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} alt="Profile" className="w-12 h-12 object-cover rounded-2xl" referrerPolicy="no-referrer" />
-            {isSupremo && (
-              <span
-                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500/100 border border-amber-200/100 flex items-center justify-center text-[11px] shadow-lg animate-breathe-glow"
-                title="Modo Supremo ativo"
-              >
-                👑
-              </span>
-            )}
-          </AnimatedButton>
-        </div>
-      </header>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_50%_0%,rgba(var(--hub-primary-rgb),0.18),transparent_62%)]" />
 
-      {/* Premium Banner */}
-      {isFree && (
-        <motion.section
-          initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.card}
-        >
-          <GlassCard
-            glow
-            className="premium-list-card p-5 border-primary/25 bg-primary/[0.045] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between cursor-pointer group"
-            onClick={() => goTo('/premium')}
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary border border-primary/30 neon-edge-subtle">
-                <Crown size={24} />
+      <motion.div
+        className="relative z-10 app-shell-premium pb-32 pt-5 md:pb-36 md:pt-8"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.header variants={staggerItem} className="mb-6 flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 shadow-[0_0_28px_rgba(var(--hub-primary-rgb),0.16)]">
+              <Sparkles className="size-5 text-primary" />
+              <span className="absolute -right-1 -top-1 size-3 rounded-full border-2 border-black bg-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.24em] text-primary/80">StudyFlow OS</p>
+              <h1 className="truncate text-2xl font-premium-title italic tracking-tight text-white md:text-3xl">
+                Olá, {name || 'Ruan'}.
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => goTo('/estatisticas')}
+              className="flex size-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] text-white/80 transition hover:border-primary/35 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              aria-label="Abrir estatísticas"
+            >
+              <BarChart3 size={19} />
+            </button>
+            <button
+              type="button"
+              onClick={() => goTo('/perfil')}
+              className="relative size-12 overflow-hidden rounded-2xl border border-primary/25 bg-white/[0.055] transition hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              aria-label="Abrir perfil"
+            >
+              <img
+                src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'StudyFlow')}`}
+                alt="Perfil"
+                className="size-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              {isSupremo && <span className="absolute right-1 top-1 size-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)]" />}
+            </button>
+          </div>
+        </motion.header>
+        <motion.section variants={staggerItem} className="grid gap-5 xl:grid-cols-[1.28fr_0.72fr]">
+          <GlassCard glow className="overflow-hidden border-primary/25 bg-[linear-gradient(135deg,rgba(0,232,143,0.13),rgba(255,255,255,0.035)_42%,rgba(59,130,246,0.08))] p-5 md:p-7">
+            <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-primary/20 blur-[90px]" />
+            <div className="relative grid gap-7 lg:grid-cols-[1fr_220px] lg:items-center">
+              <div className="space-y-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <NeonBadge tone="primary">Painel ativo</NeonBadge>
+                  <Badge variant="secondary" className="border-white/10 bg-black/20">Nível {level}</Badge>
+                  <Badge variant="secondary" className="border-white/10 bg-black/20">Liga {league}</Badge>
+                </div>
+
+                <div className="max-w-2xl">
+                  <h2 className="text-4xl font-premium-title italic leading-[0.94] tracking-tight text-white md:text-6xl">
+                    Continue em <span className="text-primary">flow</span> hoje.
+                  </h2>
+                  <p className="mt-4 max-w-xl text-sm leading-relaxed text-text-secondary md:text-base">
+                    Uma Home mais limpa para entrar em foco, responder questões e acompanhar sua evolução sem ruído.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <AnimatedButton onClick={() => goTo('/foco')} glow className="min-h-14 flex-1 text-[12px] font-black uppercase tracking-[0.18em] sm:flex-none">
+                    <Play size={17} fill="currentColor" /> Entrar em Flow
+                  </AnimatedButton>
+                  <AnimatedButton onClick={() => goTo('/questoes')} variant="secondary" className="min-h-14 flex-1 text-[12px] font-black uppercase tracking-[0.18em] sm:flex-none">
+                    <Search size={17} /> Treinar questões
+                  </AnimatedButton>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-bold group-hover:text-primary transition-colors flex flex-wrap items-center gap-2">
-                  <NeonBadge tone="primary" className="shrink-0">
-                    Plus
-                  </NeonBadge>
-                  StudyFlow Premium
-                </h4>
-                <p className="text-xs text-text-secondary">Desbloqueie Athena ilimitada e simulados exclusivos.</p>
+
+              <div className="mx-auto flex w-full max-w-[220px] flex-col items-center gap-4 rounded-[32px] border border-white/10 bg-black/25 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl">
+                <ProgressRing progress={goalProgress} size={150} strokeWidth={12} />
+                <div className="text-center">
+                  <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/80">Meta diária</p>
+                  <p className="mt-1 text-lg font-premium-title font-black text-white">
+                    {formatMinutes(todayStudyMinutes)} / {formatMinutes(safeDailyGoalMinutes)}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
-              ASSINAR
-              <ArrowUpRight size={16} />
+          </GlassCard>
+
+          <GlassCard className="border-white/10 bg-white/[0.035] p-5 md:p-6">
+            <div className="flex h-full flex-col justify-between gap-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/75">Status do aluno</p>
+                  <h3 className="mt-2 text-2xl font-premium-title italic text-white">Progresso real</h3>
+                </div>
+                <IconTile icon={Flame} color="orange" size="md" glow />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <StatPill icon={Zap} label="Streak" value={`${streak || 0} dias`} />
+                <StatPill icon={Target} label="Precisão" value={`${accuracy}%`} />
+                <StatPill icon={BookOpen} label="Resolvidas" value={formatNumber.format(answeredCount)} />
+                <StatPill icon={Clock3} label="Hoje" value={formatMinutes(todayStudyMinutes)} />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-white/50">
+                  <span>Progresso da liga</span>
+                  <span>{Math.round(leagueProgress)}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-white/[0.07]">
+                  <motion.div
+                    className="h-full rounded-full bg-[linear-gradient(90deg,var(--hub-primary),#4ad8ff)]"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${leagueProgress}%` }}
+                    transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : { duration: 1.1, ease: easings.smoothOut }}
+                  />
+                </div>
+              </div>
             </div>
           </GlassCard>
         </motion.section>
-      )}
 
-      {/* Daily Progress & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GlassCard className="premium-stat-tile studyflow-holo-panel p-6 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-primary">
-              <Target size={16} />
-              <span className="text-[10px] font-premium-mono font-bold uppercase tracking-widest">Meta Diária</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-premium-title italic">{todayStudyMinutes} / {safeDailyGoalMinutes} min</h3>
-              <p className="text-xs text-text-secondary">Você completou {Math.round(goalProgress)}% da sua meta hoje.</p>
-            </div>
-            <AnimatedButton onClick={() => goTo('/foco')} variant="primary" className="py-2 px-4 text-xs mt-2 font-bold uppercase tracking-widest gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
-              <Play size={16} strokeWidth={2} fill="currentColor" />
-              Continuar
-            </AnimatedButton>
-          </div>
-          <ProgressRing progress={goalProgress} size={100} strokeWidth={10} />
-        </GlassCard>
-
-        <motion.div
-          className="grid grid-cols-4 gap-3"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
-          {[
-            { id: 'focus', path: '/foco', icon: Timer, label: 'Foco', color: 'orange' },
-            { id: 'ai', path: '/ai', icon: MessageSquare, label: 'Athena', color: 'purple' },
-            { id: 'questions', path: '/questoes', icon: BookOpen, label: 'Questões', color: 'blue' },
-            { id: 'comunidade', path: '/comunidade', icon: Headset, label: 'Comunidade', color: 'primary' },
-          ].map(action => (
-            <motion.div key={action.id} variants={staggerItem}>
-              <motion.button
-                whileTap={{ scale: reduceMotion ? 1 : 0.88 }}
-                whileHover={reduceMotion ? { y: 0, scale: 1 } : { y: -3, scale: 1.04 }}
-                transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
-                onClick={() => goTo(action.path)}
-                className="premium-grid-card studyflow-action-tile w-full flex min-h-[7.25rem] flex-col items-center justify-center gap-2 p-3 glass rounded-[22px] border-white/10 hover:border-white/20 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-              >
-                <NeonIcon
-                  icon={action.icon as any}
-                  color={action.color as any}
-                  size={22}
-                  variant="outline"
-                  animate="float"
-                />
-                <span className="text-[10px] font-bold uppercase tracking-tighter opacity-70 group-hover:opacity-100 transition-opacity">{action.label}</span>
-              </motion.button>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Dashboard Statistics Highlight Card */}
-        <motion.button
-          onClick={() => goTo('/estatisticas')}
-          whileHover={
-            reduceMotion
-              ? { scale: 1 }
-              : { scale: 1.02, boxShadow: '0 0 24px rgba(var(--hub-primary-rgb),0.15)' }
-          }
-          whileTap={{ scale: reduceMotion ? 1 : 0.97 }}
-          transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
-          className="premium-stats-tile studyflow-holo-panel w-full relative overflow-hidden rounded-3xl p-4 border border-primary/20 text-left my-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-        >
-          <div className="absolute -top-4 -right-4 opacity-15">
-            <BarChart3 size={80} className="text-primary" />
-          </div>
-          <div className="relative flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
-              <TrendingUp size={20} className="text-primary" />
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-bold text-white">Suas Estatísticas</div>
-              <div className="text-[10px] text-white/70">Progresso, gráficos e insights</div>
-            </div>
-            <div className="text-[10px] font-bold text-primary">VER →</div>
-          </div>
-        </motion.button>
-      </div>
-
-
-      {/* AI Tools Grid */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[11px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.22em]">Ferramentas de Estudo</h3>
-          <div className="divider-premium-line ml-4" />
-        </div>
-        <motion.div
-          className="grid grid-cols-4 gap-4"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-        >
-          {[
-            { id: 'document-analyzer', path: '/analisador-documentos', icon: BookOpenCheck, label: 'Docs', color: 'cyan' },
-            { id: 'video-summarizer', path: '/metodos/video', icon: Play, label: 'Vídeos', color: 'rose' },
-            { id: 'memory-palace', path: '/palacio-memoria', icon: BrainCircuit, label: 'Palácio', color: 'purple' },
-            { id: 'socratic-duel', path: '/duelo-socratico', icon: Swords, label: 'Duelo', color: 'amber' },
-          ].map((item) => (
-            <motion.div key={item.id} variants={staggerItem}>
-              <motion.button
-                onClick={() => goTo(item.path)}
-                whileTap={{ scale: reduceMotion ? 1 : 0.88 }}
-                whileHover={reduceMotion ? { y: 0 } : { y: -3 }}
-                transition={reduceMotion ? { duration: 0.15, ease: easings.smoothOut } : springs.snappy}
-                className="w-full flex flex-col items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-2xl"
-              >
-                <IconTile icon={item.icon} color={item.color as any} glow className="group-hover:scale-105 transition-transform duration-200" />
-                <span className="text-[10px] font-premium-mono font-bold text-text-secondary uppercase tracking-widest group-hover:text-white transition-colors mt-1">{item.label}</span>
-              </motion.button>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* Next Session from Routine */}
-      {nextSession && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.22em]">Próxima Sessão</h3>
-            <AnimatedButton onClick={() => goTo('/foco')} variant="secondary" className="text-[10px] px-3 py-1 rounded-full uppercase tracking-[0.08em] opacity-80 hover:opacity-100 min-h-11 active:scale-[0.98] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black">Ver Tudo</AnimatedButton>
-          </div>
-          <GlassCard className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                  <Clock size={20} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm">{nextSession.subject}</h4>
-                  <p className="text-[10px] text-text-secondary uppercase font-premium-mono font-bold tracking-widest">{nextSession.duration} min • {nextSession.type}</p>
-                </div>
-              </div>
-              <AnimatedButton onClick={() => goTo('/foco')} className="bg-primary text-black border-primary text-[10px] px-4 py-2 min-h-11 active:scale-[0.98] active:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black">Iniciar</AnimatedButton>
-            </div>
-          </GlassCard>
-        </section>
-      )}
-
-      {/* League Progress — gamificação local (XP Zustand), sem claim de ranking global */}
-      <GlassCard className="premium-list-card p-4 border-white/10 bg-black/20 flex items-center gap-4">
-        <motion.div
-          className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20"
-          animate={reduceMotion ? { rotate: 0 } : { rotate: [0, -8, 8, 0] }}
-          transition={
-            reduceMotion
-              ? { duration: 0 }
-              : { duration: 3, repeat: Infinity, ease: 'easeInOut', repeatDelay: 4 }
-          }
-        >
-          <Trophy size={24} className="text-primary" />
-        </motion.div>
-        <div className="flex-1 space-y-1">
-          <div className="flex justify-between items-end gap-2">
-            <h4 className="text-xs font-bold uppercase tracking-widest">Liga {league}</h4>
-            <span
-              className="text-[10px] font-premium-mono text-text-secondary shrink-0 text-right"
-              title="Progressão salva neste dispositivo. Não indica posição entre outros usuários."
-            >
-              Neste aparelho
-            </span>
-          </div>
-          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-primary rounded-full"
-              initial={{ width: 0 }}
-              whileInView={{ width: `${leagueTierProgressPercent(xp)}%` }}
-              viewport={{ once: true }}
-              transition={
-                reduceMotion
-                  ? { duration: 0.15, ease: easings.smoothOut, delay: 0 }
-                  : { duration: 1.2, ease: easings.smoothOut, delay: 0.2 }
-              }
-            />
-          </div>
-        </div>
-      </GlassCard>
-
-
-      {/* collective focus highlight */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[11px] font-premium-mono font-bold text-text-secondary uppercase tracking-[0.22em]">Ambiente de Foco</h3>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.08em]">Foco Ativo</span>
-          </div>
-        </div>
-        <GlassCard className="premium-list-card p-4 border-primary/20 bg-primary/[0.045] flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-            <Users size={24} />
-          </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-bold">Salas de Estudo Coletivo</h4>
-              <p className="text-xs text-text-secondary">Entre em uma sala, ouça lofi e estude com outros alunos em tempo real.</p>
-          </div>
-          <AnimatedButton onClick={() => goTo('/comunidade')} className="text-[10px] px-4 py-2 min-h-11 active:scale-[0.98] active:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black">Explorar</AnimatedButton>
-        </GlassCard>
-      </section>
-
-      {/* Heatmap Mini */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-4 bg-primary rounded-full" />
-            <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Consistência</h3>
-          </div>
-          <button onClick={() => goTo('/estatisticas')} className="inline-flex items-center text-[10px] text-primary font-bold uppercase tracking-widest hover:underline min-h-11 px-2 active:scale-[0.98] active:brightness-110 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">Ver Detalhes</button>
-        </div>
-        <GlassCard className="premium-list-card p-4 border-white/10 bg-black/20">
-          <Heatmap data={heatmapData} />
-        </GlassCard>
-      </section>
-
-      {/* Daily Motivation */}
-      <GlassCard className="premium-list-card p-6 bg-gradient-to-br from-primary/12 to-transparent border-primary/25 text-center space-y-4">
-        <Quote size={32} className="text-primary mx-auto opacity-50" />
-        <div className="space-y-2">
-          <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.24em] text-primary/80">
-            Frase do dia {dailyQuoteIndex + 1}/60
-          </p>
-          <p className="text-lg font-premium-title italic leading-tight">
-            "{dailyQuote.text}"
-          </p>
-          <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">- {dailyQuote.author}</p>
-        </div>
-      </GlassCard>
-
-      <div className="grid grid-cols-1 gap-4">
-        <GlassCard
-          className="premium-list-card relative overflow-hidden cursor-pointer group p-6 border-primary/20 bg-primary/[0.045]"
-          onClick={() => goTo('/foco')}
-          glow
-        >
-          <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 blur-[60px] rounded-full transition-all group-hover:bg-primary/20 -mr-24 -mt-24" />
-          <div className="flex items-center justify-between relative z-10">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-primary mb-3">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[11px] font-premium-mono font-bold uppercase tracking-[0.22em]">Sessão de Foco</span>
-              </div>
-              <h3 className="text-2xl font-premium-title italic">Continuar Estudo</h3>
-              <p className="text-xs text-text-secondary font-medium opacity-90">Inicie uma sessão de foco agora</p>
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-primary text-black flex items-center justify-center shadow-[0_0_20px_rgba(0,255,148,0.4)] group-hover:scale-110 transition-transform">
-              <Play size={24} fill="currentColor" />
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Recent Activity */}
-        {recentActivity.length > 0 && (
-          <section className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-4 bg-primary rounded-full" />
-              <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Atividade Recente</h3>
-            </div>
-            <div className="space-y-3">
-              {recentActivity.map((activity, i) => (
-                <GlassCard key={i} className="p-4 flex items-center justify-between border-white/5 hover:border-white/10 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center border",
-                      activity.isCorrect ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-red-500/10 border-red-500/20 text-red-500"
-                    )}>
-                      {activity.isCorrect ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold">{activity.title}</h4>
-                      <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">{activity.subtitle}</p>
-                    </div>
+        {isFree && (
+          <motion.section variants={staggerItem} className="mt-5">
+            <GlassCard onClick={() => goTo('/premium')} className="border-primary/25 bg-primary/[0.055] p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <IconTile icon={Crown} color="amber" size="md" glow />
+                  <div>
+                    <h3 className="text-sm font-black text-white">Desbloquear StudyFlow Premium</h3>
+                    <p className="text-xs text-text-secondary">Athena ampliada, simulados e recursos avançados sem interrupção.</p>
                   </div>
-                  <span className="text-[10px] font-premium-mono text-text-secondary">
-                    {new Date(activity.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
+                </div>
+                <span className="inline-flex items-center gap-2 text-[10px] font-premium-mono font-black uppercase tracking-[0.2em] text-primary">
+                  Ver planos <ArrowRight size={14} />
+                </span>
+              </div>
+            </GlassCard>
+          </motion.section>
         )}
 
-        <GlassCard
-          className="premium-list-card relative overflow-hidden cursor-pointer group p-6 border-orange-500/20 bg-orange-500/[0.045]"
-          onClick={() => goTo('/simulados?treino=estrategico')}
-          glow
-        >
-          <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/10 blur-[60px] rounded-full transition-all group-hover:bg-orange-500/20 -mr-24 -mt-24" />
-          <div className="flex items-center justify-between relative z-10">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-orange-500 mb-3">
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-[11px] font-premium-mono font-bold uppercase tracking-[0.22em]">Simulado do Dia</span>
-              </div>
-              <h3 className="text-2xl font-premium-title italic">Treino Estratégico</h3>
-              <p className="text-xs text-text-secondary font-medium opacity-90">Questões recomendadas com base no seu histórico</p>
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.4)] group-hover:scale-110 transition-transform">
-              <FileText size={24} />
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Strategy Section */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-4 bg-primary rounded-full" />
-              <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Estratégia & Métodos</h3>
-            </div>
-            <button onClick={() => goTo('/explorar')} className="inline-flex items-center text-[10px] text-primary font-bold uppercase tracking-widest hover:underline min-h-11 px-2 active:scale-[0.98] active:brightness-110 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">Explorar</button>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <GlassCard
-              className="p-5 cursor-pointer hover:border-primary/40 transition-all group relative overflow-hidden"
-              onClick={() => goTo('/metodos')}
-              glow
-            >
-              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 blur-2xl rounded-full" />
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-colors border border-blue-500/20">
-                <Brain size={20} className="text-blue-500" />
-              </div>
-              <h4 className="text-sm font-bold mb-1">Métodos</h4>
-              <p className="text-[10px] text-text-secondary font-medium uppercase tracking-tighter opacity-60">Técnicas Avançadas</p>
-            </GlassCard>
-            <GlassCard
-              className="p-5 cursor-pointer hover:border-primary/40 transition-all group relative overflow-hidden"
-              onClick={() => goTo('/notas')}
-              glow
-            >
-              <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 blur-2xl rounded-full" />
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors border border-primary/20">
-                <Layers size={20} className="text-primary" />
-              </div>
-              <h4 className="text-sm font-bold mb-1">Flashcards</h4>
-              <p className="text-[10px] text-text-secondary font-medium uppercase tracking-tighter opacity-60">Repetição Espaçada</p>
-            </GlassCard>
-          </div>
-        </section>
-
-        <div className="grid grid-cols-2 gap-4">
-          <GlassCard
-            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
-            onClick={() => goTo('/questoes')}
-          >
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/20 transition-colors border border-blue-500/10">
-              <BookOpen size={24} className="text-blue-500" />
-            </div>
-            <h3 className="font-premium-title text-lg mb-1">Questões</h3>
-            <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-50">Banco Real</p>
-          </GlassCard>
-
-          <GlassCard
-            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
-            onClick={() => goTo('/redacao')}
-          >
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-5 group-hover:bg-purple-500/20 transition-colors border border-purple-500/10">
-              <PenTool size={24} className="text-purple-500" />
-            </div>
-            <h3 className="font-premium-title text-lg mb-1">Redação</h3>
-            <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-50">Correção Guiada</p>
-          </GlassCard>
-
-          <GlassCard
-            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
-            onClick={() => goTo('/simulados')}
-          >
-            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-5 group-hover:bg-orange-500/20 transition-colors border border-orange-500/10">
-              <FileText size={24} className="text-orange-500" />
-            </div>
-            <h3 className="font-premium-title text-lg mb-1">Simulados</h3>
-            <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-50">Provas Completas</p>
-          </GlassCard>
-
-          <GlassCard
-            className="premium-grid-card p-6 cursor-pointer group hover:border-primary/30 transition-all border-white/10"
-            onClick={() => {
-              useStore.setState({ showOnlyReviewLater: false });
-              useStore.getState().setNavFilters({ filterStatus: 'wrong' });
-              goTo('/questoes');
-            }}
-          >
-            <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center mb-5 group-hover:bg-red-500/20 transition-colors border border-red-500/10">
-              <RotateCcw size={24} className="text-red-500" />
-            </div>
-            <h3 className="font-premium-title text-lg mb-1">Revisar Erros</h3>
-            <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-50">Últimas tentativas erradas</p>
-          </GlassCard>
-        </div>
-      </div>
-
-      {routine && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-display font-medium">Cronograma de Hoje</h3>
-            <button onClick={() => goTo('/foco')} className="text-xs text-primary font-medium uppercase tracking-wider focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg px-2 py-1">Ver tudo</button>
-          </div>
-          <GlassCard className="p-5">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                <Calendar size={24} className="text-primary" />
-              </div>
-              <div>
-                <p className="font-medium">
-                  {(() => {
-                    const today = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date().getDay()];
-                    const todayPlan = routine.schedule.find(s => s.day.startsWith(today.substring(0, 3)));
-                    if (!todayPlan || !todayPlan.blocks || todayPlan.blocks.length === 0) return 'Descanso';
-                    return Array.from(new Set(todayPlan.blocks.map(b => b.subject))).join(', ');
-                  })()}
+        <motion.section variants={staggerItem} className="mt-7 space-y-4">
+          <SectionHeader
+            eyebrow="Ações principais"
+            title="Escolha o próximo movimento"
+            action={
+              <button
+                type="button"
+                onClick={() => goTo('/explorar')}
+                className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-[10px] font-premium-mono font-black uppercase tracking-[0.18em] text-white/60 transition hover:border-primary/35 hover:text-primary sm:inline-flex"
+              >
+                Explorar <ArrowRight size={13} />
+              </button>
+            }
+          />
+          <motion.div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
+            {primaryCards.map(card => (
+              <motion.div key={card.title} variants={staggerItem}>
+                <HomeTile {...card} />
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.section>
+        <motion.section variants={staggerItem} className="mt-7 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <GlassCard className="border-white/10 bg-white/[0.035] p-5">
+            <div className="flex items-start gap-4">
+              <IconTile icon={Quote} color="primary" size="md" glow />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/75">
+                  Frase do dia {dailyQuoteIndex + 1}/60
                 </p>
-                <p className="text-sm text-text-secondary">
-                  {(() => {
-                    const today = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date().getDay()];
-                    const todayPlan = routine.schedule.find(s => s.day.startsWith(today.substring(0, 3)));
-                    if (!todayPlan || !todayPlan.blocks) return 0;
-                    const mins = todayPlan.blocks.reduce((acc, b) => acc + b.duration, 0);
-                    return Math.round((mins / 60) * 10) / 10;
-                  })()}h de estudo hoje
-                </p>
+                <p className="mt-3 text-2xl font-premium-title italic leading-tight text-white">“{dailyQuote}”</p>
+                <p className="mt-3 text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-text-secondary">StudyFlow</p>
               </div>
             </div>
           </GlassCard>
-        </section>
-      )}
 
-      {exams.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-display font-medium">Próximas Provas</h3>
-            <button onClick={() => goTo('/simulados')} className="text-xs text-primary font-medium uppercase tracking-wider focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg px-2 py-1">Ver todas</button>
-          </div>
-          <div className="space-y-3">
-            {exams.slice(0, 2).map(exam => {
-              const daysLeft = calculateDaysLeft(exam.data);
-              return (
-                <GlassCard
-                  key={exam.id}
-                  className="p-4 flex justify-between items-center cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() =>
-                    goTo(
-                      exam.tipo === 'concurso'
-                        ? '/simulados?filtro=concursos'
-                        : '/simulados?filtro=vestibulares'
-                    )
-                  }
+          <GlassCard className="border-white/10 bg-white/[0.035] p-5">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-4">
+                <IconTile icon={Calendar} color="cyan" size="md" />
+                <div>
+                  <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/75">Plano de hoje</p>
+                  <h3 className="mt-2 text-xl font-premium-title italic text-white">
+                    {nextBlock ? nextBlock.subject : routine ? 'Dia leve programado' : 'Monte sua rotina'}
+                  </h3>
+                  <p className="mt-1 text-sm text-text-secondary">
+                    {nextBlock
+                      ? `${formatMinutes(nextBlock.duration)} de ${nextBlock.type === 'practice' ? 'prática' : nextBlock.type === 'review' ? 'revisão' : 'teoria'} hoje.`
+                      : routine
+                        ? `Sem blocos pendentes. Total planejado: ${formatMinutes(routineMinutes)}.`
+                        : 'Crie um plano semanal para o Flow organizar seus estudos.'}
+                  </p>
+                </div>
+              </div>
+              <AnimatedButton onClick={() => goTo(routine ? '/foco' : '/rotina')} variant="secondary" className="min-h-12 shrink-0 text-[11px] font-black uppercase tracking-[0.16em]">
+                {routine ? 'Abrir foco' : 'Criar rotina'} <ArrowRight size={14} />
+              </AnimatedButton>
+            </div>
+          </GlassCard>
+        </motion.section>
+
+        <motion.section variants={staggerItem} className="mt-7 grid gap-5 xl:grid-cols-[1fr_0.8fr]">
+          <GlassCard className="border-white/10 bg-white/[0.035] p-5 md:p-6">
+            <SectionHeader eyebrow="Controle tático" title="Atalhos que resolvem" />
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {tacticalCards.map(card => (
+                <button
+                  key={card.label}
+                  type="button"
+                  onClick={card.onClick}
+                  className="group flex items-center gap-3 rounded-[22px] border border-white/10 bg-black/20 p-4 text-left transition hover:border-primary/30 hover:bg-white/[0.055] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  <div>
-                    <h4 className="font-medium text-sm">{exam.nome}</h4>
-                    <p className="text-xs text-text-secondary">{exam.data ? new Date(exam.data).toLocaleDateString('pt-BR') : 'Edital em breve'}</p>
+                  <IconTile icon={card.icon} color={card.tone} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-black text-white">{card.label}</p>
+                    <p className="truncate text-[10px] font-premium-mono font-bold uppercase tracking-[0.16em] text-text-secondary">{card.value}</p>
                   </div>
-                  <div className="text-right">
-                    {daysLeft !== null ? (
-                      <>
-                        <span className="text-2xl font-bold text-primary font-mono">{daysLeft}</span>
-                        <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Dias</p>
-                      </>
-                    ) : (
-                      <Badge variant="warning">Breve</Badge>
-                    )}
-                  </div>
-                </GlassCard>
-              );
-            })}
-          </div>
-        </section>
-      )}
+                  <ChevronRight className="size-4 text-white/25 transition group-hover:translate-x-1 group-hover:text-primary" />
+                </button>
+              ))}
+            </div>
+          </GlassCard>
 
-      {/* Daily Study Tip */}
-      <GlassCard className="premium-list-card p-4 border-white/10 bg-white/[0.04] flex items-start gap-3">
-        <div className="p-2 bg-primary/10 rounded-lg text-primary">
-          <Info size={16} />
-        </div>
-        <div className="space-y-1">
-          <p className="text-[10px] font-premium-mono font-bold text-primary uppercase tracking-widest">Dica do Dia</p>
-          <p className="text-xs text-text-secondary leading-relaxed">{dailyTip}</p>
-        </div>
-      </GlassCard>
-      </div>
+          <GlassCard className="border-white/10 bg-white/[0.035] p-5 md:p-6">
+            <SectionHeader eyebrow="Próxima prova" title="Radar de prazo" />
+            <div className="mt-5">
+              {upcomingExam ? (
+                <button
+                  type="button"
+                  onClick={() => goTo('/simulados')}
+                  className="w-full rounded-[26px] border border-primary/20 bg-primary/[0.055] p-5 text-left transition hover:border-primary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-lg font-premium-title italic text-white">{upcomingExam.nome}</p>
+                      <p className="mt-1 text-xs text-text-secondary">{upcomingExam.data ? new Date(upcomingExam.data).toLocaleDateString('pt-BR') : 'Data em breve'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-premium-title text-4xl font-black text-primary">{upcomingExam.daysLeft ?? '--'}</p>
+                      <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-white/50">dias</p>
+                    </div>
+                  </div>
+                </button>
+              ) : (
+                <div className="rounded-[26px] border border-white/10 bg-black/20 p-5">
+                  <div className="flex items-center gap-3">
+                    <IconTile icon={Trophy} color="blue" size="md" />
+                    <div>
+                      <p className="text-sm font-black text-white">Nenhuma prova cadastrada</p>
+                      <p className="text-xs text-text-secondary">Use simulados para criar uma meta de prova.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </GlassCard>
+        </motion.section>
+        <motion.section variants={staggerItem} className="mt-7 grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+          <GlassCard className="border-white/10 bg-white/[0.035] p-5 md:p-6">
+            <SectionHeader eyebrow="Consistência" title="Últimos treinos" />
+            <div className="mt-5 rounded-[22px] border border-white/10 bg-black/20 p-4">
+              {heatmapData.length > 0 ? (
+                <Heatmap data={heatmapData} />
+              ) : (
+                <div className="flex min-h-24 items-center justify-center text-center text-sm text-text-secondary">
+                  Resolva questões para acender seu mapa de estudo.
+                </div>
+              )}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="border-white/10 bg-white/[0.035] p-5 md:p-6">
+            <div className="flex items-center justify-between gap-4">
+              <SectionHeader eyebrow="Agora" title="Feed de evolução" />
+              <AnimatedButton onClick={() => goTo('/estatisticas')} variant="ghost" className="min-h-10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]">
+                Ver tudo
+              </AnimatedButton>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => (
+                  <TimelineBlock
+                    key={activity.id}
+                    active={index === 0}
+                    label={activity.title}
+                    value={`${activity.isCorrect ? 'Acertou' : 'Errou'} • ${activity.subtitle}`}
+                  />
+                ))
+              ) : (
+                <>
+                  <TimelineBlock active label="Primeiro treino aguardando" value="Abra o banco de questões" />
+                  <TimelineBlock label="Depois revise os erros" value="O Flow monta seu mapa" />
+                  <TimelineBlock label="Feche com foco profundo" value={dailyTip} />
+                </>
+              )}
+            </div>
+          </GlassCard>
+        </motion.section>
+
+        <motion.section variants={staggerItem} className="mt-7">
+          <GlassCard className="overflow-hidden border-primary/20 bg-[linear-gradient(135deg,rgba(0,232,143,0.08),rgba(255,255,255,0.035))] p-5 md:p-6">
+            <div className="pointer-events-none absolute -bottom-20 right-0 size-64 rounded-full bg-primary/10 blur-[90px]" />
+            <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-4">
+                <IconTile icon={LineChart} color="primary" size="md" glow />
+                <div>
+                  <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/75">Sistema recomenda</p>
+                  <h3 className="mt-2 text-2xl font-premium-title italic text-white">Treino estratégico</h3>
+                  <p className="mt-1 max-w-xl text-sm leading-relaxed text-text-secondary">
+                    Combine questões, revisão e foco para transformar o histórico em progresso mensurável.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <AnimatedButton onClick={() => goTo('/simulados?treino=estrategico')} className="min-h-12 text-[11px] font-black uppercase tracking-[0.16em]">
+                  Iniciar simulado <ArrowRight size={14} />
+                </AnimatedButton>
+                <AnimatedButton onClick={() => goTo('/metodos')} variant="secondary" className="min-h-12 text-[11px] font-black uppercase tracking-[0.16em]">
+                  Ver métodos
+                </AnimatedButton>
+              </div>
+            </div>
+          </GlassCard>
+        </motion.section>
+      </motion.div>
     </div>
   );
 };
