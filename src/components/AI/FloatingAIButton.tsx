@@ -59,7 +59,7 @@ const readPageScroll = (): ScrollSnapshot => {
 const getFlightBounds = () => {
   const viewportWidth = window.innerWidth || 390;
   const viewportHeight = window.innerHeight || 720;
-  const buttonSize = viewportWidth <= 380 ? 98 : 106;
+  const buttonSize = viewportWidth <= 430 ? 96 : 106;
   const bottomInset = viewportWidth < 768 ? 124 : 76;
   const availableBottom = Math.max(96, viewportHeight - buttonSize - bottomInset);
   const upper = Math.min(availableBottom, Math.max(86, viewportHeight * 0.16));
@@ -71,18 +71,23 @@ const getFlightBounds = () => {
     upper,
     lower: Math.max(upper + 96, availableBottom),
     minX: -(viewportWidth - buttonSize - 12),
-    maxX: -8,
+    maxX: viewportWidth < 768 ? 18 : -8,
   };
 };
 
 const getFlightTarget = (snapshot: ScrollSnapshot, manualOffset: { x: number; y: number }) => {
   const bounds = getFlightBounds();
-  const progressY = clamp(snapshot.top / snapshot.maxTop, 0, 1);
+  const mobileFollowRange = Math.max(1, bounds.viewportHeight * 1.8);
+  const progressY = bounds.viewportWidth < 768
+    ? clamp(snapshot.top / mobileFollowRange, 0, 1)
+    : clamp(snapshot.top / snapshot.maxTop, 0, 1);
   const progressX = clamp(snapshot.left / snapshot.maxLeft, 0, 1);
   const easedY = smoothstep(progressY);
   const sideWave = Math.sin(progressY * Math.PI * 2.25) * Math.min(24, bounds.viewportWidth * 0.055);
   const baseY = bounds.upper + easedY * (bounds.lower - bounds.upper);
-  const baseX = -18 - progressX * Math.min(132, bounds.viewportWidth * 0.32) + sideWave;
+  const baseX = (bounds.viewportWidth < 768 ? 12 : -18)
+    - progressX * Math.min(132, bounds.viewportWidth * 0.32)
+    + sideWave;
 
   return {
     x: clamp(baseX + manualOffset.x, bounds.minX, bounds.maxX),
@@ -421,7 +426,7 @@ export function FloatingAIButton() {
   const previousPathRef = React.useRef(location.pathname);
   const routeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [flight, setFlight] = React.useState<FlightState>({
-    x: -24,
+    x: isMobileMotionViewport() ? 12 : -24,
     y: typeof window === 'undefined' ? 360 : Math.round(window.innerHeight * 0.56),
     tilt: 0,
     flip: 1,
@@ -512,8 +517,7 @@ export function FloatingAIButton() {
     };
   }, []);
   useEffect(() => {
-    if (reduced) return undefined;
-    const liteMotion = mobileMotion;
+    const liteMotion = reduced || mobileMotion;
     let blinkTimer: ReturnType<typeof setTimeout>;
     let releaseTimer: ReturnType<typeof setTimeout>;
     let rafId: number | null = null;
@@ -532,7 +536,7 @@ export function FloatingAIButton() {
       const energy = liteMotion
         ? clamp(currentPosition.energy * 0.58 + inputEnergy * 0.34, 0, 0.72)
         : clamp(currentPosition.energy * 0.74 + inputEnergy * 0.42, 0, 1);
-      const follow = liteMotion ? 0.24 + energy * 0.12 : 0.13 + energy * 0.24;
+      const follow = liteMotion ? 0.44 + energy * 0.16 : 0.13 + energy * 0.24;
       const lift = liteMotion ? clamp(deltaTop * 0.012, -2.2, 2.2) : clamp(deltaTop * 0.032, -6.5, 6.5);
       const drift = liteMotion ? clamp(deltaLeft * -0.032, -2.2, 2.2) : clamp(deltaLeft * -0.07, -6, 6);
       const y = clamp(
@@ -591,7 +595,7 @@ export function FloatingAIButton() {
       lastLeft = snapshot.left;
 
       if (Math.abs(deltaTop) > 0.08 || Math.abs(deltaLeft) > 0.08) {
-        activeUntil = Date.now() + (liteMotion ? 150 : 620);
+        activeUntil = Date.now() + (liteMotion ? 420 : 620);
       }
 
       const next = calculateFlight(snapshot, deltaTop, deltaLeft);
@@ -611,7 +615,7 @@ export function FloatingAIButton() {
         energy: shouldKeepFlying ? next.energy : Math.max(0, current.energy * 0.68),
       }));
 
-      if (shouldKeepFlying && !liteMotion) {
+      if (shouldKeepFlying && (!liteMotion || (next.distanceAfter > 8 && Date.now() < activeUntil))) {
         rafId = window.requestAnimationFrame(syncToScroll);
       } else {
         settleFlight(liteMotion ? 90 : 140);
@@ -619,7 +623,7 @@ export function FloatingAIButton() {
     };
 
     const requestSync = () => {
-      activeUntil = Date.now() + (liteMotion ? 130 : 540);
+      activeUntil = Date.now() + (liteMotion ? 360 : 540);
       if (rafId !== null) return;
       rafId = window.requestAnimationFrame(syncToScroll);
     };
@@ -830,7 +834,7 @@ export function FloatingAIButton() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      className="athena-floating-button fixed right-0 top-0 z-[100] h-[6.65rem] w-[6.65rem] overflow-visible rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d] max-[380px]:h-[6.15rem] max-[380px]:w-[6.15rem]"
+      className="athena-floating-button fixed right-0 top-0 z-[100] h-[6.65rem] w-[6.65rem] overflow-visible rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d] max-[430px]:h-24 max-[430px]:w-24"
       data-dragging={isDragging ? 'true' : 'false'}
       data-gliding={flight.gliding ? 'true' : 'false'}
       data-mobile-motion={mobileMotion ? 'true' : 'false'}

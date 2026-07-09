@@ -242,9 +242,8 @@ const DashboardView = () => {
         </motion.header>
 
         <motion.section variants={staggerItem} className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-          <GlassCard className="min-h-[330px] border-primary/[0.14] bg-[linear-gradient(135deg,rgba(0,232,143,0.10),rgba(255,255,255,0.025)_46%,rgba(255,255,255,0.015))] p-5 md:p-7">
-            <div className="pointer-events-none absolute -left-20 bottom-0 size-52 rounded-full bg-primary/[0.10] blur-[90px]" />
-            <div className="relative flex h-full flex-col justify-between gap-8">
+          <GlassCard className="min-h-[320px] border-primary/[0.14] bg-[linear-gradient(135deg,rgba(0,232,143,0.10),rgba(255,255,255,0.025)_46%,rgba(255,255,255,0.015))] p-5 md:p-7">
+            <div className="relative flex flex-col gap-7">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.07] px-3 py-1.5 text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-primary">
@@ -286,7 +285,7 @@ const DashboardView = () => {
               </div>
               <IconTile icon={BookOpen} color="blue" size="sm" className="rounded-xl" />
             </div>
-            <div className="mt-7 rounded-[22px] border border-white/[0.07] bg-black/[0.16] p-4">
+            <div className="mt-7 rounded-[22px] border border-white/[0.07] bg-black/[0.16] p-4 pr-20 md:pr-24">
               <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-white/40">{recentQuestion ? 'Última questão' : 'Próximo treino'}</p>
               <p className="mt-3 text-lg font-black text-white">{recentQuestion ? `${recentQuestion.materia} · ${recentQuestion.assunto}` : 'Comece pelo banco de questões'}</p>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
@@ -296,9 +295,11 @@ const DashboardView = () => {
                 <motion.div initial={{ width: 0 }} animate={{ width: `${recentQuestion ? Math.max(18, accuracy) : 12}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} className="h-full rounded-full bg-primary" />
               </div>
             </div>
-            <AnimatedButton onClick={() => goTo('/questoes')} variant="secondary" className="mt-5 min-h-11 w-full text-[11px] font-black uppercase tracking-[0.14em]">
-              {recentQuestion ? 'Continuar treino' : 'Abrir questões'} <ArrowRight size={15} />
-            </AnimatedButton>
+            <div className="mt-5 pr-20 md:pr-24">
+              <AnimatedButton onClick={() => goTo('/questoes')} variant="secondary" className="min-h-11 w-full text-[11px] font-black uppercase tracking-[0.14em]">
+                {recentQuestion ? 'Continuar treino' : 'Abrir questões'} <ArrowRight size={15} />
+              </AnimatedButton>
+            </div>
           </GlassCard>
         </motion.section>
 
