@@ -1983,6 +1983,9 @@ select:focus {
     drop-shadow(0 24px 36px rgba(0, 0, 0, 0.46))
     drop-shadow(0 0 18px rgba(var(--hub-primary-rgb), 0.14));
   will-change: transform, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  isolation: isolate;
 }
 
 .athena-floating-button:active,
@@ -2009,6 +2012,8 @@ select:focus {
     0 0 30px rgba(74, 216, 255, 0.14),
     0 0 40px rgba(var(--hub-primary-rgb), 0.1);
   backdrop-filter: blur(16px) saturate(150%);
+  will-change: transform, opacity;
+  transition: transform 260ms var(--ease-smooth-out), opacity 260ms var(--ease-smooth-out);
 }
 
 .athena-floating-button::after {
@@ -2021,11 +2026,15 @@ select:focus {
   opacity: 0.32;
   filter: blur(0.5px);
   animation: athena-orbit-breathe 5.8s linear infinite;
+  will-change: transform, opacity;
 }
 
 .athena-owl-shell {
   overflow: visible;
   transform-style: preserve-3d;
+  will-change: transform, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .athena-owl-shell::before {
@@ -2045,14 +2054,18 @@ select:focus {
     inset 0 -18px 30px rgba(0, 0, 0, 0.22),
     0 0 24px rgba(var(--hub-primary-rgb), 0.16);
   animation: athena-halo-breathe 4.8s var(--ease-smooth-in-out) infinite;
+  will-change: transform, opacity;
 }
 
 .athena-owl-shell svg {
   position: relative;
   z-index: 1;
-  transform: scale(1.16) translateY(-1px);
+  transform: translate3d(0, -1px, 0) scale(1.16);
   transform-origin: center;
   filter: saturate(1.18) contrast(1.08);
+  will-change: transform, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .athena-owl-shell::after {
@@ -2081,6 +2094,19 @@ select:focus {
     drop-shadow(0 25px 38px rgba(0, 0, 0, 0.48))
     drop-shadow(0 0 28px rgba(74, 216, 255, 0.18))
     drop-shadow(0 0 20px rgba(var(--hub-primary-rgb), 0.18));
+}
+.athena-floating-button[data-gliding="true"]::after {
+  animation-duration: 2.7s;
+  opacity: 0.48;
+}
+
+.athena-floating-button[data-gliding="true"] .athena-owl-shell::before {
+  animation-duration: 1.18s;
+  opacity: 0.86;
+}
+
+.athena-floating-button[data-gliding="true"] .athena-owl-shell svg {
+  filter: saturate(1.28) contrast(1.1) drop-shadow(0 0 10px rgba(74, 216, 255, 0.12));
 }
 
 .athena-floating-button[data-route-motion="behind"]::before {
@@ -2260,6 +2286,11 @@ select:focus {
 @media (prefers-reduced-motion: reduce) {
   .premium-page-stack {
     animation: none;
+  }
+
+  .athena-floating-button::after,
+  .athena-owl-shell::before {
+    animation: none !important;
   }
 }
 /* StudyFlow T. aesthetic refinement end */
