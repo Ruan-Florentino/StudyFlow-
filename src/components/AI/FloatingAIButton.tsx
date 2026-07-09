@@ -31,6 +31,9 @@ type ScrollSnapshot = {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const smoothstep = (value: number) => value * value * (3 - 2 * value);
+const isMobileMotionViewport = () =>
+  typeof window !== 'undefined' &&
+  (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
 
 const readPageScroll = (): ScrollSnapshot => {
   const main = document.getElementById('app-main-scroll');
@@ -93,27 +96,39 @@ function AthenaOwl({
   active,
   gliding,
   intensity,
+  lite,
 }: {
   blinking: boolean;
   active: boolean;
   gliding: boolean;
   intensity: number;
+  lite: boolean;
 }) {
   const alert = active || gliding;
   const flightEnergy = clamp(intensity, 0, 1);
-  const wingDuration = gliding ? 0.42 + (1 - flightEnergy) * 0.2 : 2.95;
-  const bodyDuration = gliding ? 0.72 + (1 - flightEnergy) * 0.22 : 3.25;
+  const wingDuration = lite
+    ? gliding ? 0.68 + (1 - flightEnergy) * 0.18 : 3.35
+    : gliding ? 0.42 + (1 - flightEnergy) * 0.2 : 2.95;
+  const bodyDuration = lite
+    ? gliding ? 1.05 + (1 - flightEnergy) * 0.18 : 3.6
+    : gliding ? 0.72 + (1 - flightEnergy) * 0.22 : 3.25;
   const featherEase: [number, number, number, number] = [0.36, 0, 0.2, 1];
   const leftWingMotion = gliding
-    ? { rotate: [-26, 15, -19, 9, -24], x: [-2.8, 1.4, -1.8, 0.9, -2.5], y: [2.6, -5.2, 0.7, -2.8, 2.2], scaleX: [1.04, 0.9, 1.02, 0.95, 1.04], scaleY: [0.95, 1.08, 0.98, 1.03, 0.96] }
+    ? lite
+      ? { rotate: [-16, 8, -12, 5, -15], x: [-1.6, 0.7, -0.9, 0.4, -1.4], y: [1.4, -2.6, 0.4, -1.4, 1.2], scaleX: [1.02, 0.96, 1.01, 0.98, 1.02], scaleY: [0.98, 1.04, 0.99, 1.02, 0.98] }
+      : { rotate: [-26, 15, -19, 9, -24], x: [-2.8, 1.4, -1.8, 0.9, -2.5], y: [2.6, -5.2, 0.7, -2.8, 2.2], scaleX: [1.04, 0.9, 1.02, 0.95, 1.04], scaleY: [0.95, 1.08, 0.98, 1.03, 0.96] }
     : { rotate: [-2, 0.9, -1.5], x: [-0.14, 0.12, -0.1], y: [0.08, -0.34, 0.08], scaleX: [1, 0.995, 1], scaleY: [1, 1.006, 1] };
   const rightWingMotion = gliding
-    ? { rotate: [26, -15, 19, -9, 24], x: [2.8, -1.4, 1.8, -0.9, 2.5], y: [2.6, -5.2, 0.7, -2.8, 2.2], scaleX: [1.04, 0.9, 1.02, 0.95, 1.04], scaleY: [0.95, 1.08, 0.98, 1.03, 0.96] }
+    ? lite
+      ? { rotate: [16, -8, 12, -5, 15], x: [1.6, -0.7, 0.9, -0.4, 1.4], y: [1.4, -2.6, 0.4, -1.4, 1.2], scaleX: [1.02, 0.96, 1.01, 0.98, 1.02], scaleY: [0.98, 1.04, 0.99, 1.02, 0.98] }
+      : { rotate: [26, -15, 19, -9, 24], x: [2.8, -1.4, 1.8, -0.9, 2.5], y: [2.6, -5.2, 0.7, -2.8, 2.2], scaleX: [1.04, 0.9, 1.02, 0.95, 1.04], scaleY: [0.95, 1.08, 0.98, 1.03, 0.96] }
     : { rotate: [2, -0.9, 1.5], x: [0.14, -0.12, 0.1], y: [0.08, -0.34, 0.08], scaleX: [1, 0.995, 1], scaleY: [1, 1.006, 1] };
   const headMotion = gliding
-    ? { y: [-1.9, 0.65, -1.25, 0.15], rotate: [-2.9, 1, -1.9, 0.5] }
+    ? lite
+      ? { y: [-0.9, 0.34, -0.56, 0.1], rotate: [-1.1, 0.45, -0.72, 0.18] }
+      : { y: [-1.9, 0.65, -1.25, 0.15], rotate: [-2.9, 1, -1.9, 0.5] }
     : { y: [0, -0.46, 0], rotate: [-0.36, 0.42, -0.24] };
-  const gazeShift = alert ? 1.15 + flightEnergy * 1.25 : 0.25;
+  const gazeShift = lite ? (alert ? 0.62 + flightEnergy * 0.55 : 0.18) : (alert ? 1.15 + flightEnergy * 1.25 : 0.25);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -221,14 +236,18 @@ function AthenaOwl({
         animate={{ opacity: active ? 0.34 : 0.22, scaleX: active ? 0.74 : 1, y: gliding ? 1.2 : 0 }}
         transition={{ duration: 0.42, ease: 'easeOut' }}
       />
-      <motion.circle
-        cx="56"
-        cy="54"
-        r="42"
-        fill="url(#athena-aura-core)"
-        animate={gliding ? { opacity: [0.54, 0.82, 0.54], scale: [0.96, 1.04, 0.98] } : { opacity: [0.28, 0.48, 0.3], scale: [0.98, 1.02, 0.99] }}
-        transition={{ duration: gliding ? 1.05 : 3.4, repeat: Infinity, ease: 'easeInOut' }}
-      />
+      {lite ? (
+        <circle cx="56" cy="54" r="42" fill="url(#athena-aura-core)" opacity={gliding ? 0.42 : 0.28} />
+      ) : (
+        <motion.circle
+          cx="56"
+          cy="54"
+          r="42"
+          fill="url(#athena-aura-core)"
+          animate={gliding ? { opacity: [0.54, 0.82, 0.54], scale: [0.96, 1.04, 0.98] } : { opacity: [0.28, 0.48, 0.3], scale: [0.98, 1.02, 0.99] }}
+          transition={{ duration: gliding ? 1.05 : 3.4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
 
       <motion.g
         animate={leftWingMotion}
@@ -263,7 +282,7 @@ function AthenaOwl({
       </motion.g>
 
       <motion.g
-        filter="url(#athena-soft-glow)"
+        filter={lite ? undefined : 'url(#athena-soft-glow)'}
         animate={headMotion}
         transition={{ duration: bodyDuration, repeat: Infinity, ease: 'easeInOut' }}
         style={{ transformOrigin: '56px 45px' }}
@@ -277,8 +296,8 @@ function AthenaOwl({
         <motion.path
           d="M38.4 28.2c8.2-5.4 21.3-6.2 31.3-1.3 8.8 4.3 13.7 13.5 12.6 25.6-.9 10-4.6 18.7-10.5 25.3 3.2-7.4 4.7-15.5 3.9-23.1-1.3-12.7-8.9-20.3-19.8-20.3S37.7 42 36.4 54.7c-.8 7.6.7 15.7 3.9 23.1-6-6.6-9.6-15.3-10.5-25.3-1.1-10.8 2.3-19.1 8.6-24.3Z"
           fill="rgba(255,255,255,0.08)"
-          animate={{ opacity: alert ? [0.16, 0.27, 0.16] : [0.08, 0.14, 0.08] }}
-          transition={{ duration: alert ? 1.1 : 3.6, repeat: Infinity, ease: 'easeInOut' }}
+          animate={lite ? { opacity: alert ? 0.18 : 0.1 } : { opacity: alert ? [0.16, 0.27, 0.16] : [0.08, 0.14, 0.08] }}
+          transition={lite ? { duration: 0.18, ease: 'easeOut' } : { duration: alert ? 1.1 : 3.6, repeat: Infinity, ease: 'easeInOut' }}
         />
         <path
           d="M34.6 35.3c5.2-8.3 14.7-8.1 21.4-1.7 6.7-6.4 16.2-6.6 21.4 1.7 5.8 9.2.5 21.7-10.4 23.4-4.7.8-8.5-.6-11-3.9-2.5 3.3-6.3 4.7-11 3.9-10.9-1.7-16.2-14.2-10.4-23.4Z"
@@ -290,16 +309,16 @@ function AthenaOwl({
         <path d="M37.5 31.8c5.6-5.1 12.1-4.7 18.5 1.8 6.4-6.5 12.9-6.9 18.5-1.8" fill="none" stroke="rgba(255,255,255,0.38)" strokeLinecap="round" strokeWidth="1.35" />
         <path d="M33.8 15.6c3.9 4.7 8.3 7.5 13.1 8.4" fill="none" stroke="rgba(227,251,255,0.62)" strokeLinecap="round" strokeWidth="1.35" />
         <path d="M78.2 15.6c-3.9 4.7-8.3 7.5-13.1 8.4" fill="none" stroke="rgba(227,251,255,0.62)" strokeLinecap="round" strokeWidth="1.35" />
-        <path d="M39.4 60.4c4.9 4 10.4 5.9 16.6 5.9s11.7-1.9 16.6-5.9c-1.2 15.9-7.1 25.8-16.6 25.8S40.6 76.3 39.4 60.4Z" fill="url(#athena-chest-plume)" filter="url(#athena-feather-depth)" opacity="0.88" />
+        <path d="M39.4 60.4c4.9 4 10.4 5.9 16.6 5.9s11.7-1.9 16.6-5.9c-1.2 15.9-7.1 25.8-16.6 25.8S40.6 76.3 39.4 60.4Z" fill="url(#athena-chest-plume)" filter={lite ? undefined : 'url(#athena-feather-depth)'} opacity="0.88" />
         <motion.g
-          animate={{ opacity: alert ? [0.72, 1, 0.72] : [0.46, 0.64, 0.46] }}
-          transition={{ duration: alert ? 1.18 : 3.9, repeat: Infinity, ease: 'easeInOut' }}
+          animate={lite ? { opacity: alert ? 0.82 : 0.52 } : { opacity: alert ? [0.72, 1, 0.72] : [0.46, 0.64, 0.46] }}
+          transition={lite ? { duration: 0.18, ease: 'easeOut' } : { duration: alert ? 1.18 : 3.9, repeat: Infinity, ease: 'easeInOut' }}
         >
           <path d="M42.7 62.2c3.6 2.3 8 3.5 13.3 3.5s9.7-1.2 13.3-3.5" fill="none" stroke="url(#athena-plume-rim)" strokeLinecap="round" strokeWidth="1.25" />
           <path d="M44.8 68.2c3.1 2 6.8 3 11.2 3s8.1-1 11.2-3" fill="none" stroke="rgba(221,255,242,0.34)" strokeLinecap="round" strokeWidth="1.05" />
           <path d="M48.4 74.2c2.1 1.2 4.7 1.8 7.6 1.8s5.5-.6 7.6-1.8" fill="none" stroke="rgba(255,238,204,0.26)" strokeLinecap="round" strokeWidth="1" />
         </motion.g>
-        <g opacity="0.94" filter="url(#athena-feather-depth)">
+        <g opacity="0.94" filter={lite ? undefined : 'url(#athena-feather-depth)'}>
           <path
             d="M44.8 60.9c3.8 1 7.6 1.5 11.2 1.5s7.4-.5 11.2-1.5c-.4 9.6-4.1 16.2-11.2 20.1-7.1-3.9-10.8-10.5-11.2-20.1Z"
             fill="url(#athena-shield-glass)"
@@ -311,7 +330,7 @@ function AthenaOwl({
           <circle cx="45.1" cy="65.2" r="1" fill="#72f7ff" opacity="0.76" />
           <circle cx="66.9" cy="65.2" r="1" fill="#72f7ff" opacity="0.76" />
         </g>
-        <g opacity="0.72" filter="url(#athena-feather-depth)">
+        <g opacity="0.72" filter={lite ? undefined : 'url(#athena-feather-depth)'}>
           <path d="M43 65.4c3.7 2.8 8 4.2 13 4.2s9.3-1.4 13-4.2" fill="none" stroke="rgba(255,238,204,0.28)" strokeLinecap="round" strokeWidth="1.2" />
           <path d="M45.8 71.3c3 2.1 6.4 3.1 10.2 3.1s7.2-1 10.2-3.1" fill="none" stroke="rgba(255,255,255,0.18)" strokeLinecap="round" strokeWidth="1.05" />
           <path d="M49.5 77.1c2 1.2 4.2 1.8 6.5 1.8s4.5-.6 6.5-1.8" fill="none" stroke="rgba(0,232,143,0.18)" strokeLinecap="round" strokeWidth="1" />
@@ -331,7 +350,7 @@ function AthenaOwl({
 
       <motion.g
         animate={gliding ? { y: [0.4, 1.7, 0.4], rotate: [-1, 1.4, -0.8] } : { y: [0, 0.55, 0], rotate: [-0.4, 0.5, -0.3] }}
-        transition={{ duration: gliding ? 0.95 : 2.8, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: lite ? (gliding ? 1.35 : 3.4) : (gliding ? 0.95 : 2.8), repeat: Infinity, ease: 'easeInOut' }}
         style={{ transformOrigin: '56px 88px' }}
         opacity="0.9"
       >
@@ -339,7 +358,7 @@ function AthenaOwl({
         <path d="M53.5 86.8c.4 3.2 1.2 5.8 2.5 7.6 1.3-1.8 2.1-4.4 2.5-7.6" fill="none" stroke="rgba(0,232,143,0.2)" strokeLinecap="round" strokeWidth="1" />
       </motion.g>
 
-      <g filter="url(#athena-eye-glow)">
+      <g filter={lite ? undefined : 'url(#athena-eye-glow)'}>
         <ellipse cx="45.1" cy="45.4" rx="10.4" ry="11" fill="#041018" stroke="rgba(196,247,255,0.5)" strokeWidth="1.15" />
         <ellipse cx="66.9" cy="45.4" rx="10.4" ry="11" fill="#041018" stroke="rgba(196,247,255,0.5)" strokeWidth="1.15" />
         <motion.ellipse
@@ -348,8 +367,8 @@ function AthenaOwl({
           rx="7.75"
           ry="8.25"
           fill="url(#athena-eye-ring)"
-          animate={{ opacity: alert ? [0.78, 1, 0.8] : [0.5, 0.72, 0.52], scale: alert ? [1, 1.04, 1] : [0.98, 1.01, 0.99] }}
-          transition={{ duration: alert ? 1.1 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+          animate={lite ? { opacity: alert ? 0.92 : 0.58, scale: alert ? 1.02 : 1 } : { opacity: alert ? [0.78, 1, 0.8] : [0.5, 0.72, 0.52], scale: alert ? [1, 1.04, 1] : [0.98, 1.01, 0.99] }}
+          transition={lite ? { duration: 0.18, ease: 'easeOut' } : { duration: alert ? 1.1 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
           style={{ transformOrigin: '45.1px 45.4px' }}
         />
         <motion.ellipse
@@ -358,8 +377,8 @@ function AthenaOwl({
           rx="7.75"
           ry="8.25"
           fill="url(#athena-eye-ring)"
-          animate={{ opacity: alert ? [0.78, 1, 0.8] : [0.5, 0.72, 0.52], scale: alert ? [1, 1.04, 1] : [0.98, 1.01, 0.99] }}
-          transition={{ duration: alert ? 1.1 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+          animate={lite ? { opacity: alert ? 0.92 : 0.58, scale: alert ? 1.02 : 1 } : { opacity: alert ? [0.78, 1, 0.8] : [0.5, 0.72, 0.52], scale: alert ? [1, 1.04, 1] : [0.98, 1.01, 0.99] }}
+          transition={lite ? { duration: 0.18, ease: 'easeOut' } : { duration: alert ? 1.1 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
           style={{ transformOrigin: '66.9px 45.4px' }}
         />
         {blinking ? (
@@ -392,6 +411,7 @@ export function FloatingAIButton() {
   const { openChat, isOpen, setViewMode } = useAIUI();
   const location = useLocation();
   const reduced = useReducedMotion() ?? false;
+  const [mobileMotion, setMobileMotion] = React.useState(isMobileMotionViewport);
   const [mounted, setMounted] = React.useState(false);
   const [hover, setHover] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -447,6 +467,23 @@ export function FloatingAIButton() {
   }, []);
 
   useEffect(() => {
+    const coarsePointer = window.matchMedia('(pointer: coarse)');
+    const smallViewport = window.matchMedia('(max-width: 767px)');
+    const updateMobileMotion = () => setMobileMotion(coarsePointer.matches || smallViewport.matches);
+
+    updateMobileMotion();
+    coarsePointer.addEventListener('change', updateMobileMotion);
+    smallViewport.addEventListener('change', updateMobileMotion);
+    window.addEventListener('resize', updateMobileMotion, { passive: true });
+
+    return () => {
+      coarsePointer.removeEventListener('change', updateMobileMotion);
+      smallViewport.removeEventListener('change', updateMobileMotion);
+      window.removeEventListener('resize', updateMobileMotion);
+    };
+  }, []);
+
+  useEffect(() => {
     if (previousPathRef.current === location.pathname) return undefined;
     previousPathRef.current = location.pathname;
 
@@ -476,6 +513,7 @@ export function FloatingAIButton() {
   }, []);
   useEffect(() => {
     if (reduced) return undefined;
+    const liteMotion = mobileMotion;
     let blinkTimer: ReturnType<typeof setTimeout>;
     let releaseTimer: ReturnType<typeof setTimeout>;
     let rafId: number | null = null;
@@ -488,11 +526,15 @@ export function FloatingAIButton() {
       const target = getFlightTarget(snapshot, manualOffsetRef.current);
       const scrollSpeed = Math.hypot(deltaTop, deltaLeft);
       const targetDistance = Math.hypot(target.x - currentPosition.x, target.y - currentPosition.y);
-      const inputEnergy = clamp(scrollSpeed / 56 + targetDistance / 360, 0, 1);
-      const energy = clamp(currentPosition.energy * 0.74 + inputEnergy * 0.42, 0, 1);
-      const follow = 0.13 + energy * 0.24;
-      const lift = clamp(deltaTop * 0.032, -6.5, 6.5);
-      const drift = clamp(deltaLeft * -0.07, -6, 6);
+      const inputEnergy = liteMotion
+        ? clamp(scrollSpeed / 88 + targetDistance / 540, 0, 0.72)
+        : clamp(scrollSpeed / 56 + targetDistance / 360, 0, 1);
+      const energy = liteMotion
+        ? clamp(currentPosition.energy * 0.58 + inputEnergy * 0.34, 0, 0.72)
+        : clamp(currentPosition.energy * 0.74 + inputEnergy * 0.42, 0, 1);
+      const follow = liteMotion ? 0.24 + energy * 0.12 : 0.13 + energy * 0.24;
+      const lift = liteMotion ? clamp(deltaTop * 0.012, -2.2, 2.2) : clamp(deltaTop * 0.032, -6.5, 6.5);
+      const drift = liteMotion ? clamp(deltaLeft * -0.032, -2.2, 2.2) : clamp(deltaLeft * -0.07, -6, 6);
       const y = clamp(
         currentPosition.y + (target.y - currentPosition.y) * follow + lift,
         target.bounds.upper,
@@ -511,11 +553,11 @@ export function FloatingAIButton() {
       return {
         x,
         y,
-        tilt: clamp(vertical * 0.14 + horizontal * 0.075, -14, 14),
+        tilt: liteMotion ? clamp(vertical * 0.07 + horizontal * 0.035, -7, 7) : clamp(vertical * 0.14 + horizontal * 0.075, -14, 14),
         flip,
         energy,
         distanceAfter,
-        active: scrollSpeed > 0.08 || energy > 0.038 || distanceAfter > 0.48,
+        active: liteMotion ? scrollSpeed > 0.08 || energy > 0.08 : scrollSpeed > 0.08 || energy > 0.038 || distanceAfter > 0.48,
       };
     };
 
@@ -549,11 +591,13 @@ export function FloatingAIButton() {
       lastLeft = snapshot.left;
 
       if (Math.abs(deltaTop) > 0.08 || Math.abs(deltaLeft) > 0.08) {
-        activeUntil = Date.now() + 620;
+        activeUntil = Date.now() + (liteMotion ? 150 : 620);
       }
 
       const next = calculateFlight(snapshot, deltaTop, deltaLeft);
-      const shouldKeepFlying = next.active || Date.now() < activeUntil;
+      const shouldKeepFlying = liteMotion
+        ? next.active || Date.now() < activeUntil
+        : next.active || Date.now() < activeUntil;
 
       commitFlight((current) => ({
         ...current,
@@ -561,27 +605,27 @@ export function FloatingAIButton() {
         y: next.y,
         tilt: shouldKeepFlying ? next.tilt : current.tilt * 0.72,
         flip: next.flip,
-        burst: shouldKeepFlying && next.energy > 0.16 ? current.burst + 1 : current.burst,
+        burst: !liteMotion && shouldKeepFlying && next.energy > 0.16 ? current.burst + 1 : current.burst,
         gliding: shouldKeepFlying,
         peek: shouldKeepFlying,
         energy: shouldKeepFlying ? next.energy : Math.max(0, current.energy * 0.68),
       }));
 
-      if (shouldKeepFlying) {
+      if (shouldKeepFlying && !liteMotion) {
         rafId = window.requestAnimationFrame(syncToScroll);
       } else {
-        settleFlight(140);
+        settleFlight(liteMotion ? 90 : 140);
       }
     };
 
     const requestSync = () => {
-      activeUntil = Date.now() + 540;
+      activeUntil = Date.now() + (liteMotion ? 130 : 540);
       if (rafId !== null) return;
       rafId = window.requestAnimationFrame(syncToScroll);
     };
 
     const handlePointerMove = (event: PointerEvent) => {
-      if (event.pointerType === 'touch') return;
+      if (liteMotion || event.pointerType === 'touch') return;
       const width = window.innerWidth || 1;
       const zone = event.clientX / width;
       if (zone < 0.18 || zone > 0.82) {
@@ -618,7 +662,7 @@ export function FloatingAIButton() {
     document.addEventListener('scroll', requestSync, { passive: true, capture: true });
     window.addEventListener('scroll', requestSync, { passive: true });
     window.addEventListener('wheel', requestSync, { passive: true });
-    window.addEventListener('touchmove', requestSync, { passive: true });
+    if (!liteMotion) window.addEventListener('touchmove', requestSync, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
     visualViewport?.addEventListener('scroll', requestSync, { passive: true });
     visualViewport?.addEventListener('resize', handleResize, { passive: true });
@@ -632,15 +676,18 @@ export function FloatingAIButton() {
       document.removeEventListener('scroll', requestSync, true);
       window.removeEventListener('scroll', requestSync);
       window.removeEventListener('wheel', requestSync);
-      window.removeEventListener('touchmove', requestSync);
+      if (!liteMotion) window.removeEventListener('touchmove', requestSync);
       window.removeEventListener('resize', handleResize);
       visualViewport?.removeEventListener('scroll', requestSync);
       visualViewport?.removeEventListener('resize', handleResize);
       window.removeEventListener('pointermove', handlePointerMove);
     };
-  }, [commitFlight, reduced]);
+  }, [commitFlight, mobileMotion, reduced]);
 
   if (isOpen) return null;
+
+  const liteMotion = reduced || mobileMotion;
+  const heavyEffects = !liteMotion;
 
   const clampDraggedFlight = (x: number, y: number) => {
     const bounds = getFlightBounds();
@@ -715,6 +762,7 @@ export function FloatingAIButton() {
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     dragRef.current.pointerId = null;
     setIsDragging(false);
+    setHover(false);
 
     if (drag.moved) {
       lastDragAtRef.current = Date.now();
@@ -728,6 +776,7 @@ export function FloatingAIButton() {
     if (dragRef.current.pointerId !== event.pointerId) return;
     dragRef.current.pointerId = null;
     setIsDragging(false);
+    setHover(false);
     commitFlight((current) => ({ ...current, tilt: 0, gliding: false, peek: false, energy: 0 }));
   };
 
@@ -764,12 +813,18 @@ export function FloatingAIButton() {
       initial={{ opacity: 0, scale: 0.72, x: -18, y: 460 }}
       animate={{
         opacity: routeMotion.behind ? 0.38 : flight.peek ? 0.94 : 1,
-        scale: routeMotion.behind ? 0.72 : isDragging ? 1.08 : hover ? 1.07 : flight.peek ? 0.985 : 1,
+        scale: routeMotion.behind ? 0.72 : isDragging ? (mobileMotion ? 1.035 : 1.08) : hover ? 1.07 : flight.peek ? 0.985 : 1,
         x: flight.x,
-        y: flight.y - (routeMotion.behind ? 22 : 0),
-        rotate: routeMotion.behind ? (flight.flip === -1 ? -8 : 8) : flight.tilt,
+        y: flight.y - (routeMotion.behind ? (mobileMotion ? 12 : 22) : 0),
+        rotate: routeMotion.behind ? (flight.flip === -1 ? -6 : 6) : flight.tilt,
       }}
-      transition={reduced ? { duration: 0.08 } : { type: 'spring', stiffness: flight.gliding ? 220 : 175, damping: flight.gliding ? 28 : 24, mass: 0.62 }}
+      transition={
+        reduced
+          ? { duration: 0.08 }
+          : mobileMotion
+            ? { duration: flight.gliding ? 0.14 : 0.18, ease: [0.22, 1, 0.36, 1] }
+            : { type: 'spring', stiffness: flight.gliding ? 220 : 175, damping: flight.gliding ? 28 : 24, mass: 0.62 }
+      }
       whileTap={{ scale: 0.9, transition: springs.snappy }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -778,10 +833,11 @@ export function FloatingAIButton() {
       className="athena-floating-button fixed right-0 top-0 z-[100] h-[6.65rem] w-[6.65rem] overflow-visible rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0d] max-[380px]:h-[6.15rem] max-[380px]:w-[6.15rem]"
       data-dragging={isDragging ? 'true' : 'false'}
       data-gliding={flight.gliding ? 'true' : 'false'}
+      data-mobile-motion={mobileMotion ? 'true' : 'false'}
       data-route-motion={routeMotion.behind ? 'behind' : 'idle'}
     >
       <AnimatePresence>
-        {ripple > 0 && (
+        {ripple > 0 && heavyEffects && (
           <motion.span
             key={ripple}
             aria-hidden
@@ -795,7 +851,7 @@ export function FloatingAIButton() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {flight.burst > 0 && !reduced && (
+        {flight.burst > 0 && heavyEffects && (
           <motion.span
             key={flight.burst}
             aria-hidden
@@ -808,33 +864,37 @@ export function FloatingAIButton() {
         )}
       </AnimatePresence>
 
-      <motion.span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-full"
-        animate={reduced ? {} : { opacity: hover || flight.gliding ? [0.5, 0.76, 0.5] : [0.24, 0.42, 0.24] }}
-        transition={{ duration: hover || flight.gliding ? 1 : 2.6, repeat: Infinity, ease: 'easeInOut' }}
-        style={{
-          background: 'radial-gradient(circle, rgba(var(--hub-primary-rgb),0.4), rgba(96,245,255,0.16) 42%, transparent 74%)',
-          filter: 'blur(15px)',
-        }}
-      />
+      {heavyEffects && (
+        <>
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-full"
+            animate={{ opacity: hover || flight.gliding ? [0.5, 0.76, 0.5] : [0.24, 0.42, 0.24] }}
+            transition={{ duration: hover || flight.gliding ? 1 : 2.6, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              background: 'radial-gradient(circle, rgba(var(--hub-primary-rgb),0.4), rgba(96,245,255,0.16) 42%, transparent 74%)',
+              filter: 'blur(15px)',
+            }}
+          />
 
-      <motion.span
-        aria-hidden
-        className="pointer-events-none absolute inset-3 rounded-full border border-white/15 shadow-[inset_0_0_22px_rgba(var(--hub-primary-rgb),0.16),0_0_24px_rgba(0,245,174,0.12)]"
-        animate={reduced ? {} : { scale: hover || flight.gliding ? [0.97, 1.04, 0.98] : [0.98, 1.01, 0.99], opacity: hover || flight.gliding ? [0.72, 0.96, 0.74] : [0.38, 0.58, 0.4] }}
-        transition={{ duration: hover || flight.gliding ? 1.05 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
-      />
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-3 rounded-full border border-white/15 shadow-[inset_0_0_22px_rgba(var(--hub-primary-rgb),0.16),0_0_24px_rgba(0,245,174,0.12)]"
+            animate={{ scale: hover || flight.gliding ? [0.97, 1.04, 0.98] : [0.98, 1.01, 0.99], opacity: hover || flight.gliding ? [0.72, 0.96, 0.74] : [0.38, 0.58, 0.4] }}
+            transition={{ duration: hover || flight.gliding ? 1.05 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+          />
 
-      <motion.span
-        aria-hidden
-        className="pointer-events-none absolute inset-[1.05rem] rounded-full border border-primary/20 border-t-white/45 border-r-cyan-200/30"
-        animate={reduced ? {} : { rotate: 360 }}
-        transition={{ duration: hover || flight.gliding ? 3.8 : 7.5, repeat: Infinity, ease: 'linear' }}
-      />
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-[1.05rem] rounded-full border border-primary/20 border-t-white/45 border-r-cyan-200/30"
+            animate={{ rotate: 360 }}
+            transition={{ duration: hover || flight.gliding ? 3.8 : 7.5, repeat: Infinity, ease: 'linear' }}
+          />
+        </>
+      )}
 
       <AnimatePresence>
-        {routeMotion.behind && !reduced && (
+        {routeMotion.behind && heavyEffects && (
           <motion.span
             key={`route-${routeMotion.pulse}`}
             aria-hidden
@@ -849,24 +909,28 @@ export function FloatingAIButton() {
       <motion.span
         className="athena-owl-shell relative z-10 flex h-full w-full items-center justify-center rounded-full p-[0.12rem]"
         animate={{
-          rotateY: routeMotion.behind ? [flight.flip === -1 ? 180 : 0, flight.flip === -1 ? 18 : 166, 176] : flight.flip === -1 ? 180 : 0,
-          x: routeMotion.behind ? [0, flight.flip * -5, 0] : flight.peek ? flight.flip * 4 : 0,
-          y: routeMotion.behind ? [0, -18, -10] : flight.gliding ? -2 : 0,
-          scale: routeMotion.behind ? [1, 0.78, 0.86] : flight.gliding ? 1.025 : 1,
+          rotateY: routeMotion.behind
+            ? mobileMotion ? 176 : [flight.flip === -1 ? 180 : 0, flight.flip === -1 ? 18 : 166, 176]
+            : flight.flip === -1 ? 180 : 0,
+          x: routeMotion.behind ? (mobileMotion ? 0 : [0, flight.flip * -5, 0]) : flight.peek ? flight.flip * (mobileMotion ? 2 : 4) : 0,
+          y: routeMotion.behind ? (mobileMotion ? -6 : [0, -18, -10]) : flight.gliding ? (mobileMotion ? -1 : -2) : 0,
+          scale: routeMotion.behind ? (mobileMotion ? 0.9 : [1, 0.78, 0.86]) : flight.gliding ? (mobileMotion ? 1.01 : 1.025) : 1,
         }}
-        transition={{ duration: routeMotion.behind ? 0.46 : 0.5, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: routeMotion.behind ? (mobileMotion ? 0.24 : 0.46) : (mobileMotion ? 0.22 : 0.5), ease: [0.22, 1, 0.36, 1] }}
         style={{
           transformPerspective: 760,
           background:
             'radial-gradient(circle at 42% 24%, rgba(255,244,218,0.24), rgba(var(--hub-primary-rgb),0.12) 30%, rgba(34,21,13,0.12) 58%, rgba(0,0,0,0.01) 100%)',
-          filter: routeMotion.behind
-            ? 'blur(1.6px) drop-shadow(0 0 8px rgba(var(--hub-primary-rgb),0.16))'
-            : hover
-              ? 'drop-shadow(0 0 32px rgba(var(--hub-primary-rgb),0.42)) drop-shadow(0 16px 28px rgba(0,0,0,0.34))'
-              : 'drop-shadow(0 0 21px rgba(var(--hub-primary-rgb),0.28)) drop-shadow(0 12px 22px rgba(0,0,0,0.28))',
+          filter: mobileMotion
+            ? 'drop-shadow(0 10px 14px rgba(0,0,0,0.28))'
+            : routeMotion.behind
+              ? 'blur(1.6px) drop-shadow(0 0 8px rgba(var(--hub-primary-rgb),0.16))'
+              : hover
+                ? 'drop-shadow(0 0 32px rgba(var(--hub-primary-rgb),0.42)) drop-shadow(0 16px 28px rgba(0,0,0,0.34))'
+                : 'drop-shadow(0 0 21px rgba(var(--hub-primary-rgb),0.28)) drop-shadow(0 12px 22px rgba(0,0,0,0.28))',
         }}
       >
-        <AthenaOwl blinking={blink} active={hover || flight.gliding} gliding={flight.gliding} intensity={flight.energy} />
+        <AthenaOwl blinking={blink} active={hover || flight.gliding} gliding={flight.gliding} intensity={flight.energy} lite={liteMotion} />
         <span className="absolute right-[1.05rem] top-[1.18rem] h-2.5 w-2.5 rounded-full border-2 border-[#06100d] bg-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.82)]" />
       </motion.span>
     </motion.button>

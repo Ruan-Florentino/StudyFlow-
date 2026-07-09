@@ -2275,7 +2275,62 @@ select:focus {
   }
 
   .athena-floating-button {
-    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.42));
+    filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.34));
+  }
+
+  .athena-floating-button::before {
+    inset: 0.86rem;
+    background:
+      radial-gradient(circle at 44% 22%, rgba(231, 251, 255, 0.18), transparent 32%),
+      radial-gradient(circle at 52% 62%, rgba(var(--hub-primary-rgb), 0.16), transparent 46%),
+      rgba(5, 8, 7, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      inset 0 -10px 22px rgba(0, 0, 0, 0.18),
+      0 10px 20px rgba(0, 0, 0, 0.26);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .athena-floating-button::after,
+  .athena-route-warp {
+    display: none;
+  }
+
+  .athena-owl-shell {
+    filter: none !important;
+  }
+
+  .athena-owl-shell::before {
+    inset: 0.66rem;
+    opacity: 0.5;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -12px 22px rgba(0, 0, 0, 0.18),
+      0 0 14px rgba(var(--hub-primary-rgb), 0.1);
+    animation-duration: 5.6s;
+  }
+
+  .athena-owl-shell::after {
+    filter: blur(3px);
+    opacity: 0.3;
+  }
+
+  .athena-owl-shell svg {
+    filter: saturate(1.08) contrast(1.04);
+  }
+
+  .athena-floating-button[data-mobile-motion="true"][data-gliding="true"] {
+    filter: drop-shadow(0 11px 16px rgba(0, 0, 0, 0.36));
+  }
+
+  .athena-floating-button[data-mobile-motion="true"][data-gliding="true"] .athena-owl-shell::before {
+    animation-duration: 2.8s;
+    opacity: 0.58;
+  }
+
+  .athena-floating-button[data-mobile-motion="true"][data-gliding="true"] .athena-owl-shell svg {
+    filter: saturate(1.12) contrast(1.06);
   }
 
   .focus-timer-face span:first-child {
