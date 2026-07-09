@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { X, Maximize2, Minimize2 } from 'lucide-react';
 import { useAIUI } from '../../../hooks/useAIUI';
 import { AthenaChat } from './AthenaChat';
+import { AthenaAvatar } from './AthenaAvatar';
 import { ATHENA_CONFIG } from '../constants/config';
 import { springs } from '../../../lib/animations/easings';
 
@@ -42,7 +43,7 @@ export function AthenaSidebar() {
             animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.96, rotateX: -3 }}
             transition={reduceMotion ? { duration: 0.16 } : springs.soft}
-            className={`athena-sidebar-panel fixed z-[1200] flex flex-col overflow-hidden rounded-[28px] border shadow-2xl outline-none ${
+            className={`athena-sidebar-panel athena-floating-chat-panel fixed z-[1200] flex flex-col overflow-hidden rounded-[28px] border shadow-2xl outline-none ${
               expanded
                 ? 'inset-x-3 bottom-[max(1rem,env(safe-area-inset-bottom,0px))] top-[max(1rem,env(safe-area-inset-top,0px))] md:left-auto md:right-5 md:w-[min(42rem,calc(100vw-2.5rem))]'
                 : 'inset-x-3 bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))] top-[max(1rem,env(safe-area-inset-top,0px))] sm:bottom-5 sm:left-auto sm:right-5 sm:top-5 sm:w-[min(28.5rem,calc(100vw-2.5rem))]'
@@ -50,9 +51,7 @@ export function AthenaSidebar() {
           >
             <div className="athena-chat-header flex shrink-0 items-center justify-between gap-3 p-4 backdrop-blur-xl">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="athena-signal flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 shadow-[0_16px_34px_rgba(var(--hub-primary-rgb),0.15)]">
-                  <span className="relative z-10 text-2xl">{ATHENA_CONFIG.ICON}</span>
-                </div>
+                <AthenaAvatar size="md" active />
                 <div className="min-w-0">
                   <h3 className="truncate text-sm font-black tracking-tight text-white">{ATHENA_CONFIG.NAME}</h3>
                   <p className="truncate text-[10px] font-bold uppercase tracking-widest text-white/45">Janela ativa</p>

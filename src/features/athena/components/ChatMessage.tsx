@@ -4,6 +4,7 @@ import { Copy, User, Zap } from 'lucide-react';
 import { Message } from '../types/chat.types';
 import { ATHENA_CONFIG } from '../constants/config';
 import { springs } from '../../../lib/animations/easings';
+import { AthenaAvatar } from './AthenaAvatar';
 
 const ChatMarkdownBasic = lazy(() =>
   import('./ChatMarkdown').then((module) => ({ default: module.ChatMarkdown }))
@@ -46,15 +47,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
   };
 
   const avatar = (
-    <div
-      className={`athena-signal flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border shadow-lg ${
-        isAssistant
-          ? 'border-primary/25 bg-primary/10 text-primary shadow-primary/10'
-          : 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200 shadow-cyan-500/10'
-      }`}
-    >
-      {isAssistant ? <Zap size={16} /> : <User size={16} />}
-    </div>
+    isAssistant ? (
+      <AthenaAvatar size="sm" active={Boolean(isStreaming)} />
+    ) : (
+      <div className="athena-user-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 shadow-lg shadow-cyan-500/10">
+        <User size={16} />
+      </div>
+    )
   );
 
   return (
@@ -74,7 +73,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
         } min-w-0 max-w-[min(82vw,46rem)] rounded-[22px] px-4 py-3 sm:px-5 sm:py-4`}
       >
         <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="truncate text-[10px] font-bold uppercase tracking-widest text-white/40">
+          <span className="inline-flex min-w-0 items-center gap-1.5 truncate text-[10px] font-bold uppercase tracking-widest text-white/40">
+            {isAssistant && <Zap size={11} className="text-primary/70" />}
             {isAssistant ? ATHENA_CONFIG.NAME : 'Voce'}
           </span>
           {isAssistant && (

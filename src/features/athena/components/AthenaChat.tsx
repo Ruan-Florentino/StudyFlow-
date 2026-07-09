@@ -1,16 +1,43 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { springs } from '../../../lib/animations/easings';
-import { Shield, Trash2, History, Sidebar, Plus, MessageSquare } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, History, MessageSquare, Microscope, PenLine, Plus, Shield, Sidebar, Trash2 } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { ModelSelector } from './ModelSelector';
+import { AthenaAvatar } from './AthenaAvatar';
 import { useAthena } from '../hooks/useAthena';
 import { ATHENA_MODELS, DEFAULT_MODEL } from '../constants/models';
 import type { ChatSession } from '../types/chat.types';
 import { ATHENA_CONFIG } from '../constants/config';
 import { AIModel } from '../types/model.types';
 
+const ATHENA_EMPTY_SUGGESTIONS = [
+  {
+    action: 'Explicar equacao do 2o grau',
+    title: 'Equacao do 2o grau',
+    hint: 'Passo a passo rapido',
+    icon: BookOpen,
+  },
+  {
+    action: 'Dicas para redacao nota 1000',
+    title: 'Redacao nota 1000',
+    hint: 'Estrutura, repertorio e tese',
+    icon: PenLine,
+  },
+  {
+    action: 'O que cai mais em Biologia?',
+    title: 'Biologia no ENEM',
+    hint: 'Assuntos com maior retorno',
+    icon: Microscope,
+  },
+  {
+    action: 'Corrigir minha redacao',
+    title: 'Corrigir redacao',
+    hint: 'Feedback por competencia',
+    icon: Brain,
+  },
+];
 interface AthenaChatProps {
   context?: 'home' | 'hub' | 'redacao' | 'questoes' | 'trilhas' | 'sidebar';
   greeting?: string;
@@ -82,7 +109,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
     <div
       className={
         compact
-          ? 'athena-chat-shell flex h-full min-h-0 w-full overflow-hidden rounded-[24px] backdrop-blur-xl'
+          ? 'athena-chat-shell athena-chat-shell-compact flex h-full min-h-0 w-full overflow-hidden rounded-[24px] backdrop-blur-xl'
           : 'athena-chat-shell flex h-full min-h-0 w-full overflow-hidden rounded-[30px] backdrop-blur-3xl max-md:rounded-[24px]'
       }
     >
@@ -176,8 +203,8 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
         <header
           className={
             compact
-              ? 'athena-chat-header flex shrink-0 flex-wrap items-center justify-between gap-2 p-2.5 backdrop-blur-xl'
-              : 'athena-chat-header flex shrink-0 flex-wrap items-center justify-between gap-2 p-3 backdrop-blur-xl sm:p-4'
+              ? 'athena-chat-header athena-chat-main-header flex shrink-0 flex-wrap items-center justify-between gap-2 p-2.5 backdrop-blur-xl'
+              : 'athena-chat-header athena-chat-main-header flex shrink-0 flex-wrap items-center justify-between gap-2 p-3 backdrop-blur-xl sm:p-4'
           }
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
@@ -192,19 +219,21 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
               </button>
             )}
 
-            <div className="flex min-w-0 flex-col">
-              <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-                <span className={`shrink-0 ${compact ? 'text-lg' : 'text-lg sm:text-xl'}`}>{ATHENA_CONFIG.ICON}</span>
-                <span className={`min-w-0 truncate ${compact ? 'text-xs font-bold tracking-tight text-white' : 'text-xs font-bold tracking-tight text-white sm:text-sm'}`}>
-                  {ATHENA_CONFIG.NAME}
-                </span>
-                <span className="athena-chip inline-flex shrink-0 rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest">
-                  Online
-                </span>
+            <div className="athena-chat-identity flex min-w-0 items-center gap-2.5 sm:gap-3">
+              <AthenaAvatar size={compact ? 'sm' : 'md'} active />
+              <div className="flex min-w-0 flex-col">
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className={compact ? 'text-xs font-black tracking-tight text-white' : 'text-xs font-black tracking-tight text-white sm:text-sm'}>
+                    {ATHENA_CONFIG.NAME}
+                  </span>
+                  <span className="athena-chip athena-online-chip inline-flex shrink-0 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest">
+                    Online
+                  </span>
+                </div>
+                {!compact && (
+                  <span className="hidden truncate text-[10px] font-medium text-white/45 sm:block">{ATHENA_CONFIG.TAGLINE}</span>
+                )}
               </div>
-              {!compact && (
-                <span className="hidden truncate text-[10px] font-medium text-white/40 sm:block">{ATHENA_CONFIG.TAGLINE}</span>
-              )}
             </div>
           </div>
 
@@ -230,32 +259,11 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                 transition={reduceMotion ? { duration: 0.12 } : springs.card}
                 className={
                   compact
-                    ? 'flex h-full flex-col items-center justify-center p-4 text-center'
-                    : 'flex h-full flex-col items-center justify-center px-4 py-8 text-center sm:p-8'
+                    ? 'athena-empty-state flex h-full flex-col items-center justify-center p-4 text-center'
+                    : 'athena-empty-state flex h-full flex-col items-center justify-center px-4 py-8 text-center sm:p-8'
                 }
               >
-                <div
-                  className={
-                    compact
-                      ? 'athena-signal mb-3 flex h-14 w-14 items-center justify-center rounded-[22px] border border-primary/25 bg-primary/10 shadow-[0_16px_34px_rgba(var(--hub-primary-rgb),0.12)]'
-                      : 'athena-signal mb-4 flex h-16 w-16 items-center justify-center rounded-[26px] border border-primary/25 bg-primary/10 shadow-[0_18px_46px_rgba(var(--hub-primary-rgb),0.14)] sm:mb-6 sm:h-20 sm:w-20'
-                  }
-                >
-                  <span className={`relative z-10 ${compact ? 'text-2xl' : 'text-3xl sm:text-4xl'}`}>{ATHENA_CONFIG.ICON}</span>
-                  <motion.div
-                    animate={
-                      reduceMotion
-                        ? { opacity: 0.2 }
-                        : { scale: [1, 1.08, 1], opacity: [0.12, 0.24, 0.12] }
-                    }
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { repeat: Infinity, duration: 2.4, ease: 'easeInOut' }
-                    }
-                    className="absolute inset-0 rounded-[26px] bg-primary/20 blur-xl"
-                  />
-                </div>
+                <AthenaAvatar size={compact ? 'lg' : 'xl'} active className={compact ? 'mb-3' : 'mb-4 sm:mb-6'} />
 
                 <h2 className={compact ? 'mb-1 text-base font-bold text-white' : 'mb-2 text-lg font-bold text-white sm:text-2xl'}>
                   {greeting || `Ola! Eu sou ${ATHENA_CONFIG.NAME}`}
@@ -264,24 +272,20 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                   Pergunte qualquer duvida de estudo - ENEM, redacao ou questoes.
                 </p>
 
-                <div className={compact ? 'mt-4 grid w-full max-w-md grid-cols-2 gap-2' : 'mt-6 grid w-full max-w-lg grid-cols-2 gap-2 px-1 sm:mt-12 sm:gap-3 sm:px-0'}>
-                  {[
-                    'Explicar equacao do 2o grau',
-                    'Dicas para redacao nota 1000',
-                    'O que cai mais em Biologia?',
-                    'Corrigir minha redacao',
-                  ].map((action) => (
+                <div className={compact ? 'athena-suggestion-grid mt-4 grid w-full max-w-md grid-cols-2 gap-2' : 'athena-suggestion-grid mt-6 grid w-full max-w-lg grid-cols-2 gap-2 px-1 sm:mt-10 sm:gap-3 sm:px-0'}>
+                  {ATHENA_EMPTY_SUGGESTIONS.map(({ action, title, hint, icon: Icon }) => (
                     <button
                       key={action}
                       type="button"
                       onClick={() => sendMessage(action, selectedModel)}
-                      className={
-                        compact
-                          ? 'premium-grid-card rounded-2xl border border-white/10 bg-white/5 p-2.5 text-left text-[10px] font-bold text-white/70 transition-all hover:border-primary/25 hover:bg-primary/10 hover:text-white'
-                          : 'premium-grid-card rounded-2xl border border-white/10 bg-white/5 p-3 text-left text-[10px] font-bold leading-snug text-white/70 transition-all hover:border-primary/25 hover:bg-primary/10 hover:text-white sm:p-4 sm:text-xs'
-                      }
+                      className={compact ? 'athena-suggestion-card group rounded-2xl p-3 text-left' : 'athena-suggestion-card group rounded-[22px] p-4 text-left'}
                     >
-                      {action}
+                      <span className="athena-suggestion-icon mb-3 flex h-9 w-9 items-center justify-center rounded-2xl text-primary">
+                        <Icon size={17} />
+                      </span>
+                      <span className="block text-[11px] font-black leading-snug text-white sm:text-xs">{title}</span>
+                      <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em] text-white/38">{hint}</span>
+                      <ArrowRight className="absolute right-3 top-3 opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-70" size={14} />
                     </button>
                   ))}
                 </div>
@@ -291,7 +295,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
             )}
 
             {loading && (
-              <div className="athena-message-row flex items-center gap-3 py-5">
+              <div className="athena-message-row athena-thinking-row flex items-center gap-3 py-5">
                 <div className="flex gap-1">
                   <motion.div
                     animate={reduceMotion ? { opacity: [0.35, 1, 0.35] } : { y: [0, -5, 0] }}
@@ -330,9 +334,9 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
           <div ref={messagesEndRef} className={compact ? 'h-8' : 'h-20'} />
         </div>
 
-        <div className={compact ? 'shrink-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3' : 'shrink-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 sm:p-6'}>
+        <div className={compact ? 'athena-composer-zone shrink-0 p-3' : 'athena-composer-zone shrink-0 p-3 sm:p-6'}>
           <ChatInput onSend={(content) => sendMessage(content, selectedModel)} disabled={loading} placeholder={placeholder} />
-          <div className={`flex items-center justify-between px-2 ${compact ? 'mt-2' : 'mt-4'}`}>
+          <div className={`athena-input-footer flex items-center justify-between px-2 ${compact ? 'mt-2' : 'mt-4'}`}>
             <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/25">
               <Shield size={10} />
               <span>{ATHENA_CONFIG.NAME} - DeepSeek</span>

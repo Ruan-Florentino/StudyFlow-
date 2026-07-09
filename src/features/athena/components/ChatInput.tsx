@@ -35,11 +35,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, placehol
   };
 
   return (
-    <div className="athena-input-shell relative rounded-[24px] p-2 transition-all duration-300 ease-out backdrop-blur-xl">
+    <div
+      className="athena-input-shell relative rounded-[24px] p-2 transition-all duration-300 ease-out backdrop-blur-xl"
+      data-has-text={input.trim() ? 'true' : 'false'}
+    >
       <div className="flex items-end gap-2 px-1 sm:px-2">
         <button
           type="button"
-          className="shrink-0 rounded-2xl p-2.5 text-white/30 transition-colors hover:bg-white/5 hover:text-white"
+          className="athena-attach-button shrink-0 rounded-2xl p-2.5 text-white/30 transition-colors hover:bg-white/5 hover:text-white"
           title="Anexar arquivo"
         >
           <Paperclip size={20} />
@@ -61,7 +64,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, placehol
           onClick={handleSend}
           disabled={!input.trim() || disabled}
           whileTap={input.trim() && !disabled ? { scale: 0.94, transition: springs.snappy } : undefined}
-          className={`athena-signal shrink-0 rounded-2xl p-3 transition-all duration-200 ease-out ${
+          className={`athena-send-button athena-signal shrink-0 rounded-2xl p-3 transition-all duration-200 ease-out ${
             input.trim() && !disabled
               ? 'scale-100 bg-primary text-black shadow-[0_0_24px_rgba(var(--hub-primary-rgb),0.38)]'
               : 'scale-95 bg-white/5 text-white/20'

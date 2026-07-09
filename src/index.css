@@ -2263,3 +2263,346 @@ select:focus {
   }
 }
 /* StudyFlow T. aesthetic refinement end */
+
+/* Athena chat premium pass start */
+.athena-floating-chat-panel {
+  position: fixed !important;
+  max-height: calc(100dvh - 2rem);
+  background:
+    linear-gradient(180deg, rgba(231, 251, 255, 0.075), rgba(255, 255, 255, 0.018)),
+    linear-gradient(135deg, rgba(0, 232, 143, 0.05), rgba(74, 216, 255, 0.025) 48%, rgba(255, 255, 255, 0.018)),
+    rgba(4, 10, 9, 0.965) !important;
+  border-color: rgba(221, 255, 242, 0.18) !important;
+  box-shadow:
+    0 34px 110px rgba(0, 0, 0, 0.68),
+    0 0 0 1px rgba(var(--hub-primary-rgb), 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(30px) saturate(150%);
+}
+
+.athena-chat-shell {
+  border-color: rgba(221, 255, 242, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.018)),
+    linear-gradient(135deg, rgba(var(--hub-primary-rgb), 0.065), rgba(74, 216, 255, 0.026) 46%, rgba(255, 255, 255, 0.012)),
+    rgba(3, 9, 8, 0.955);
+  box-shadow:
+    0 28px 88px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(var(--hub-primary-rgb), 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.36);
+}
+
+.athena-chat-shell::before,
+.athena-floating-chat-panel::before {
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.11) 44%, transparent 58%),
+    linear-gradient(rgba(var(--hub-primary-rgb), 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 216, 255, 0.034) 1px, transparent 1px);
+  background-size: auto, 42px 42px, 42px 42px;
+  opacity: 0.26;
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.78) 44%, transparent 100%);
+}
+
+.athena-chat-shell::after,
+.athena-floating-chat-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 32%),
+    linear-gradient(90deg, rgba(var(--hub-primary-rgb), 0.055), transparent 18%, transparent 82%, rgba(74, 216, 255, 0.04));
+  opacity: 0.72;
+}
+
+.athena-chat-shell > *,
+.athena-floating-chat-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.athena-chat-main-header,
+.athena-chat-header {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.024)),
+    rgba(5, 12, 11, 0.84);
+  border-bottom-color: rgba(221, 255, 242, 0.13);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.34);
+}
+
+.athena-chat-main-header {
+  min-height: 4.75rem;
+}
+
+.athena-avatar {
+  border: 1px solid rgba(221, 255, 242, 0.2);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.028)),
+    linear-gradient(135deg, rgba(var(--hub-primary-rgb), 0.16), rgba(74, 216, 255, 0.09)),
+    rgba(5, 13, 11, 0.92);
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    0 0 28px rgba(var(--hub-primary-rgb), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateZ(0);
+}
+
+.athena-avatar-aura {
+  position: absolute;
+  inset: -30%;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(from 120deg, transparent, rgba(74, 216, 255, 0.32), transparent 38%, rgba(var(--hub-primary-rgb), 0.28), transparent 72%);
+  opacity: 0.44;
+  filter: blur(8px);
+  animation: athena-avatar-orbit 6.8s linear infinite;
+}
+
+.athena-avatar-core {
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 45% 24%, rgba(231, 251, 255, 0.2), transparent 34%),
+    rgba(0, 0, 0, 0.12);
+}
+
+.athena-avatar-image {
+  filter: drop-shadow(0 0 12px rgba(var(--hub-primary-rgb), 0.28)) saturate(1.08) contrast(1.04);
+  transform: translateY(-1px);
+}
+
+.athena-avatar-fallback {
+  filter: drop-shadow(0 0 12px rgba(var(--hub-primary-rgb), 0.28));
+}
+
+.athena-avatar-status {
+  position: absolute;
+  right: 9%;
+  top: 10%;
+  z-index: 12;
+  height: 0.42rem;
+  width: 0.42rem;
+  border-radius: 999px;
+  border: 2px solid rgba(3, 9, 8, 0.95);
+  background: var(--hub-primary);
+  box-shadow: 0 0 13px rgba(var(--hub-primary-rgb), 0.86);
+}
+
+.athena-avatar[data-size="lg"] .athena-avatar-status,
+.athena-avatar[data-size="xl"] .athena-avatar-status {
+  height: 0.58rem;
+  width: 0.58rem;
+}
+
+.athena-avatar[data-active="true"] .athena-avatar-core {
+  animation: athena-avatar-breathe 3.4s var(--ease-smooth-in-out) infinite;
+}
+
+.athena-online-chip,
+.athena-model-chip {
+  background: rgba(var(--hub-primary-rgb), 0.1);
+  border-color: rgba(var(--hub-primary-rgb), 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 18px rgba(var(--hub-primary-rgb), 0.08);
+}
+
+.athena-empty-state {
+  position: relative;
+  overflow: hidden;
+}
+
+.athena-empty-state::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(36rem, 92%);
+  height: min(28rem, 68%);
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(var(--hub-primary-rgb), 0.08), transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 62%);
+  filter: blur(26px);
+  opacity: 0.72;
+  transform: translate(-50%, -50%);
+}
+
+.athena-empty-state > * {
+  position: relative;
+  z-index: 1;
+}
+
+.athena-suggestion-card {
+  position: relative;
+  min-height: 7.35rem;
+  overflow: hidden;
+  border: 1px solid rgba(221, 255, 242, 0.105);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.018)),
+    rgba(9, 15, 14, 0.82);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    transform 220ms var(--ease-smooth-out),
+    border-color 220ms var(--ease-smooth-out),
+    background-color 220ms var(--ease-smooth-out),
+    box-shadow 220ms var(--ease-smooth-out);
+}
+
+.athena-suggestion-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.1) 45%, transparent 58%);
+  opacity: 0;
+  transform: translateX(-35%);
+  transition: opacity 220ms var(--ease-smooth-out), transform 620ms var(--ease-smooth-out);
+}
+
+.athena-suggestion-card:hover,
+.athena-suggestion-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(var(--hub-primary-rgb), 0.3);
+  background-color: rgba(var(--hub-primary-rgb), 0.045);
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.34),
+    0 0 24px rgba(var(--hub-primary-rgb), 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.athena-suggestion-card:hover::before,
+.athena-suggestion-card:focus-visible::before {
+  opacity: 1;
+  transform: translateX(38%);
+}
+
+.athena-suggestion-icon {
+  border: 1px solid rgba(var(--hub-primary-rgb), 0.22);
+  background:
+    linear-gradient(180deg, rgba(var(--hub-primary-rgb), 0.16), rgba(var(--hub-primary-rgb), 0.055));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.athena-message-card {
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+.athena-message-card.assistant {
+  border-color: rgba(var(--hub-primary-rgb), 0.2);
+  background:
+    linear-gradient(180deg, rgba(var(--hub-primary-rgb), 0.08), rgba(255, 255, 255, 0.018)),
+    rgba(7, 17, 15, 0.88);
+}
+
+.athena-message-card.user {
+  border-color: rgba(74, 216, 255, 0.22);
+  background:
+    linear-gradient(180deg, rgba(74, 216, 255, 0.09), rgba(255, 255, 255, 0.02)),
+    rgba(7, 14, 19, 0.9);
+}
+
+.athena-user-avatar {
+  box-shadow:
+    0 16px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.athena-thinking-row {
+  margin-inline: clamp(0.875rem, 2.5vw, 1.5rem);
+  width: fit-content;
+  border: 1px solid rgba(var(--hub-primary-rgb), 0.14);
+  border-radius: 999px;
+  background: rgba(var(--hub-primary-rgb), 0.055);
+  padding-inline: 1rem;
+}
+
+.athena-composer-zone {
+  border-top: 1px solid rgba(221, 255, 242, 0.09);
+  background:
+    linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.26) 28%, rgba(0, 0, 0, 0.55)),
+    linear-gradient(90deg, rgba(var(--hub-primary-rgb), 0.04), transparent 26%, transparent 74%, rgba(74, 216, 255, 0.032));
+}
+
+.athena-input-shell {
+  border-color: rgba(221, 255, 242, 0.17);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.022)),
+    rgba(4, 10, 9, 0.92);
+}
+
+.athena-input-shell[data-has-text="true"] {
+  border-color: rgba(var(--hub-primary-rgb), 0.36);
+  box-shadow:
+    0 18px 54px rgba(0, 0, 0, 0.52),
+    0 0 28px rgba(var(--hub-primary-rgb), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.athena-input-shell textarea {
+  caret-color: var(--hub-primary);
+}
+
+.athena-attach-button,
+.athena-send-button {
+  transform: translateZ(0);
+  will-change: transform, background-color, box-shadow;
+}
+
+.athena-send-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+@keyframes athena-avatar-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes athena-avatar-breathe {
+  0%, 100% {
+    transform: scale(0.985);
+  }
+  50% {
+    transform: scale(1.025);
+  }
+}
+
+@media (max-width: 520px) {
+  .athena-floating-chat-panel {
+    border-radius: 24px !important;
+  }
+
+  .athena-chat-main-header {
+    min-height: 4.25rem;
+  }
+
+  .athena-model-chip {
+    max-width: 9.25rem;
+  }
+
+  .athena-suggestion-card {
+    min-height: 7rem;
+  }
+
+  .athena-input-footer {
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .athena-avatar-aura,
+  .athena-avatar[data-active="true"] .athena-avatar-core {
+    animation: none !important;
+  }
+
+  .athena-suggestion-card,
+  .athena-suggestion-card::before {
+    transition-duration: 1ms !important;
+  }
+}
+/* Athena chat premium pass end */
