@@ -1,5 +1,5 @@
 /**
- * Modelo único StudyFlow — DeepSeek V3 (OpenRouter).
+ * Modelo único StudyFlow para a Athena V3.
  */
 export const ATHENA_V3_OPENROUTER_ID = 'deepseek/deepseek-chat' as const;
 

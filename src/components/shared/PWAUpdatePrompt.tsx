@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { RefreshCw, X } from 'lucide-react';
@@ -7,14 +7,26 @@ import { springs } from '../../lib/animations';
 
 export function PWAUpdatePrompt() {
   const reduceMotion = useReducedMotion();
+  const hasAppliedRefreshRef = useRef(false);
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered() {},
+    onRegistered(registration) {
+      if (!registration) return;
+      window.setInterval(() => {
+        void registration.update();
+      }, 10 * 60 * 1000);
+    },
     onRegisterError() {},
   });
+
+  useEffect(() => {
+    if (!needRefresh || hasAppliedRefreshRef.current) return;
+    hasAppliedRefreshRef.current = true;
+    void updateServiceWorker(true);
+  }, [needRefresh, updateServiceWorker]);
 
   const close = () => {
     setOfflineReady(false);
@@ -42,14 +54,14 @@ export function PWAUpdatePrompt() {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-bold text-white mb-1">
-                {needRefresh ? 'Nova versão disponível!' : 'App pronto para uso offline!'}
+                {needRefresh ? 'Nova versao disponivel!' : 'App pronto para uso offline!'}
               </h3>
               <p className="text-xs text-white/70 mb-3">
-                {needRefresh 
-                  ? 'Clique em atualizar para carregar a versão mais recente.' 
+                {needRefresh
+                  ? 'Atualizando para carregar a versao mais recente.'
                   : 'O aplicativo foi baixado e pode ser usado sem internet.'}
               </p>
-              
+
               {needRefresh && (
                 <div className="flex items-center gap-3">
                   <button
@@ -67,9 +79,9 @@ export function PWAUpdatePrompt() {
                 </div>
               )}
             </div>
-            
+
             {!needRefresh && (
-              <button 
+              <button
                 onClick={close}
                 className="text-white/50 hover:text-white transition-colors shrink-0 p-1"
               >

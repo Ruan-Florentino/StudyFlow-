@@ -18,8 +18,8 @@ export const AI_MODELS: AIModel[] = [
   {
     id: 'athena-v3',
     name: 'ATHENA V3',
-    provider: 'DeepSeek',
-    description: 'Núcleo único de IA StudyFlow (DeepSeek V3 via OpenRouter)',
+    provider: 'StudyFlow',
+    description: 'Núcleo único de IA StudyFlow para estudo, redação e questões',
     emoji: '🦉',
     color: '#10b981',
     bestFor: ['Chat', 'Redação', 'Questões', 'ENEM'],
