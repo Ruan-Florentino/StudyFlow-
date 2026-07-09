@@ -2692,3 +2692,187 @@ select:focus {
   }
 }
 /* Athena chat premium pass end */
+
+
+/* Athena V3 intelligence polish */
+.athena-floating-chat-panel,
+.athena-chat-shell {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(var(--hub-primary-rgb), 0.09), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 28%, rgba(0, 0, 0, 0.14)),
+    rgba(3, 5, 4, 0.975);
+}
+
+.athena-floating-window-header {
+  min-height: 4.5rem;
+}
+
+.athena-window-action {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.athena-window-action:hover {
+  border-color: rgba(var(--hub-primary-rgb), 0.26);
+  background: rgba(var(--hub-primary-rgb), 0.09);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.athena-online-chip {
+  letter-spacing: 0.12em;
+}
+
+.athena-status-dot {
+  display: inline-block;
+  width: 0.38rem;
+  height: 0.38rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--hub-primary);
+  box-shadow: 0 0 0 3px rgba(var(--hub-primary-rgb), 0.09), 0 0 12px rgba(var(--hub-primary-rgb), 0.7);
+  animation: athena-status-pulse 2.2s ease-in-out infinite;
+}
+
+.athena-hero-kicker {
+  color: rgba(189, 255, 226, 0.82);
+  border: 1px solid rgba(var(--hub-primary-rgb), 0.19);
+  background: rgba(var(--hub-primary-rgb), 0.075);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11);
+}
+
+.athena-hero-subline {
+  text-wrap: balance;
+}
+
+.athena-empty-state::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.58), transparent 74%);
+  opacity: 0.38;
+}
+
+.athena-suggestion-card:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.athena-message-card {
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.athena-message-card.assistant {
+  border-color: rgba(var(--hub-primary-rgb), 0.16);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.075);
+}
+
+.athena-message-card.user {
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.075);
+}
+
+.athena-message-actions {
+  border-top: 1px solid rgba(255, 255, 255, 0.065);
+  padding-top: 0.8rem;
+}
+
+.athena-message-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.athena-message-actions button:hover,
+.athena-message-actions button:focus-visible {
+  border-color: rgba(var(--hub-primary-rgb), 0.28);
+  background: rgba(var(--hub-primary-rgb), 0.075);
+  outline: none;
+}
+
+.athena-input-shell {
+  border: 1px solid rgba(255, 255, 255, 0.115);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.athena-input-shell[data-focused="true"] {
+  border-color: rgba(var(--hub-primary-rgb), 0.42);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 3px rgba(var(--hub-primary-rgb), 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13);
+}
+
+.athena-voice-button {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.athena-thinking-skeleton {
+  background: linear-gradient(90deg, rgba(var(--hub-primary-rgb), 0.13), rgba(255, 255, 255, 0.14), rgba(var(--hub-primary-rgb), 0.13));
+  background-size: 200% 100%;
+  animation: athena-skeleton-shimmer 1.4s linear infinite;
+}
+
+@keyframes athena-status-pulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.76;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes athena-skeleton-shimmer {
+  from {
+    background-position: 160% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .athena-floating-window-header {
+    min-height: 4.1rem;
+  }
+
+  .athena-hero-kicker {
+    margin-bottom: 0.55rem;
+    padding-inline: 0.65rem;
+    font-size: 0.48rem;
+  }
+
+  .athena-suggestion-card {
+    min-height: 6.7rem;
+  }
+
+  .athena-message-actions {
+    gap: 0.38rem;
+  }
+
+  .athena-message-actions button {
+    padding: 0.34rem 0.48rem;
+    font-size: 0.57rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .athena-status-dot,
+  .athena-thinking-skeleton {
+    animation: none !important;
+  }
+}
+/* Athena V3 intelligence polish end */

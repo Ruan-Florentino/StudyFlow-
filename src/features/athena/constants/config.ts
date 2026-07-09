@@ -1,14 +1,14 @@
 export const ATHENA_CONFIG = {
   NAME: 'ATHENA V3',
-  TAGLINE: 'Sua tutora para o ENEM - DeepSeek V3',
+  TAGLINE: 'Assistente de estudos do StudyFlow',
   ICON: '\uD83E\uDD89',
   ICON_SRC: '/icons/app-icon.png?v=5',
   COLORS: {
-    PRIMARY: '#10b981', // emerald-500
-    SECONDARY: '#6366f1', // indigo-500
-    ACCENT: '#fbbf24', // amber-400
-    BG: '#0f172a', // slate-900
-    SURFACE: '#1e293b', // slate-800
+    PRIMARY: '#00E88F',
+    SECONDARY: '#0A0A0A',
+    ACCENT: '#00E88F',
+    BG: '#030504',
+    SURFACE: '#101010',
   },
   TIMEOUT: 60000,
   MAX_RETRIES: 3,

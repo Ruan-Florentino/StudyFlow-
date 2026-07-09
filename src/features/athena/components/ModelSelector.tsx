@@ -35,7 +35,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onS
       >
         {ATHENA_MODELS.map((model) => (
           <option key={model.id} value={model.id} className="bg-slate-950 text-white">
-            {model.name} ({model.provider})
+            {model.name}
           </option>
         ))}
       </select>
