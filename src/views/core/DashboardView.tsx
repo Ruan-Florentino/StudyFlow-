@@ -7,20 +7,17 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronRight,
-  Compass,
-  Crown,
-  FileText,
   Flame,
   GraduationCap,
-  MessageCircle,
+  ListChecks,
   PenLine,
   Play,
   Quote,
   RotateCcw,
-  Sparkles,
   Target,
   Timer,
   Trophy,
+  Zap,
 } from 'lucide-react';
 
 import { useAppNavigation } from '../../app/router/useAppNavigation';
@@ -33,6 +30,8 @@ import { calculateDaysLeft } from '../../lib/studyUtils';
 import { useStore } from '../../store';
 
 const formatNumber = new Intl.NumberFormat('pt-BR');
+const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'] as const;
+const DAY_INITIALS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'] as const;
 
 const DAILY_QUOTES = [
   'A jornada de mil milhas começa com um único passo.',
@@ -76,7 +75,8 @@ const DAILY_QUOTES = [
   'A meta do dia é simples: sair melhor do que entrou.',
   'Quem treina com atenção ganha tempo na prova.',
   'A dúvida não é inimiga; é o começo da clareza.',
-  'Faça a sessão pequena. Depois faça outra.',  'Conhecimento fica quando você usa, explica e revisa.',
+  'Faça a sessão pequena. Depois faça outra.',
+  'Conhecimento fica quando você usa, explica e revisa.',
   'O seu foco merece proteção ativa.',
   'Uma rotina forte reduz a dependência da força de vontade.',
   'O estudo certo deixa rastros: notas, revisões e tentativas.',
@@ -97,21 +97,10 @@ const DAILY_QUOTES = [
 ] as const;
 
 type Tone = 'primary' | 'orange' | 'blue' | 'purple' | 'rose' | 'amber' | 'cyan' | 'violet';
-
-type SoftTileProps = {
-  icon: LucideIcon;
-  tone: Tone;
-  title: string;
-  text: string;
-  meta?: string;
-  onClick: () => void;
-};
+type QuickAction = { icon: LucideIcon; tone: Tone; title: string; description: string; meta: string; onClick: () => void };
 
 function localDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 function formatMinutes(minutes: number) {
@@ -121,11 +110,17 @@ function formatMinutes(minutes: number) {
   return rest ? `${hours}h ${rest}m` : `${hours}h`;
 }
 
-function SectionHeader({ label, title, action }: { label: string; title: string; action?: ReactNode }) {
+function getGreeting(hour: number) {
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+function SectionHeader({ eyebrow, title, action }: { eyebrow: string; title: string; action?: ReactNode }) {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className="min-w-0">
-        <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/70">{label}</p>
+        <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.2em] text-primary/70">{eyebrow}</p>
         <h2 className="mt-1 text-xl font-premium-title italic tracking-tight text-white md:text-2xl">{title}</h2>
       </div>
       {action}
@@ -133,100 +128,73 @@ function SectionHeader({ label, title, action }: { label: string; title: string;
   );
 }
 
-function SoftMetric({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+function MetricPill({ icon: Icon, children, accent }: { icon: LucideIcon; children: ReactNode; accent?: boolean }) {
   return (
-    <div className="rounded-[20px] border border-white/[0.08] bg-white/[0.035] px-4 py-3">
-      <div className="flex items-center gap-2 text-white/45">
-        <Icon size={14} />
-        <span className="text-[9px] font-premium-mono font-bold uppercase tracking-[0.18em]">{label}</span>
-      </div>
-      <p className="mt-2 text-base font-black text-white">{value}</p>
+    <div className={cn('flex h-9 min-w-0 items-center justify-center gap-2 rounded-xl border px-2.5 text-[10px] font-premium-mono font-bold uppercase tracking-[0.1em]', accent ? 'border-primary/20 bg-primary/[0.08] text-primary' : 'border-white/[0.08] bg-white/[0.035] text-white/65')}>
+      <Icon size={14} className="shrink-0" />
+      <span className="truncate">{children}</span>
     </div>
   );
 }
 
-function SoftTile({ icon, tone, title, text, meta, onClick }: SoftTileProps) {
+function QuickCard({ icon, tone, title, description, meta, onClick }: QuickAction) {
   return (
-    <GlassCard
-      enterAnimation={false}
-      onClick={onClick}
-      className="group min-h-[150px] border-white/[0.08] bg-white/[0.028] p-5 hover:border-primary/25 hover:bg-white/[0.045]"
-    >
+    <GlassCard enterAnimation={false} onClick={onClick} className="group min-h-[150px] border-white/[0.075] bg-white/[0.025] p-4 hover:border-primary/25 hover:bg-white/[0.043] md:p-5">
       <div className="flex h-full flex-col justify-between gap-5">
         <div className="flex items-start justify-between gap-3">
-          <IconTile icon={icon} color={tone} size="md" glow={tone === 'primary'} />
-          <ChevronRight className="mt-2 size-5 text-white/20 transition group-hover:translate-x-1 group-hover:text-primary/80" />
+          <IconTile icon={icon} color={tone} size="sm" glow={tone === 'primary'} className="rounded-xl" />
+          <ChevronRight className="size-4 text-white/25 transition duration-300 group-hover:translate-x-0.5 group-hover:text-primary" />
         </div>
         <div>
-          {meta && <p className="mb-2 text-[9px] font-premium-mono font-bold uppercase tracking-[0.18em] text-white/35">{meta}</p>}
-          <h3 className="text-base font-premium-title italic leading-tight text-white">{title}</h3>
-          <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">{text}</p>
+          <h3 className="text-sm font-black text-white">{title}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-text-secondary">{description}</p>
+          <p className="mt-3 text-[9px] font-premium-mono font-bold uppercase tracking-[0.13em] text-white/35">{meta}</p>
         </div>
       </div>
     </GlassCard>
   );
 }
 
-function TrailStep({ icon: Icon, title, text, active }: { icon: LucideIcon; title: string; text: string; active?: boolean }) {
-  return (
-    <div className="flex gap-4">
-      <div className="flex flex-col items-center">
-        <div className={cn('flex size-10 items-center justify-center rounded-2xl border', active ? 'border-primary/35 bg-primary/12 text-primary' : 'border-white/10 bg-white/[0.04] text-white/45')}>
-          <Icon size={18} />
-        </div>
-        <div className="mt-3 h-full min-h-7 w-px bg-white/[0.08] last:hidden" />
-      </div>
-      <div className="min-w-0 pb-5">
-        <p className="text-sm font-black text-white">{title}</p>
-        <p className="mt-1 text-xs leading-relaxed text-text-secondary">{text}</p>
-      </div>
-    </div>
-  );
-}
 const DashboardView = () => {
-  const { questionMap, loading: qLoading, error: qError } = useQuestionMap();
-  const {
-    name,
-    profilePic,
-    level,
-    xp,
-    streak,
-    sessions,
-    history,
-    exams,
-    league,
-    routine,
-    dailyGoalMinutes,
-  } = useStore();
-  const { isFree, isSupremo } = useUserAccess();
+  const { questionMap, loading: questionsLoading, error: questionsError } = useQuestionMap();
+  const { name, profilePic, level, xp, streak, sessions, history, exams, league, routine, dailyGoalMinutes } = useStore();
+  const { isFree } = useUserAccess();
   const { goTo } = useAppNavigation();
 
-  const todayKey = localDateKey();
-  const todaySessions = sessions.filter(session => session.date === todayKey);
-  const todayStudyMinutes = todaySessions.reduce((acc, session) => acc + session.duration, 0);
-  const safeDailyGoalMinutes = Math.max(1, Number(dailyGoalMinutes) || 1);
-  const goalProgress = Math.min(100, Math.max(0, (todayStudyMinutes / safeDailyGoalMinutes) * 100));
+  const now = new Date();
+  const todayKey = localDateKey(now);
+  const todayStudyMinutes = sessions.filter((session) => session.date === todayKey).reduce((total, session) => total + session.duration, 0);
+  const dailyGoal = Math.max(1, Number(dailyGoalMinutes) || 1);
+  const goalProgress = Math.min(100, Math.max(0, (todayStudyMinutes / dailyGoal) * 100));
+  const minutesRemaining = Math.max(0, dailyGoal - todayStudyMinutes);
   const answeredCount = history.length;
-  const correctCount = history.filter(item => item.isCorrect).length;
+  const correctCount = history.filter((item) => item.isCorrect).length;
   const wrongCount = Math.max(0, answeredCount - correctCount);
   const accuracy = answeredCount ? Math.round((correctCount / answeredCount) * 100) : 0;
-  const questionCount = questionMap?.size ?? 0;
+  const questionMetric = questionsLoading ? 'Carregando banco' : questionsError ? 'Banco indisponível' : `${formatNumber.format(questionMap?.size ?? 0)} questões`;
 
-  const today = new Date();
-  const dayLabel = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][today.getDay()];
-  const todayRoutine = routine?.schedule.find(item => item.day === dayLabel || item.day.startsWith(dayLabel.slice(0, 3)));
-  const nextBlock = todayRoutine?.blocks[0] ?? null;
-  const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const quoteIndex = Math.floor(dayStart.getTime() / 86400000) % DAILY_QUOTES.length;
+  const weekDates = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(now);
+    date.setDate(now.getDate() - (6 - index));
+    return date;
+  });
+  const weekMinutes = weekDates.map((date) => sessions.filter((session) => session.date === localDateKey(date)).reduce((total, session) => total + session.duration, 0));
+  const weekTotal = weekMinutes.reduce((total, minutes) => total + minutes, 0);
+  const weekPeak = Math.max(1, ...weekMinutes);
+  const activeWeekDays = weekMinutes.filter((minutes) => minutes > 0).length;
+
+  const dayLabel = DAY_NAMES[now.getDay()];
+  const todayRoutine = routine?.schedule.find((item) => item.day === dayLabel || item.day.startsWith(dayLabel.slice(0, 3)));
+  const todayBlocks = todayRoutine?.blocks.slice(0, 4) ?? [];
+  const quoteIndex = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 86400000) % DAILY_QUOTES.length;
   const quote = DAILY_QUOTES[quoteIndex];
-
-  const upcomingExam = exams
-    .map(exam => ({ ...exam, daysLeft: calculateDaysLeft(exam.data) }))
-    .filter(exam => exam.daysLeft === null || exam.daysLeft >= 0)
-    .sort((a, b) => (a.daysLeft ?? 9999) - (b.daysLeft ?? 9999))[0];
-
   const recentQuestion = history[0] ? questionMap?.get(history[0].questionId) : null;
-  const questionMetric = qLoading ? 'Carregando' : qError ? 'Offline' : `${formatNumber.format(questionCount)} questões`;
+  const recentSession = sessions[0];
+  const upcomingExams = exams
+    .map((exam) => ({ ...exam, daysLeft: calculateDaysLeft(exam.data) }))
+    .filter((exam) => exam.daysLeft === null || exam.daysLeft >= 0)
+    .sort((a, b) => (a.daysLeft ?? 9999) - (b.daysLeft ?? 9999))
+    .slice(0, 3);
 
   const openWrongReview = () => {
     useStore.setState({ showOnlyReviewLater: false });
@@ -234,234 +202,230 @@ const DashboardView = () => {
     goTo('/questoes');
   };
 
-  const learningTiles: SoftTileProps[] = [
-    {
-      icon: BookOpen,
-      tone: 'blue',
-      title: 'Questões',
-      text: 'Entre direto no banco e escolha uma lista para treinar com calma.',
-      meta: questionMetric,
-      onClick: () => goTo('/questoes'),
-    },
-    {
-      icon: PenLine,
-      tone: 'purple',
-      title: 'Redação',
-      text: 'Continue um rascunho, abra temas e acompanhe sua evolução.',
-      meta: 'Produção guiada',
-      onClick: () => goTo('/redacao'),
-    },
-    {
-      icon: MessageCircle,
-      tone: 'primary',
-      title: 'Athena',
-      text: 'Use a tutora para tirar dúvidas sem sair do seu fluxo de estudo.',
-      meta: isFree ? 'Plano gratuito' : 'Acesso ativo',
-      onClick: () => goTo('/ai'),
-    },
-    {
-      icon: FileText,
-      tone: 'amber',
-      title: 'Simulados',
-      text: 'Treine por objetivo quando quiser uma sessão mais completa.',
-      meta: 'Prova e revisão',
-      onClick: () => goTo('/simulados'),
-    },
+  const quickActions: QuickAction[] = [
+    { icon: BookOpen, tone: 'blue', title: 'Banco de questões', description: 'Encontre uma lista e comece seu próximo treino.', meta: questionMetric, onClick: () => goTo('/questoes') },
+    { icon: RotateCcw, tone: 'orange', title: 'Revisar erros', description: 'Volte ao que precisa de mais atenção.', meta: wrongCount ? `${wrongCount} pendente${wrongCount === 1 ? '' : 's'}` : 'Tudo em dia', onClick: openWrongReview },
+    { icon: PenLine, tone: 'purple', title: 'Redação', description: 'Escreva, salve e evolua por competência.', meta: 'Temas ENEM', onClick: () => goTo('/redacao') },
+    { icon: Trophy, tone: 'amber', title: 'Ranking', description: 'Acompanhe sua posição e sua sequência.', meta: `Liga ${league}`, onClick: () => goTo('/ranking') },
+    { icon: CalendarDays, tone: 'cyan', title: 'Cronograma', description: 'Organize a semana com o seu ritmo.', meta: routine ? `${todayBlocks.length} bloco${todayBlocks.length === 1 ? '' : 's'} hoje` : 'Plano inteligente', onClick: () => goTo('/rotina') },
+    { icon: Timer, tone: 'primary', title: 'Modo foco', description: 'Um bloco sem distrações para começar agora.', meta: `${formatMinutes(todayStudyMinutes)} hoje`, onClick: () => goTo('/foco') },
   ];
 
-  return (
-    <div className="studyflow-dashboard relative min-h-full animate-in fade-in duration-700">
+  const recentActivity = history[0]
+    ? { icon: history[0].isCorrect ? CheckCircle2 : RotateCcw, title: history[0].isCorrect ? 'Questão resolvida' : 'Questão para revisar', detail: recentQuestion ? `${recentQuestion.materia} · ${recentQuestion.assunto}` : 'Seu último exercício foi salvo.' }
+    : recentSession
+      ? { icon: Timer, title: 'Sessão registrada', detail: `${formatMinutes(recentSession.duration)} de ${recentSession.subject}` }
+      : null;
+
+  return (    <div className="studyflow-dashboard relative min-h-full overflow-hidden animate-in fade-in duration-700">
       <AuroraBackground intensity="subtle" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_48%_0%,rgba(var(--hub-primary-rgb),0.11),transparent_64%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[28rem] bg-[radial-gradient(circle_at_50%_-10%,rgba(var(--hub-primary-rgb),0.12),transparent_58%)]" />
 
-      <motion.div
-        className="relative z-10 app-shell-premium pb-32 pt-5 md:pb-36 md:pt-8"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="show"
-      >
-        <motion.header variants={staggerItem} className="mb-7 flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.08] text-primary">
-              <GraduationCap size={21} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/65">StudyFlow</p>
-              <h1 className="truncate text-2xl font-premium-title italic tracking-tight text-white md:text-3xl">Olá, {name || 'Ruan'}.</h1>
-            </div>
+      <motion.div className="relative z-10 app-shell-premium pb-32 pt-5 md:pb-36 md:pt-8" variants={staggerContainer} initial="hidden" animate="show">
+        <motion.header variants={staggerItem} className="mb-8 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.22em] text-primary/70">StudyFlow</p>
+            <h1 className="mt-1 truncate text-[28px] font-premium-title italic tracking-tight text-white md:text-4xl">
+              {getGreeting(now.getHours())}, {name || 'estudante'}.
+            </h1>
+            <p className="mt-1 text-sm text-text-secondary">Uma coisa de cada vez. Você já sabe por onde começar.</p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => goTo('/perfil')}
-            className="relative size-12 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:border-primary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-            aria-label="Abrir perfil"
-          >
-            <img
-              src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'StudyFlow')}`}
-              alt="Perfil"
-              className="size-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-            {isSupremo && <span className="absolute right-1 top-1 size-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)]" />}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="hidden items-center gap-2 sm:flex">
+              <MetricPill icon={Flame}>{streak || 0} dias</MetricPill>
+              <MetricPill icon={Zap} accent>{formatNumber.format(xp)} XP</MetricPill>
+            </div>
+            <button type="button" onClick={() => goTo('/perfil')} aria-label="Abrir perfil" className="size-11 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:border-primary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+              <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'StudyFlow')}`} alt="Perfil" className="size-full object-cover" referrerPolicy="no-referrer" />
+            </button>
+          </div>
         </motion.header>
-        <motion.section variants={staggerItem} className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-          <GlassCard className="overflow-hidden border-white/[0.08] bg-white/[0.032] p-5 md:p-7">
-            <div className="pointer-events-none absolute -right-28 -top-28 size-64 rounded-full bg-primary/[0.10] blur-[90px]" />
-            <div className="relative grid gap-7 lg:grid-cols-[1fr_172px] lg:items-center">
-              <div className="space-y-5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-white/55">
-                  <Sparkles size={13} className="text-primary" />
-                  Plano de estudo do dia
-                </div>
 
-                <div className="max-w-xl">
-                  <h2 className="text-4xl font-premium-title italic leading-[0.96] tracking-tight text-white md:text-5xl">
-                    Estude com mais calma e direção.
-                  </h2>
-                  <p className="mt-4 text-sm leading-relaxed text-text-secondary md:text-base">
-                    A Home agora mostra só o que ajuda você a começar: uma sessão, uma trilha curta e os espaços principais de estudo.
+        <motion.section variants={staggerItem} className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+          <GlassCard className="min-h-[330px] border-primary/[0.14] bg-[linear-gradient(135deg,rgba(0,232,143,0.10),rgba(255,255,255,0.025)_46%,rgba(255,255,255,0.015))] p-5 md:p-7">
+            <div className="pointer-events-none absolute -left-20 bottom-0 size-52 rounded-full bg-primary/[0.10] blur-[90px]" />
+            <div className="relative flex h-full flex-col justify-between gap-8">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.07] px-3 py-1.5 text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-primary">
+                    <Target size={13} /> Meta diária
+                  </div>
+                  <p className="mt-5 text-sm text-text-secondary">Seu ritmo de hoje</p>
+                  <p className="mt-1 text-4xl font-premium-title italic tracking-tight text-white md:text-5xl">
+                    {formatMinutes(todayStudyMinutes)} <span className="text-xl text-white/35">/ {formatMinutes(dailyGoal)}</span>
                   </p>
                 </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <AnimatedButton onClick={() => goTo('/foco')} glow className="min-h-14 flex-1 text-[12px] font-black uppercase tracking-[0.16em] sm:flex-none">
-                    <Play size={17} fill="currentColor" /> Começar sessão
-                  </AnimatedButton>
-                  <AnimatedButton onClick={() => goTo('/explorar')} variant="secondary" className="min-h-14 flex-1 text-[12px] font-black uppercase tracking-[0.16em] sm:flex-none">
-                    <Compass size={17} /> Explorar trilhas
-                  </AnimatedButton>
+                <div className="shrink-0 rounded-[26px] border border-white/[0.08] bg-black/20 p-2 backdrop-blur-xl">
+                  <ProgressRing progress={goalProgress} size={106} strokeWidth={9} />
                 </div>
               </div>
-
-              <div className="mx-auto flex w-full max-w-[172px] flex-col items-center gap-4 rounded-[30px] border border-white/10 bg-black/20 p-4 backdrop-blur-xl">
-                <ProgressRing progress={goalProgress} size={126} strokeWidth={10} />
-                <div className="text-center">
-                  <p className="text-[9px] font-premium-mono font-black uppercase tracking-[0.18em] text-primary/70">Meta de hoje</p>
-                  <p className="mt-1 text-sm font-black text-white">{formatMinutes(todayStudyMinutes)} / {formatMinutes(safeDailyGoalMinutes)}</p>
-                </div>
+              <div className="max-w-lg">
+                <h2 className="text-2xl font-premium-title italic tracking-tight text-white md:text-3xl">
+                  {minutesRemaining > 0 ? `Faltam ${formatMinutes(minutesRemaining)} para sua meta.` : 'Meta concluída. Mantenha o ritmo com leveza.'}
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+                  {todayStudyMinutes > 0 ? 'Uma sessão curta agora já deixa o restante do dia mais leve.' : 'Comece com uma sessão curta e deixe o próximo passo aparecer.'}
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <AnimatedButton onClick={() => goTo('/foco')} glow className="min-h-12 flex-1 text-[11px] font-black uppercase tracking-[0.14em] sm:flex-none">
+                  <Play size={16} fill="currentColor" /> Entrar em flow
+                </AnimatedButton>
+                <button type="button" onClick={() => goTo('/rotina')} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[18px] border border-white/[0.10] bg-black/[0.14] px-5 text-[11px] font-black uppercase tracking-[0.14em] text-white/70 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+                  Ver plano <ArrowRight size={15} />
+                </button>
               </div>
             </div>
           </GlassCard>
 
-          <GlassCard className="border-white/[0.08] bg-white/[0.028] p-5 md:p-6">
-            <SectionHeader label="Sua trilha" title="Próximos passos" />
-            <div className="mt-6">
-              <TrailStep
-                active
-                icon={Timer}
-                title={nextBlock ? `Começar por ${nextBlock.subject}` : 'Abrir modo foco'}
-                text={nextBlock ? `${formatMinutes(nextBlock.duration)} de ${nextBlock.type === 'practice' ? 'prática' : nextBlock.type === 'review' ? 'revisão' : 'teoria'} para iniciar o dia.` : 'Use um bloco curto para aquecer antes de estudar pesado.'}
-              />
-              <TrailStep
-                icon={BookOpen}
-                title="Resolver uma lista curta"
-                text={answeredCount > 0 ? `${formatNumber.format(answeredCount)} questões já registradas no seu histórico.` : 'Comece com poucas questões e revise com atenção.'}
-              />
-              <TrailStep
-                icon={RotateCcw}
-                title="Fechar revisando erros"
-                text={wrongCount > 0 ? `${wrongCount} erro(s) prontos para revisão.` : 'Quando errar, o Flow transforma isso em material de evolução.'}
-              />
+          <GlassCard className="border-white/[0.075] bg-white/[0.025] p-5 md:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.2em] text-primary/70">Retomar</p>
+                <h2 className="mt-1 text-xl font-premium-title italic tracking-tight text-white">Continue de onde parou</h2>
+              </div>
+              <IconTile icon={BookOpen} color="blue" size="sm" className="rounded-xl" />
             </div>
+            <div className="mt-7 rounded-[22px] border border-white/[0.07] bg-black/[0.16] p-4">
+              <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-white/40">{recentQuestion ? 'Última questão' : 'Próximo treino'}</p>
+              <p className="mt-3 text-lg font-black text-white">{recentQuestion ? `${recentQuestion.materia} · ${recentQuestion.assunto}` : 'Comece pelo banco de questões'}</p>
+              <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+                {recentQuestion ? `${answeredCount} questão${answeredCount === 1 ? '' : 'ões'} respondida${answeredCount === 1 ? '' : 's'} · ${accuracy}% de precisão` : 'Escolha uma matéria ou deixe o StudyFlow sugerir sua primeira lista.'}
+              </p>
+              <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${recentQuestion ? Math.max(18, accuracy) : 12}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} className="h-full rounded-full bg-primary" />
+              </div>
+            </div>
+            <AnimatedButton onClick={() => goTo('/questoes')} variant="secondary" className="mt-5 min-h-11 w-full text-[11px] font-black uppercase tracking-[0.14em]">
+              {recentQuestion ? 'Continuar treino' : 'Abrir questões'} <ArrowRight size={15} />
+            </AnimatedButton>
           </GlassCard>
         </motion.section>
 
-        <motion.section variants={staggerItem} className="mt-5 grid gap-3 sm:grid-cols-3">
-          <SoftMetric icon={Flame} label="Streak" value={`${streak || 0} dias`} />
-          <SoftMetric icon={Target} label="Precisão" value={`${accuracy}%`} />
-          <SoftMetric icon={Trophy} label="Nível" value={`${level} • ${league}`} />
+        <motion.section variants={staggerItem} className="mt-4 grid grid-cols-3 gap-2 sm:hidden">
+          <MetricPill icon={Flame}>{streak || 0}d</MetricPill>
+          <MetricPill icon={Target}>{accuracy}%</MetricPill>
+          <MetricPill icon={Trophy} accent>Nv. {level}</MetricPill>
         </motion.section>
 
-        <motion.section variants={staggerItem} className="mt-8 space-y-4">
-          <SectionHeader
-            label="Espaços de estudo"
-            title="Escolha uma área"
-            action={
-              <button
-                type="button"
-                onClick={() => goTo('/estatisticas')}
-                className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 text-[10px] font-premium-mono font-black uppercase tracking-[0.18em] text-white/50 transition hover:border-primary/25 hover:text-primary sm:inline-flex"
-              >
-                Ver evolução <ArrowRight size={13} />
-              </button>
-            }
-          />
-          <motion.div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
-            {learningTiles.map(tile => (
-              <motion.div key={tile.title} variants={staggerItem}>
-                <SoftTile {...tile} />
-              </motion.div>
-            ))}
+        <motion.section variants={staggerItem} className="mt-10 space-y-4">
+          <SectionHeader eyebrow="Começar" title="Escolha seu próximo passo" action={<button type="button" onClick={() => goTo('/explorar')} className="hidden items-center gap-2 text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-primary/75 transition hover:text-primary sm:inline-flex">Explorar tudo <ArrowRight size={14} /></button>} />
+          <motion.div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4" variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-72px' }}>
+            {quickActions.map((action) => <motion.div key={action.title} variants={staggerItem}><QuickCard {...action} /></motion.div>)}
           </motion.div>
         </motion.section>
-        <motion.section variants={staggerItem} className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.82fr]">
-          <GlassCard className="border-white/[0.08] bg-white/[0.028] p-5 md:p-6">
+
+        <motion.section variants={staggerItem} className="mt-10 grid gap-5 lg:grid-cols-[1.08fr_0.92fr]">
+          <GlassCard className="border-white/[0.075] bg-white/[0.025] p-5 md:p-6">
+            <SectionHeader eyebrow="Seu dia" title="Plano de hoje" action={<button type="button" onClick={() => goTo('/rotina')} className="inline-flex items-center gap-1 text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-white/45 transition hover:text-primary">{routine ? 'Abrir plano' : 'Criar plano'} <ChevronRight size={14} /></button>} />
+            <div className="mt-5 space-y-2">
+              {todayBlocks.length > 0 ? todayBlocks.map((block, index) => (
+                <div key={`${block.subject}-${block.type}-${index}`} className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-black/[0.12] p-3.5 transition hover:border-white/[0.14] hover:bg-white/[0.035]">
+                  <div className={cn('flex size-9 shrink-0 items-center justify-center rounded-xl border', index === 0 ? 'border-primary/25 bg-primary/10 text-primary' : 'border-white/[0.08] bg-white/[0.04] text-white/55')}>
+                    {block.type === 'review' ? <RotateCcw size={16} /> : block.type === 'practice' ? <BookOpen size={16} /> : <PenLine size={16} />}
+                  </div>
+                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-white">{block.subject}</p><p className="mt-0.5 text-xs text-text-secondary">{formatMinutes(block.duration)} · {block.type === 'review' ? 'revisão' : block.type === 'practice' ? 'prática' : 'teoria'}</p></div>
+                  <button type="button" onClick={() => goTo(block.type === 'theory' ? '/foco' : '/questoes')} aria-label={`Iniciar ${block.subject}`} className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.09] bg-white/[0.035] text-white/60 transition hover:border-primary/30 hover:bg-primary/10 hover:text-primary"><Play size={13} fill="currentColor" /></button>
+                </div>
+              )) : (
+                <div className="rounded-[22px] border border-dashed border-white/[0.11] bg-black/[0.10] px-5 py-7 text-center">
+                  <ListChecks className="mx-auto size-5 text-primary/75" />
+                  <p className="mt-3 text-sm font-bold text-white">Seu dia ainda está aberto</p>
+                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">Monte um cronograma ou comece uma sessão curta agora.</p>
+                  <button type="button" onClick={() => goTo('/rotina')} className="mt-4 text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-primary">Criar cronograma</button>
+                </div>
+              )}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="border-white/[0.075] bg-white/[0.025] p-5 md:p-6">
+            <SectionHeader eyebrow="Semana" title="Seu ritmo" action={<button type="button" onClick={() => goTo('/estatisticas')} className="inline-flex items-center gap-1 text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-white/45 transition hover:text-primary">Detalhes <ChevronRight size={14} /></button>} />
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-white/[0.07] bg-black/[0.13] p-3.5"><p className="text-[9px] font-premium-mono font-bold uppercase tracking-[0.14em] text-white/40">Estudado</p><p className="mt-2 text-xl font-premium-title italic text-white">{formatMinutes(weekTotal)}</p></div>
+              <div className="rounded-2xl border border-white/[0.07] bg-black/[0.13] p-3.5"><p className="text-[9px] font-premium-mono font-bold uppercase tracking-[0.14em] text-white/40">Dias ativos</p><p className="mt-2 text-xl font-premium-title italic text-white">{activeWeekDays}<span className="text-sm text-white/35">/7</span></p></div>
+            </div>
+            <div className="mt-6 flex h-24 items-end justify-between gap-2 border-b border-white/[0.07] pb-2">
+              {weekMinutes.map((minutes, index) => (
+                <div key={localDateKey(weekDates[index])} className="flex h-full flex-1 flex-col justify-end gap-2">
+                  <motion.div initial={{ height: 0 }} whileInView={{ height: `${Math.max(8, Math.round((minutes / weekPeak) * 100))}%` }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.05, ease: 'easeOut' }} className={cn('min-h-1 rounded-full', localDateKey(weekDates[index]) === todayKey ? 'bg-primary shadow-[0_0_16px_rgba(var(--hub-primary-rgb),0.35)]' : 'bg-white/[0.18]')} />
+                  <span className="text-center text-[8px] font-premium-mono font-bold text-white/35">{DAY_INITIALS[weekDates[index].getDay()]}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-text-secondary">{weekTotal > 0 ? 'Cada sessão conta. Continue fazendo o próximo bloco caber no seu dia.' : 'Registre sua primeira sessão para ver o ritmo da semana ganhar forma.'}</p>
+          </GlassCard>
+        </motion.section>
+        <motion.section variants={staggerItem} className="mt-10 space-y-4">
+          <SectionHeader eyebrow="Radar" title="Provas próximas" action={<button type="button" onClick={() => goTo('/exames')} className="inline-flex items-center gap-1 text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-primary/75 transition hover:text-primary">Ver todas <ArrowRight size={14} /></button>} />
+          {upcomingExams.length > 0 ? (
+            <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+              {upcomingExams.map((exam) => (
+                <button key={exam.id} type="button" onClick={() => goTo('/exames')} className="group min-w-[208px] flex-1 rounded-[20px] border border-white/[0.075] bg-white/[0.025] p-4 text-left transition duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+                  <div className="flex items-start justify-between gap-4"><IconTile icon={GraduationCap} color="primary" size="sm" className="rounded-xl" /><span className="text-2xl font-premium-mono font-black text-white">{exam.daysLeft ?? '--'}</span></div>
+                  <p className="mt-5 truncate text-sm font-black text-white">{exam.nome}</p>
+                  <p className="mt-1 truncate text-xs text-text-secondary">{exam.descricao}</p>
+                  <p className="mt-4 text-[9px] font-premium-mono font-bold uppercase tracking-[0.14em] text-primary/75">{exam.daysLeft === null ? 'Data pendente' : exam.daysLeft === 0 ? 'É hoje' : `${exam.daysLeft} dias restantes`}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <GlassCard className="border-dashed border-white/[0.10] bg-white/[0.018] p-6 text-center">
+              <GraduationCap className="mx-auto size-5 text-primary/70" />
+              <p className="mt-3 text-sm font-bold text-white">Nenhuma prova no radar</p>
+              <p className="mt-1 text-xs text-text-secondary">Escolha uma prova para transformar o prazo em plano.</p>
+            </GlassCard>
+          )}
+        </motion.section>
+
+        <motion.section variants={staggerItem} className="mt-10 grid gap-5 lg:grid-cols-[0.96fr_1.04fr]">
+          <GlassCard className="border-white/[0.075] bg-white/[0.025] p-5 md:p-6">
             <div className="flex items-start gap-4">
-              <IconTile icon={Quote} color="primary" size="md" glow />
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.22em] text-primary/65">Frase do dia {quoteIndex + 1}/60</p>
-                <p className="mt-3 text-2xl font-premium-title italic leading-tight text-white">“{quote}”</p>
-                <p className="mt-3 text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-text-secondary">StudyFlow</p>
+              <IconTile icon={Quote} color="primary" size="sm" glow className="rounded-xl" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-primary/70">Frase do dia · {quoteIndex + 1}/60</p>
+                <blockquote className="mt-3 text-xl font-premium-title italic leading-snug text-white">“{quote}”</blockquote>
               </div>
             </div>
           </GlassCard>
 
-          <div className="grid gap-5">
-            <GlassCard className="border-white/[0.08] bg-white/[0.028] p-5">
-              <div className="flex items-center gap-4">
-                <IconTile icon={CalendarDays} color="cyan" size="md" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.2em] text-primary/65">Radar</p>
-                  {upcomingExam ? (
-                    <>
-                      <p className="mt-1 truncate text-base font-black text-white">{upcomingExam.nome}</p>
-                      <p className="text-xs text-text-secondary">{upcomingExam.daysLeft ?? '--'} dias para a prova</p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="mt-1 text-base font-black text-white">Sem prova cadastrada</p>
-                      <p className="text-xs text-text-secondary">Cadastre uma meta quando quiser organizar prazos.</p>
-                    </>
-                  )}
-                </div>
+          <GlassCard className="border-white/[0.075] bg-white/[0.025] p-5 md:p-6">
+            <SectionHeader eyebrow="Histórico" title="Atividade recente" />
+            {recentActivity ? (
+              <div className="mt-5 flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-black/[0.12] p-4">
+                <IconTile icon={recentActivity.icon} color="primary" size="sm" className="rounded-xl" />
+                <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">{recentActivity.title}</p><p className="mt-1 truncate text-xs text-text-secondary">{recentActivity.detail}</p></div>
+                <ChevronRight className="size-4 shrink-0 text-white/25" />
               </div>
-            </GlassCard>
-
-            <GlassCard className="border-white/[0.08] bg-white/[0.028] p-5">
-              <div className="flex items-center gap-4">
-                <IconTile icon={CheckCircle2} color={recentQuestion ? 'primary' : 'violet'} size="md" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.2em] text-primary/65">Último registro</p>
-                  <p className="mt-1 truncate text-base font-black text-white">{recentQuestion?.materia || 'Comece pelo primeiro treino'}</p>
-                  <p className="text-xs text-text-secondary">{recentQuestion?.assunto || 'Seu histórico aparece aqui com calma, sem poluir a tela.'}</p>
-                </div>
+            ) : (
+              <div className="mt-5 rounded-[22px] border border-dashed border-white/[0.10] py-7 text-center">
+                <Timer className="mx-auto size-5 text-primary/65" />
+                <p className="mt-3 text-sm font-bold text-white">Seu histórico começa no primeiro treino</p>
+                <p className="mt-1 px-5 text-xs text-text-secondary">Resolva uma questão ou conclua uma sessão para acompanhar sua evolução aqui.</p>
               </div>
-            </GlassCard>
-          </div>
+            )}
+          </GlassCard>
         </motion.section>
 
-        {isFree && (
-          <motion.section variants={staggerItem} className="mt-8">
-            <button
-              type="button"
-              onClick={() => goTo('/premium')}
-              className="flex w-full items-center justify-between gap-4 rounded-[24px] border border-primary/15 bg-primary/[0.035] px-5 py-4 text-left transition hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-            >
-              <span className="flex min-w-0 items-center gap-3">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                  <Crown size={18} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-black text-white">StudyFlow Premium</span>
-                  <span className="block truncate text-xs text-text-secondary">Athena ampliada, simulados e recursos extras.</span>
-                </span>
-              </span>
+        <motion.section variants={staggerItem} className="mt-10">
+          <GlassCard className="border-primary/[0.16] bg-[linear-gradient(105deg,rgba(0,232,143,0.11),rgba(255,255,255,0.025)_56%,rgba(255,255,255,0.018))] p-5 md:p-7">
+            <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary shadow-[0_0_28px_rgba(var(--hub-primary-rgb),0.15)]"><Timer size={22} /></div>
+                <div><p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.18em] text-primary/75">Modo foco</p><h2 className="mt-1 text-2xl font-premium-title italic tracking-tight text-white">Dê espaço para uma sessão profunda.</h2><p className="mt-2 max-w-xl text-sm leading-relaxed text-text-secondary">Um timer limpo, uma meta clara e o resto do app fica fora do caminho.</p></div>
+              </div>
+              <AnimatedButton onClick={() => goTo('/foco')} glow className="min-h-12 shrink-0 text-[11px] font-black uppercase tracking-[0.14em]"><Play size={16} fill="currentColor" /> Iniciar sessão</AnimatedButton>
+            </div>
+          </GlassCard>
+        </motion.section>
+
+        {isFree ? (
+          <motion.section variants={staggerItem} className="mt-6">
+            <button type="button" onClick={() => goTo('/premium')} className="flex w-full items-center justify-between gap-4 rounded-[20px] border border-white/[0.075] bg-white/[0.022] px-5 py-4 text-left transition hover:border-primary/25 hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+              <span className="min-w-0"><span className="block text-sm font-bold text-white">Mais profundidade quando você precisar</span><span className="mt-1 block truncate text-xs text-text-secondary">Acesse recursos extras sem tirar o foco do seu plano.</span></span>
               <ArrowRight className="size-4 shrink-0 text-primary/80" />
             </button>
           </motion.section>
-        )}
+        ) : null}
       </motion.div>
     </div>
   );
