@@ -1,376 +1,212 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import React, { memo, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
-  AlertCircle,
-  ArrowRight,
-  BarChart3,
-  BookOpen,
-  Bookmark,
-  Brain,
-  CalendarCheck,
-  ChevronRight,
-  ClipboardList,
-  Compass,
-  Flame,
-  GraduationCap,
-  History,
-  Landmark,
-  Languages,
-  Microscope,
-  PenLine,
-  Play,
-  Route,
-  Search,
-  Shield,
-  Sigma,
-  Sparkles,
-  Star,
-  Target,
-  Timer,
-  Trophy,
+  AlertCircle, ArrowRight, Atom, BarChart3, BookOpen, Brain, CalendarClock, Check,
+  ChevronRight, CircleDot, ClipboardCheck, Clock3, Compass, FilePenLine, Filter,
+  Flame, FlaskConical, Focus, GraduationCap, History, Languages, Landmark, Library,
+  ListChecks, Microscope, PenLine, Play, RotateCcw, Route, Search, Shield,
+  Sigma, Sparkles, Star, Target, Timer, TrendingUp, Trophy, UserRound, X,
   type LucideIcon,
 } from 'lucide-react';
 import { AnimatedButton, Badge, GlassCard, cn } from '../../components/UI';
-import { useStore } from '../../store';
 import { useAppNavigation } from '../../app/router/useAppNavigation';
-import { QUESTION_BANK_TOTAL_TARGET, QUESTION_EXAM_TYPE_LABELS, getQuestionStats, getQuestions, loadQuestionBank } from '../../services/questionService';
-import type { Question as StudyQuestion, QuestionExamType, QuestionFilterState } from '../../types/question';
+import { useStore } from '../../store';
+import { getQuestionStats, getQuestions, loadQuestionBank } from '../../services/questionService';
+import {
+  DEFAULT_EXPLORE_FILTERS, ESSAY_ACTIONS, GOAL_ACTIONS, SIMULATION_ACTIONS,
+  SUBJECT_NAMES, TRAINING_ACTIONS, getContinueStudyItems, getExploreSearchResults,
+  getExploreSections, getRecommendedAction, getSubjectAccuracy, getSuggestedTrails,
+  getTrendingTopics, getWeakTopics,
+  type ExploreAction, type ExploreCategory, type ExploreFilters, type ExploreStatus,
+  type SmartTrail,
+} from '../../services/exploreService';
+import type { Question, QuestionFilterState } from '../../types/question';
 
-type ObjectiveCard = { title: string; description: string; icon: LucideIcon; examType: QuestionExamType; accent: string };
-type SubjectCard = { subject: string; label: string; description: string; icon: LucideIcon; tone: string };
-type ModeCard = { title: string; description: string; icon: LucideIcon; filters?: QuestionFilterState; path?: string; metric: string };
-type ToolCard = { title: string; description: string; icon: LucideIcon; path: string; tone: string };
+const iconByGoal: Record<string, LucideIcon> = {
+  'goal-enem': GraduationCap, 'goal-vestibular': Landmark, 'goal-concurso': ClipboardCheck,
+  'goal-militar': Shield, 'goal-essay': PenLine, 'goal-review': RotateCcw,
+};
+const iconBySubject: Record<string, LucideIcon> = {
+  Matematica: Sigma, Portugues: Languages, Redacao: FilePenLine, Fisica: Atom,
+  Quimica: FlaskConical, Biologia: Microscope, Historia: History, Geografia: Compass,
+  Filosofia: Brain, Sociologia: Library, Ingles: Languages, Espanhol: Languages,
+};
+const iconByTraining: Record<string, LucideIcon> = {
+  'training-quick': Play, 'training-errors': AlertCircle, 'training-hard': Flame,
+  'training-simulation': Timer, 'training-favorites': Star, 'training-marathon': Trophy,
+};
+const statusStyle: Record<ExploreStatus, { label: string; className: string }> = {
+  forte: { label: 'forte', className: 'bg-emerald-400/10 text-emerald-300' },
+  medio: { label: 'médio', className: 'bg-amber-400/10 text-amber-300' },
+  fraco: { label: 'fraco', className: 'bg-rose-400/10 text-rose-300' },
+  nao_iniciado: { label: 'não iniciado', className: 'bg-white/[0.06] text-white/45' },
+};
+const categoryLabel: Record<ExploreCategory, string> = {
+  questoes: 'Questões', materias: 'Matérias', provas: 'Provas', redacao: 'Redação',
+  treinos: 'Modos de treino', trilhas: 'Trilhas',
+};
 
-const objectiveCards: ObjectiveCard[] = [
-  { title: 'ENEM', description: 'Competencias, habilidades, TRI e revisao por area.', icon: GraduationCap, examType: 'enem', accent: 'from-emerald-300/18 to-cyan-300/10' },
-  { title: 'Vestibulares', description: 'Fuvest, Unicamp, Unesp, UnB e provas tradicionais.', icon: Landmark, examType: 'vestibular', accent: 'from-sky-300/18 to-violet-300/10' },
-  { title: 'Concursos', description: 'Treino direto para portugues, logica e conhecimentos gerais.', icon: ClipboardList, examType: 'concurso', accent: 'from-amber-300/16 to-emerald-300/8' },
-  { title: 'Militares', description: 'Alta exigencia para ITA, IME, ESA, EsPCEx e AFA.', icon: Shield, examType: 'militar', accent: 'from-rose-300/16 to-cyan-300/8' },
-];
+function SectionHeading({ eyebrow, title, icon: Icon, action }: { eyebrow: string; title: string; icon: LucideIcon; action?: React.ReactNode }) {
+  return <div className="flex items-end justify-between gap-4">
+    <div className="flex min-w-0 items-center gap-3">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Icon size={18} /></span>
+      <div className="min-w-0"><p className="text-[9px] font-black uppercase tracking-[0.22em] text-primary">{eyebrow}</p><h2 className="truncate text-xl font-premium-title italic text-white sm:text-2xl">{title}</h2></div>
+    </div>{action}
+  </div>;
+}
 
-const subjectCards: SubjectCard[] = [
-  { subject: 'Matematica', label: 'Matematica', description: 'Funcoes, geometria, estatistica e algebra.', icon: Sigma, tone: 'text-cyan-200 border-cyan-300/20 bg-cyan-300/10' },
-  { subject: 'Portugues', label: 'Portugues', description: 'Interpretacao, gramatica e literatura.', icon: Languages, tone: 'text-amber-200 border-amber-300/20 bg-amber-300/10' },
-  { subject: 'Fisica', label: 'Fisica', description: 'Mecanica, eletricidade, optica e ondas.', icon: Timer, tone: 'text-blue-200 border-blue-300/20 bg-blue-300/10' },
-  { subject: 'Quimica', label: 'Quimica', description: 'Estequiometria, organica e solucoes.', icon: Microscope, tone: 'text-emerald-200 border-emerald-300/20 bg-emerald-300/10' },
-  { subject: 'Biologia', label: 'Biologia', description: 'Ecologia, genetica, fisiologia e citologia.', icon: Brain, tone: 'text-green-200 border-green-300/20 bg-green-300/10' },
-  { subject: 'Historia', label: 'Historia', description: 'Brasil, mundo contemporaneo e movimentos sociais.', icon: History, tone: 'text-rose-200 border-rose-300/20 bg-rose-300/10' },
-  { subject: 'Geografia', label: 'Geografia', description: 'Espaco, clima, industria e geopolitica.', icon: Compass, tone: 'text-sky-200 border-sky-300/20 bg-sky-300/10' },
-  { subject: 'Sociologia', label: 'Sociologia', description: 'Cidadania, cultura, trabalho e poder.', icon: BookOpen, tone: 'text-violet-200 border-violet-300/20 bg-violet-300/10' },
-];
+function EmptyState({ icon: Icon = Compass, title, description, action }: { icon?: LucideIcon; title: string; description: string; action?: React.ReactNode }) {
+  return <GlassCard enterAnimation={false} className="border-dashed border-white/10 p-7 text-center sm:p-9">
+    <span className="mx-auto flex size-14 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.04] text-white/30"><Icon size={24} /></span>
+    <h3 className="mt-4 text-xl font-premium-title italic text-white">{title}</h3><p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary">{description}</p>{action ? <div className="mt-5">{action}</div> : null}
+  </GlassCard>;
+}
 
-const trainingModes: ModeCard[] = [
-  { title: 'Treino rapido', description: 'Abrir o banco completo e resolver agora.', icon: Play, filters: {}, metric: '10 min' },
-  { title: 'Simulado', description: 'Montar prova com tempo, resultado e revisao.', icon: Target, path: '/simulados', metric: 'modo prova' },
-  { title: 'Revisar erros', description: 'Voltar nos pontos que mais derrubam nota.', icon: AlertCircle, filters: { onlyWrong: true } as QuestionFilterState, metric: 'prioridade' },
-  { title: 'Questoes dificeis', description: 'Subir nivel com itens mais pesados.', icon: Flame, filters: { difficulty: 'dificil' }, metric: 'avancado' },
-  { title: 'Favoritas', description: 'Treinar o caderno que voce salvou.', icon: Star, filters: { onlyFavorites: true }, metric: 'salvas' },
-];
+const ActionCard = memo(function ActionCard({ action, icon: Icon, meta, onOpen, className }: { action: ExploreAction; icon: LucideIcon; meta?: string; onOpen: (action: ExploreAction) => void; className?: string }) {
+  return <motion.button type="button" whileTap={{ scale: 0.975 }} onClick={() => onOpen(action)} className={cn('premium-grid-card group min-h-44 rounded-[26px] border border-white/10 bg-white/[0.045] p-5 text-left transition-colors hover:border-primary/30 hover:bg-white/[0.065]', className)}>
+    <div className="flex h-full flex-col"><div className="flex items-center justify-between"><span className="flex size-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Icon size={19} /></span><ChevronRight size={18} className="text-white/25 transition group-hover:translate-x-0.5 group-hover:text-primary" /></div>
+    <h3 className="mt-5 text-lg font-premium-title italic text-white">{action.title}</h3><p className="mt-2 text-xs leading-relaxed text-text-secondary">{action.description}</p>{meta ? <p className="mt-auto pt-4 text-[9px] font-black uppercase tracking-[0.16em] text-primary">{meta}</p> : null}</div>
+  </motion.button>;
+});
 
-const discoveryLanes: Array<{ title: string; description: string; filters: QuestionFilterState; icon: LucideIcon }> = [
-  { title: 'Base forte para ENEM', description: 'Matematica, Natureza e Humanas em blocos curtos.', filters: { examType: 'enem' }, icon: Route },
-  { title: 'Arrumar pontos fracos', description: 'Erros, dificeis e revisao ativa sem perder tempo.', filters: { onlyWrong: true }, icon: AlertCircle },
-  { title: 'Revisao de vespera', description: 'Questoes objetivas, explicacao rapida e foco.', filters: { difficulty: 'medio' }, icon: Timer },
-];
+function ProgressBar({ value }: { value: number }) {
+  return <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]"><div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></div>;
+}
 
-const toolCards: ToolCard[] = [
-  { title: 'Redacao', description: 'Tema, rascunho, correcao e historico.', icon: PenLine, path: '/redacao', tone: 'border-emerald-300/20 bg-emerald-300/10 text-emerald-100' },
-  { title: 'Cronograma', description: 'Organize a rotina de estudo da semana.', icon: CalendarCheck, path: '/rotina', tone: 'border-sky-300/20 bg-sky-300/10 text-sky-100' },
-  { title: 'Relatorios', description: 'Veja precisao, evolucao e materias.', icon: BarChart3, path: '/estatisticas', tone: 'border-violet-300/20 bg-violet-300/10 text-violet-100' },
-  { title: 'Ranking', description: 'XP, liga, streak e posicao global.', icon: Trophy, path: '/ranking', tone: 'border-amber-300/20 bg-amber-300/10 text-amber-100' },
-];
-
-function SectionTitle({ eyebrow, title, icon: Icon, action }: { eyebrow: string; title: string; icon: LucideIcon; action?: React.ReactNode }) {
-  return (
-    <div className="flex items-end justify-between gap-4">
-      <div className="premium-section-heading flex-1">
-        <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-            <Icon size={18} />
-          </span>
-          <div>
-            <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
-            <h2 className="text-xl font-premium-title italic text-white sm:text-2xl">{title}</h2>
-          </div>
-        </div>
+function FilterSheet({ open, filters, subjects, onChange, onClear, onClose }: { open: boolean; filters: ExploreFilters; subjects: string[]; onChange: (filters: ExploreFilters) => void; onClear: () => void; onClose: () => void }) {
+  const option = <K extends keyof ExploreFilters>(key: K, value: ExploreFilters[K], label: string) => <button key={`${key}-${String(value)}`} type="button" aria-pressed={filters[key] === value} onClick={() => onChange({ ...filters, [key]: value })} className={cn('rounded-full border px-3 py-2 text-[10px] font-black uppercase tracking-wider transition', filters[key] === value ? 'border-primary/40 bg-primary/15 text-primary' : 'border-white/10 bg-white/[0.04] text-white/55 hover:text-white')}>{label}</button>;
+  if (typeof document === 'undefined') return null;
+  return createPortal(<AnimatePresence>{open ? <motion.div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}>
+    <motion.div role="dialog" aria-modal="true" aria-labelledby="explore-filter-title" initial={{ opacity: 0, y: 40, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30 }} className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-t-[32px] border border-white/10 bg-[#0a0a0a] p-5 shadow-2xl sm:rounded-[32px] sm:p-7">
+      <div className="flex items-start justify-between"><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Descoberta sob medida</p><h2 id="explore-filter-title" className="mt-1 text-2xl font-premium-title italic text-white">Filtros avançados</h2></div><button type="button" aria-label="Fechar filtros" onClick={onClose} className="flex size-10 items-center justify-center rounded-2xl border border-white/10 text-white/55 hover:text-white"><X size={18} /></button></div>
+      <div className="mt-6 space-y-5">
+        <div><p className="mb-2 text-xs font-bold text-white/70">Objetivo</p><div className="flex flex-wrap gap-2">{option('objective', 'all', 'Todos')}{option('objective', 'enem', 'ENEM')}{option('objective', 'vestibular', 'Vestibular')}{option('objective', 'concurso', 'Concurso')}{option('objective', 'militar', 'Militar')}{option('objective', 'redacao', 'Redação')}{option('objective', 'revisao', 'Revisão')}</div></div>
+        <div><p className="mb-2 text-xs font-bold text-white/70">Matéria</p><div className="flex flex-wrap gap-2">{option('subject', '', 'Todas')}{subjects.slice(0, 12).map((subject) => option('subject', subject, subject))}</div></div>
+        <div><p className="mb-2 text-xs font-bold text-white/70">Dificuldade</p><div className="flex flex-wrap gap-2">{option('difficulty', '', 'Todas')}{option('difficulty', 'facil', 'Fácil')}{option('difficulty', 'medio', 'Médio')}{option('difficulty', 'dificil', 'Difícil')}{option('difficulty', 'muito_dificil', 'Muito difícil')}</div></div>
+        <div><p className="mb-2 text-xs font-bold text-white/70">Duração</p><div className="flex flex-wrap gap-2">{option('duration', 'all', 'Qualquer')}{option('duration', 'curta', 'Até 20 min')}{option('duration', 'media', '20–90 min')}{option('duration', 'longa', '90+ min')}</div></div>
+        <div><p className="mb-2 text-xs font-bold text-white/70">Status</p><div className="flex flex-wrap gap-2">{option('status', 'all', 'Todos')}{option('status', 'novo', 'Novo')}{option('status', 'andamento', 'Em andamento')}{option('status', 'concluido', 'Concluído')}</div></div>
+        <div><p className="mb-2 text-xs font-bold text-white/70">Tipo de treino</p><div className="flex flex-wrap gap-2">{option('trainingType', 'all', 'Todos')}{option('trainingType', 'questoes', 'Questões')}{option('trainingType', 'revisao', 'Revisão')}{option('trainingType', 'simulado', 'Simulado')}{option('trainingType', 'redacao', 'Redação')}</div></div>
       </div>
-      {action}
-    </div>
-  );
+      <div className="sticky bottom-0 mt-7 flex gap-3 border-t border-white/10 bg-[#0a0a0a] pt-4"><AnimatedButton type="button" variant="secondary" onClick={onClear} className="flex-1">Limpar filtros</AnimatedButton><AnimatedButton type="button" onClick={onClose} className="flex-1">Ver resultados <Check size={15} /></AnimatedButton></div>
+    </motion.div>
+  </motion.div> : null}</AnimatePresence>, document.body);
 }
 
 const ExploreView: React.FC = () => {
   const reduceMotion = useReducedMotion() ?? false;
   const { goTo } = useAppNavigation();
-  const { setNavFilters, history, sessions } = useStore();
-  const [questions, setQuestions] = useState<StudyQuestion[]>(() => getQuestions());
+  const { setNavFilters, history, sessions, essays, mastery, level, profilePic, name } = useStore();
+  const [questions, setQuestions] = useState<Question[]>(() => getQuestions());
   const [bankStatus, setBankStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
+  const [filters, setFilters] = useState<ExploreFilters>(DEFAULT_EXPLORE_FILTERS);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
-    loadQuestionBank()
-      .then((loadedQuestions) => {
-        if (!active) return;
-        setQuestions(loadedQuestions);
-        setBankStatus('ready');
-      })
-      .catch(() => {
-        if (!active) return;
-        setBankStatus('error');
-      });
-    return () => {
-      active = false;
-    };
+    loadQuestionBank().then((loaded) => { if (active) { setQuestions(loaded); setBankStatus('ready'); } }).catch(() => { if (active) setBankStatus('error'); });
+    return () => { active = false; };
   }, []);
+  useEffect(() => {
+    if (!filterOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, [filterOpen]);
 
   const stats = useMemo(() => getQuestionStats(questions), [questions]);
-  const latestAttempt = history?.[0] ?? null;
-  const latestSession = sessions?.[0] ?? null;
-  const totalQuestions = bankStatus === 'loading' ? QUESTION_BANK_TOTAL_TARGET : stats.total;
-  const answeredCount = history?.length ?? 0;
-  const uniqueAnswered = useMemo(() => new Set((history ?? []).map((item) => item.questionId)).size, [history]);
-  const accuracy = answeredCount === 0 ? 0 : Math.round(((history ?? []).filter((item) => item.isCorrect).length / answeredCount) * 100);
+  const recommended = useMemo(() => getRecommendedAction(history, questions, essays), [history, questions, essays]);
+  const continueItems = useMemo(() => getContinueStudyItems(history, sessions, essays, questions), [history, sessions, essays, questions]);
+  const weakTopics = useMemo(() => getWeakTopics(history, questions), [history, questions]);
+  const trails = useMemo(() => getSuggestedTrails(history, questions), [history, questions]);
+  const trending = useMemo(() => getTrendingTopics(), []);
+  const allActions = useMemo<ExploreAction[]>(() => [...GOAL_ACTIONS, ...TRAINING_ACTIONS, ...trails, ...ESSAY_ACTIONS, ...SIMULATION_ACTIONS], [trails]);
+  const visibleIds = useMemo(() => new Set(getExploreSections(allActions, filters).map((item) => item.id)), [allActions, filters]);
+  const searchResults = useMemo(() => getExploreSections(getExploreSearchResults(deferredQuery, questions), filters), [deferredQuery, questions, filters]);
+  const groupedResults = useMemo(() => searchResults.reduce<Partial<Record<ExploreCategory, ExploreAction[]>>>((groups, result) => { (groups[result.category] ??= []).push(result); return groups; }, {}), [searchResults]);
+  const activeFilterCount = Object.entries(filters).filter(([key, value]) => value !== DEFAULT_EXPLORE_FILTERS[key as keyof ExploreFilters]).length;
+  const attemptedCount = new Set(history.map((item) => item.questionId)).size;
+  const accuracy = history.length ? Math.round((history.filter((item) => item.isCorrect).length / history.length) * 100) : 0;
+  const questionById = useMemo(() => new Map(questions.map((question) => [question.id, question])), [questions]);
 
-  const openQuestions = (filters: QuestionFilterState = {}) => {
-    setNavFilters(filters);
+  const openAction = (action: ExploreAction) => {
+    if (action.path) { goTo(action.path); return; }
+    const contextualFilters: QuestionFilterState = {
+      ...(filters.objective !== 'all' && !['redacao', 'revisao'].includes(filters.objective) ? { examType: filters.objective as QuestionFilterState['examType'] } : {}),
+      ...(filters.subject ? { subject: filters.subject } : {}),
+      ...(filters.difficulty ? { difficulty: filters.difficulty } : {}),
+      ...(filters.objective === 'revisao' || filters.trainingType === 'revisao' ? { onlyWrong: true } : {}),
+    };
+    const actionFilters = { ...action.filters, ...contextualFilters };
+    setNavFilters({
+      ...actionFilters,
+      ...(actionFilters.onlyWrong ? { filterStatus: 'wrong' } : {}),
+      ...(actionFilters.onlyUnanswered ? { filterStatus: 'unanswered' } : {}),
+      ...(actionFilters.onlyAnswered ? { filterStatus: 'answered' } : {}),
+    });
     goTo('/questoes');
   };
+  const clearFilters = () => setFilters(DEFAULT_EXPLORE_FILTERS);
+  const clearDiscovery = () => { setQuery(''); clearFilters(); };
 
-  const submitSearch = (event?: React.FormEvent) => {
-    event?.preventDefault();
-    const search = searchTerm.trim();
-    if (!search) {
-      openQuestions();
-      return;
-    }
-    openQuestions({ search });
-  };
+  const subjectItems = SUBJECT_NAMES.filter((subject) => !filters.subject || subject === filters.subject);
+  const goalItems = GOAL_ACTIONS.filter((item) => visibleIds.has(item.id));
+  const trainingItems = TRAINING_ACTIONS.filter((item) => visibleIds.has(item.id));
+  const trailItems = trails.filter((item) => visibleIds.has(item.id));
+  const essayItems = ESSAY_ACTIONS.filter((item) => visibleIds.has(item.id));
+  const simulationItems = SIMULATION_ACTIONS.filter((item) => visibleIds.has(item.id));
+  const hasFilteredContent = goalItems.length + trainingItems.length + trailItems.length + essayItems.length + simulationItems.length + subjectItems.length > 0;
 
-  return (
-    <div className="studyflow-explore app-shell-premium premium-page-stack relative isolate pb-32 pt-5 md:pb-36 md:pt-8">
-      <motion.header
-        initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="premium-page-hero studyflow-command-hero overflow-hidden p-5 sm:p-7"
-      >
-        <div className="pointer-events-none absolute -right-20 -top-24 size-80 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 left-10 size-72 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="relative grid gap-7 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-end">
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="primary">Explorar</Badge>
-              <span className="rounded-full border border-white/10 bg-white/[0.055] px-3 py-1 text-[10px] font-premium-mono font-black uppercase tracking-[0.16em] text-white/55">
-                hub de estudos
-              </span>
-              <span className={cn('rounded-full border px-3 py-1 text-[10px] font-premium-mono font-black uppercase tracking-[0.16em]', bankStatus === 'error' ? 'border-red-400/30 bg-red-400/10 text-red-200' : 'border-primary/20 bg-primary/10 text-primary')}>
-                {bankStatus === 'loading' ? 'carregando banco' : bankStatus === 'error' ? 'modo offline' : 'banco pronto'}
-              </span>
-            </div>
-            <div className="max-w-4xl space-y-3">
-              <h1 className="text-4xl font-premium-title italic leading-[0.95] text-white sm:text-5xl lg:text-6xl">
-                Encontre o proximo estudo sem se perder.
-              </h1>
-              <p className="max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
-                Busca, trilhas, objetivos, materias e ferramentas em um so lugar. A ideia aqui e o aluno bater o olho e saber exatamente onde clicar.
-              </p>
-            </div>
-
-            <form onSubmit={submitSearch} className="group flex flex-col gap-3 rounded-[28px] border border-white/10 bg-black/30 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:flex-row sm:items-center">
-              <div className="flex min-h-12 flex-1 items-center gap-3 px-3">
-                <Search size={19} className="text-primary" />
-                <input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Busque Hitler, funcoes, ecologia, redacao..."
-                  className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/35"
-                />
-              </div>
-              <AnimatedButton type="submit" glow className="min-h-12 px-5 font-black uppercase tracking-widest">
-                Buscar no banco <ArrowRight size={16} />
-              </AnimatedButton>
-            </form>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 xl:grid-cols-1">
-            {[
-              { label: 'questoes', value: totalQuestions.toLocaleString('pt-BR') },
-              { label: 'respondidas', value: uniqueAnswered.toLocaleString('pt-BR') },
-              { label: 'precisao', value: `${accuracy}%` },
-            ].map((item) => (
-              <GlassCard key={item.label} enterAnimation={false} className="p-3 text-center xl:p-4">
-                <p className="text-2xl font-black text-white xl:text-3xl">{item.value}</p>
-                <p className="text-[9px] font-black uppercase tracking-widest text-white/45">{item.label}</p>
-              </GlassCard>
-            ))}
-          </div>
+  return <div className="studyflow-explore app-shell-premium premium-page-stack relative isolate pb-32 pt-5 md:pb-36 md:pt-8">
+    <motion.header initial={{ opacity: 0, y: reduceMotion ? 0 : 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="premium-page-hero studyflow-command-hero overflow-hidden p-5 sm:p-7">
+      <div className="pointer-events-none absolute -right-24 -top-28 size-96 rounded-full bg-primary/[0.09] blur-3xl" /><div className="pointer-events-none absolute -bottom-32 left-1/4 size-80 rounded-full bg-cyan-400/[0.06] blur-3xl" />
+      <div className="relative space-y-6">
+        <div className="flex items-start justify-between gap-4"><div><div className="flex flex-wrap items-center gap-2"><Badge variant="primary">Central de descoberta</Badge><span className={cn('rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-widest', bankStatus === 'error' ? 'border-amber-400/20 bg-amber-400/10 text-amber-200' : 'border-white/10 bg-white/[0.05] text-white/50')}>{bankStatus === 'loading' ? 'Sincronizando banco' : bankStatus === 'error' ? 'Dados locais' : `${stats.total.toLocaleString('pt-BR')} questões`}</span></div><h1 className="mt-4 text-4xl font-premium-title italic leading-none text-white sm:text-6xl">Explorar</h1><p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">Encontre o melhor caminho para estudar hoje, com base no seu ritmo e desempenho.</p></div>
+          <div className="flex items-center gap-2"><button type="button" onClick={() => setFilterOpen(true)} className="relative flex size-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-white/65 transition hover:border-primary/30 hover:text-primary" aria-label="Abrir filtros"><Filter size={19} />{activeFilterCount ? <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[9px] font-black text-black">{activeFilterCount}</span> : null}</button><div className="hidden items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 pr-3 sm:flex">{profilePic ? <img src={profilePic} alt="" className="size-9 rounded-xl object-cover" /> : <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><UserRound size={17} /></span>}<span><span className="block max-w-24 truncate text-xs font-bold text-white">{name}</span><span className="block text-[9px] uppercase tracking-widest text-primary">Nível {level}</span></span></div></div>
         </div>
-      </motion.header>
+        <form onSubmit={(event) => event.preventDefault()} className="group flex min-h-14 items-center gap-3 rounded-[24px] border border-white/10 bg-black/35 p-2 pl-4 transition focus-within:border-primary/35 focus-within:shadow-[0_0_0_4px_rgba(0,232,143,0.06)]"><Search size={19} className="shrink-0 text-primary" /><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Buscar no Explorar" placeholder="Buscar prova, matéria, assunto ou modo de treino…" className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/30" />{query ? <button type="button" onClick={() => setQuery('')} aria-label="Limpar busca" className="flex size-9 items-center justify-center rounded-xl text-white/40 hover:bg-white/[0.06] hover:text-white"><X size={16} /></button> : null}<button type="button" onClick={() => setFilterOpen(true)} className="hidden min-h-10 items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] px-4 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white sm:flex"><Filter size={14} /> Filtrar</button></form>
+        {activeFilterCount ? <div className="flex flex-wrap gap-2">{Object.entries(filters).filter(([key, value]) => value !== DEFAULT_EXPLORE_FILTERS[key as keyof ExploreFilters]).map(([key, value]) => <button key={key} type="button" onClick={() => setFilters({ ...filters, [key]: DEFAULT_EXPLORE_FILTERS[key as keyof ExploreFilters] })} className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-primary">{String(value).replace('_', ' ')} <X size={11} /></button>)}<button type="button" onClick={clearFilters} className="px-2 text-[9px] font-black uppercase tracking-wider text-white/40 hover:text-white">Limpar filtros</button></div> : null}
+      </div>
+    </motion.header>
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
-        <GlassCard className="premium-list-card p-5 sm:p-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-start gap-4">
-              <div className="flex size-14 shrink-0 items-center justify-center rounded-3xl border border-primary/20 bg-primary/10 text-primary">
-                <Bookmark size={24} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.18em] text-primary">continue</p>
-                <h2 className="mt-1 text-2xl font-premium-title italic text-white">{latestAttempt ? 'Retomar revisao inteligente' : 'Comecar por um treino guiado'}</h2>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-text-secondary">
-                  {latestAttempt
-                    ? `Sua ultima tentativa foi ${latestAttempt.isCorrect ? 'um acerto' : 'um erro'}. Abra o banco com esse contexto e continue sem resetar ritmo.`
-                    : latestSession
-                      ? `Ultima sessao em ${latestSession.subject}. Continue com questoes e cronometro.`
-                      : 'Ainda sem historico suficiente. Comece por um objetivo e o app passa a mostrar atalhos mais certeiros.'}
-                </p>
-              </div>
-            </div>
-            <AnimatedButton onClick={() => latestAttempt ? openQuestions({ search: latestAttempt.questionId }) : openQuestions()} className="shrink-0">
-              Continuar <ChevronRight size={16} />
-            </AnimatedButton>
-          </div>
-        </GlassCard>
+    {deferredQuery.trim() ? <section className="space-y-4" aria-live="polite"><SectionHeading eyebrow="Busca inteligente" title={searchResults.length ? `${searchResults.length} resultados para “${deferredQuery.trim()}”` : 'Nada encontrado'} icon={Search} />
+      {searchResults.length ? <div className="space-y-5">{Object.entries(groupedResults).map(([category, results]) => <div key={category}><p className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/40">{categoryLabel[category as ExploreCategory]}</p><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{results?.map((result) => <ActionCard key={result.id} action={result} icon={result.category === 'redacao' ? PenLine : result.category === 'provas' ? Target : result.category === 'materias' ? BookOpen : Search} onOpen={openAction} />)}</div></div>)}</div> : <EmptyState icon={Search} title="Nenhum caminho com esse termo" description="Tente ENEM, Matemática, Funções, ITA, Banco do Brasil, Redação ou Revisar erros." action={<AnimatedButton type="button" onClick={clearDiscovery} variant="secondary">Limpar busca</AnimatedButton>} />}
+    </section> : null}
 
-        <GlassCard className="premium-list-card border-primary/20 bg-primary/[0.035] p-5 sm:p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-              <Sparkles size={22} />
-            </div>
-            <div>
-              <p className="text-[10px] font-premium-mono font-black uppercase tracking-[0.18em] text-primary">recomendado</p>
-              <h3 className="mt-1 text-xl font-premium-title italic text-white">Treino de 10 minutos</h3>
-              <p className="mt-2 text-sm leading-relaxed text-text-secondary">Um bloco curto para aquecer antes de simulado, aula ou redacao.</p>
-              <AnimatedButton onClick={() => openQuestions({ difficulty: 'medio' })} variant="secondary" className="mt-4">
-                Abrir treino <Play size={15} />
-              </AnimatedButton>
-            </div>
-          </div>
-        </GlassCard>
+    {!deferredQuery.trim() ? <>
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.7fr)]">
+        <motion.div animate={reduceMotion ? undefined : { boxShadow: ['0 0 30px rgba(0,232,143,0.06)', '0 0 46px rgba(0,232,143,0.13)', '0 0 30px rgba(0,232,143,0.06)'] }} transition={{ repeat: Infinity, duration: 4 }} className="rounded-[30px]"><GlassCard enterAnimation={false} className="h-full border-primary/25 bg-primary/[0.04] p-6 sm:p-7"><div className="flex h-full flex-col justify-between gap-7"><div><div className="flex items-center gap-2 text-primary"><Sparkles size={17} /><span className="text-[9px] font-black uppercase tracking-[0.2em]">{recommended.eyebrow}</span></div><h2 className="mt-4 max-w-2xl text-3xl font-premium-title italic leading-tight text-white sm:text-4xl">{recommended.title}</h2><p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-secondary">{recommended.description}</p><p className="mt-3 flex items-start gap-2 text-xs text-white/45"><CircleDot size={13} className="mt-0.5 shrink-0 text-primary" />{recommended.reason}</p></div><AnimatedButton type="button" glow onClick={() => openAction(recommended)} className="self-start">Começar agora <ArrowRight size={16} /></AnimatedButton></div></GlassCard></motion.div>
+        <GlassCard enterAnimation={false} className="p-5 sm:p-6"><div className="flex items-center justify-between"><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Seu panorama</p><h3 className="mt-1 text-xl font-premium-title italic text-white">Hoje no StudyFlow</h3></div><BarChart3 size={22} className="text-primary" /></div><div className="mt-6 grid grid-cols-3 gap-2">{[[attemptedCount, 'vistas'], [`${accuracy}%`, 'precisão'], [weakTopics.length, 'pontos fracos']].map(([value, label]) => <div key={label} className="rounded-2xl border border-white/8 bg-white/[0.035] p-3 text-center"><p className="text-xl font-black text-white">{value}</p><p className="text-[8px] font-black uppercase tracking-wider text-white/35">{label}</p></div>)}</div><button type="button" onClick={() => goTo('/estatisticas')} className="mt-5 flex w-full items-center justify-between rounded-2xl border border-white/10 px-4 py-3 text-xs font-bold text-white/60 hover:border-primary/25 hover:text-primary">Ver relatório completo <ChevronRight size={15} /></button></GlassCard>
       </section>
 
-      <section className="space-y-4">
-        <SectionTitle eyebrow="Trilhas" title="Escolha uma rota pronta" icon={Route} />
-        <div className="grid gap-4 lg:grid-cols-3">
-          {discoveryLanes.map((lane, index) => {
-            const Icon = lane.icon;
-            return (
-              <motion.button
-                key={lane.title}
-                type="button"
-                onClick={() => openQuestions(lane.filters)}
-                initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: reduceMotion ? 0 : 0.04 * index }}
-                className="premium-grid-card group rounded-[28px] border border-white/10 bg-white/[0.045] p-5 text-left transition-colors hover:border-primary/30 hover:bg-white/[0.07]"
-              >
-                <div className="mb-5 flex items-center justify-between">
-                  <span className="flex size-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                    <Icon size={21} />
-                  </span>
-                  <ChevronRight size={18} className="text-white/30 transition-colors group-hover:text-primary" />
-                </div>
-                <h3 className="text-lg font-premium-title italic text-white">{lane.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{lane.description}</p>
-              </motion.button>
-            );
-          })}
-        </div>
-      </section>
+      <section className="space-y-4"><SectionHeading eyebrow="Retomar" title="Continue estudando" icon={Play} />{continueItems.length ? <div className="grid gap-4 lg:grid-cols-3">{continueItems.map((item) => <button key={item.id} type="button" onClick={() => openAction(item)} className="premium-list-card rounded-[26px] border border-white/10 bg-white/[0.045] p-5 text-left hover:border-primary/30"><div className="flex items-start justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-widest text-primary">{item.meta}</p><h3 className="mt-2 text-lg font-premium-title italic text-white">{item.title}</h3><p className="mt-2 text-xs leading-relaxed text-text-secondary">{item.description}</p></div><ChevronRight size={17} className="shrink-0 text-white/30" /></div><div className="mt-5"><ProgressBar value={item.progress} /></div></button>)}</div> : <EmptyState icon={Play} title="Nenhum estudo iniciado ainda" description="Comece com um diagnóstico curto e seus atalhos aparecerão aqui." action={<AnimatedButton type="button" onClick={() => openAction({ id: 'diagnostic', title: 'Diagnóstico', description: '', category: 'treinos', filters: {} })}>Começar diagnóstico</AnimatedButton>} />}</section>
 
-      <section className="space-y-4">
-        <SectionTitle eyebrow="Objetivo" title="Explorar por prova" icon={Target} action={<AnimatedButton onClick={() => openQuestions()} variant="secondary" className="hidden sm:inline-flex">Banco completo</AnimatedButton>} />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {objectiveCards.map((card) => {
-            const Icon = card.icon;
-            const count = stats.byExamType[card.examType] ?? 0;
-            return (
-              <GlassCard key={card.examType} enterAnimation={false} onClick={() => openQuestions({ examType: card.examType })} className="premium-grid-card group overflow-hidden p-5">
-                <div className={cn('absolute inset-x-0 top-0 h-24 bg-gradient-to-br opacity-80 blur-2xl', card.accent)} />
-                <div className="relative flex h-full flex-col gap-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex size-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Icon size={21} /></div>
-                    <ChevronRight size={18} className="text-white/35 transition-colors group-hover:text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-premium-title italic text-white">{card.title}</h3>
-                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">{card.description}</p>
-                  </div>
-                  <p className="mt-auto text-[10px] font-premium-mono font-black uppercase tracking-[0.16em] text-primary">
-                    {count.toLocaleString('pt-BR')} questoes | {QUESTION_EXAM_TYPE_LABELS[card.examType]}
-                  </p>
-                </div>
-              </GlassCard>
-            );
-          })}
-        </div>
-      </section>
+      {!hasFilteredContent ? <section><EmptyState icon={Filter} title="Nenhuma seção combina com esses filtros" description="Remova um ou mais filtros para voltar a descobrir conteúdos." action={<AnimatedButton type="button" variant="secondary" onClick={clearFilters}>Limpar filtros</AnimatedButton>} /></section> : null}
 
-      <section className="space-y-4">
-        <SectionTitle eyebrow="Materia" title="Entrar por assunto" icon={BookOpen} />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {subjectCards.map((card) => {
-            const Icon = card.icon;
-            const count = stats.bySubject[card.subject] ?? 0;
-            return (
-              <button key={card.subject} type="button" onClick={() => openQuestions({ subject: card.subject })} className="premium-list-card group rounded-[24px] border border-white/10 bg-white/[0.045] p-4 text-left transition-colors hover:border-primary/30 hover:bg-white/[0.07]">
-                <div className="mb-4 flex items-center justify-between">
-                  <span className={cn('flex size-11 items-center justify-center rounded-2xl border', card.tone)}><Icon size={19} /></span>
-                  <ChevronRight size={17} className="text-white/30 transition-colors group-hover:text-primary" />
-                </div>
-                <h3 className="font-black text-white">{card.label}</h3>
-                <p className="mt-1 min-h-9 text-xs leading-relaxed text-text-secondary">{card.description}</p>
-                <p className="mt-3 text-[10px] font-premium-mono font-black uppercase tracking-widest text-white/45">{count.toLocaleString('pt-BR')} questoes</p>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      {goalItems.length ? <section className="space-y-4"><SectionHeading eyebrow="Meta" title="Explorar por objetivo" icon={Target} /><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{goalItems.map((item) => <ActionCard key={item.id} action={item} icon={iconByGoal[item.id]} meta={item.filters?.examType ? `${stats.byExamType[item.filters.examType].toLocaleString('pt-BR')} questões no banco` : item.path === '/redacao' ? `${essays.length} redações registradas` : `${history.filter((entry) => !entry.isCorrect).length} respostas para revisar`} onOpen={openAction} />)}</div></section> : null}
 
-      <section className="space-y-4">
-        <SectionTitle eyebrow="Modo" title="Como voce quer treinar?" icon={Flame} />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {trainingModes.map((mode) => {
-            const Icon = mode.icon;
-            return (
-              <GlassCard key={mode.title} enterAnimation={false} onClick={() => mode.path ? goTo(mode.path) : openQuestions(mode.filters)} className="premium-grid-card group p-5">
-                <div className="flex h-full flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex size-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Icon size={19} /></div>
-                    <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[9px] font-premium-mono font-black uppercase tracking-widest text-white/45">{mode.metric}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-premium-title italic text-white">{mode.title}</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-text-secondary">{mode.description}</p>
-                  </div>
-                </div>
-              </GlassCard>
-            );
-          })}
-        </div>
-      </section>
+      {subjectItems.length ? <section className="space-y-4"><SectionHeading eyebrow="Domínio" title="Explorar por matéria" icon={BookOpen} /><div className="flex snap-x gap-3 overflow-x-auto pb-2 [scrollbar-width:none] sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">{subjectItems.map((subject) => { const Icon = iconBySubject[subject] ?? BookOpen; const performance = getSubjectAccuracy(subject, history, questions, mastery); const status = statusStyle[performance.status]; return <motion.button whileTap={{ scale: 0.97 }} key={subject} type="button" onClick={() => openAction({ id: `subject-${subject}`, title: subject, description: '', category: 'materias', filters: { subject } })} className="premium-list-card min-w-[240px] snap-start rounded-[24px] border border-white/10 bg-white/[0.045] p-4 text-left hover:border-primary/30 sm:min-w-0"><div className="flex items-center justify-between"><span className="flex size-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Icon size={19} /></span><span className={cn('rounded-full px-2.5 py-1 text-[8px] font-black uppercase tracking-wider', status.className)}>{status.label}</span></div><h3 className="mt-4 font-premium-title italic text-white">{subject}</h3><div className="mt-3 flex items-center justify-between text-[10px] text-white/40"><span>{(stats.bySubject[subject] ?? 0).toLocaleString('pt-BR')} questões</span><span>{performance.accuracy === null ? 'sem precisão' : `${performance.accuracy}% precisão`}</span></div></motion.button>; })}</div></section> : null}
 
-      <section className="space-y-4">
-        <SectionTitle eyebrow="Ferramentas" title="Abrir outra parte do app" icon={Compass} />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {toolCards.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <button key={tool.title} type="button" onClick={() => goTo(tool.path)} className="premium-list-card group rounded-[26px] border border-white/10 bg-white/[0.045] p-5 text-left transition-colors hover:border-primary/30 hover:bg-white/[0.07]">
-                <div className="mb-5 flex items-center justify-between">
-                  <span className={cn('flex size-12 items-center justify-center rounded-2xl border', tool.tone)}><Icon size={20} /></span>
-                  <ChevronRight size={18} className="text-white/30 transition-colors group-hover:text-primary" />
-                </div>
-                <h3 className="text-lg font-premium-title italic text-white">{tool.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{tool.description}</p>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-    </div>
-  );
+      {trainingItems.length ? <section className="space-y-4"><SectionHeading eyebrow="Prática" title="Modos de treino" icon={Flame} /><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{trainingItems.map((item) => <ActionCard key={item.id} action={item} icon={iconByTraining[item.id]} meta={item.id === 'training-quick' ? '10 questões' : item.id === 'training-simulation' ? 'tempo real' : 'ação imediata'} onOpen={openAction} />)}</div></section> : null}
+
+      {trailItems.length ? <section className="space-y-4"><SectionHeading eyebrow="Sequência guiada" title="Trilhas inteligentes" icon={Route} /><div className="grid gap-4 lg:grid-cols-2">{trailItems.map((trail: SmartTrail) => <button key={trail.id} type="button" onClick={() => openAction(trail)} className="premium-list-card rounded-[26px] border border-white/10 bg-white/[0.045] p-5 text-left hover:border-primary/30"><div className="flex items-start gap-4"><span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Route size={20} /></span><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div><h3 className="text-lg font-premium-title italic text-white">{trail.title}</h3><p className="mt-1 text-xs text-text-secondary">{trail.description}</p></div><ChevronRight size={17} className="shrink-0 text-white/30" /></div><div className="mt-4 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-white/40"><span>{trail.steps} etapas</span><span>{trail.duration} estimadas</span><span>{trail.progress}%</span></div><div className="mt-2"><ProgressBar value={trail.progress} /></div></div></div></button>)}</div></section> : null}
+
+      <section className="space-y-4"><SectionHeading eyebrow="Diagnóstico" title="Revisar pontos fracos" icon={AlertCircle} />{weakTopics.length ? <div className="grid gap-3 md:grid-cols-2">{weakTopics.map((topic) => <button key={`${topic.subject}-${topic.topic}`} type="button" onClick={() => openAction({ id: `weak-${topic.topic}`, title: topic.topic, description: '', category: 'treinos', filters: { subject: topic.subject, topic: topic.topic, onlyWrong: true } })} className="premium-list-card flex items-center gap-4 rounded-[24px] border border-white/10 bg-white/[0.045] p-4 text-left hover:border-rose-400/25"><span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-rose-400/10 font-black text-rose-300">{topic.accuracy}%</span><span className="min-w-0 flex-1"><span className="block text-[9px] font-black uppercase tracking-widest text-rose-300">{topic.subject} • {topic.attempts} tentativas</span><span className="mt-1 block truncate font-premium-title italic text-white">{topic.topic}</span></span><span className="text-xs font-bold text-white/45">Revisar</span></button>)}</div> : <EmptyState icon={AlertCircle} title="Seus pontos fracos aparecerão aqui" description="Resolva questões para o StudyFlow identificar assuntos que merecem revisão." action={<AnimatedButton type="button" variant="secondary" onClick={() => openAction({ id: 'weak-start', title: '', description: '', category: 'treinos', filters: {} })}>Resolver questões</AnimatedButton>} />}</section>
+
+      {essayItems.length ? <section className="space-y-4"><SectionHeading eyebrow="Escrita estratégica" title="Redação e repertório" icon={PenLine} /><GlassCard enterAnimation={false} className="border-primary/20 bg-gradient-to-br from-primary/[0.07] to-transparent p-6 sm:p-7"><div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Tema da semana • sugestão StudyFlow</p><h3 className="mt-3 max-w-3xl text-2xl font-premium-title italic text-white sm:text-3xl">Desafios para a formação educacional de surdos no Brasil</h3><p className="mt-2 text-sm text-text-secondary">Planeje argumentos, selecione repertórios e escreva no ambiente de redação.</p></div><AnimatedButton type="button" onClick={() => goTo('/redacao')}>Escrever redação <PenLine size={15} /></AnimatedButton></div></GlassCard><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{essayItems.map((item) => <ActionCard key={item.id} action={item} icon={item.id === 'essay-repertoire' ? Library : PenLine} onOpen={openAction} />)}</div></section> : null}
+
+      {simulationItems.length ? <section className="space-y-4"><SectionHeading eyebrow="Ritmo de prova" title="Simulados e provas" icon={Timer} /><div className="flex snap-x gap-4 overflow-x-auto pb-2 [scrollbar-width:none]">{simulationItems.map((item) => <motion.button whileTap={{ scale: 0.98 }} key={item.id} type="button" onClick={() => openAction(item)} className="premium-grid-card min-w-[280px] snap-start rounded-[26px] border border-white/10 bg-white/[0.045] p-5 text-left hover:border-primary/30 sm:min-w-[330px]"><div className="flex items-center justify-between"><span className="flex size-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Timer size={19} /></span><span className="rounded-full border border-white/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-wider text-white/45">{item.difficulty}</span></div><h3 className="mt-5 text-lg font-premium-title italic text-white">{item.title}</h3><p className="mt-2 text-xs text-text-secondary">{item.description}</p><div className="mt-5 flex gap-4 text-[9px] font-black uppercase tracking-wider text-white/40"><span className="flex items-center gap-1"><Clock3 size={12} />{item.duration}</span><span className="flex items-center gap-1"><ListChecks size={12} />{item.questions}</span></div></motion.button>)}</div></section> : null}
+
+      <section className="space-y-4"><SectionHeading eyebrow="Curadoria editorial" title="Sugestões do StudyFlow" icon={TrendingUp} /><div className="flex flex-wrap gap-2">{trending.map((item, index) => <motion.button initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: reduceMotion ? 0 : index * 0.04 }} key={item.id} type="button" onClick={() => openAction(item)} className="rounded-full border border-white/10 bg-white/[0.045] px-4 py-2.5 text-xs font-bold text-white/65 transition hover:border-primary/30 hover:text-primary">{item.title}</motion.button>)}</div></section>
+
+      <section className="space-y-4"><SectionHeading eyebrow="Seu histórico" title="Atividade recente" icon={History} action={<button type="button" onClick={() => goTo('/estatisticas')} className="hidden text-[10px] font-black uppercase tracking-wider text-primary sm:block">Ver tudo</button>} />{history.length || sessions.length || essays.length ? <div className="divide-y divide-white/[0.06] overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.035]">{history.slice(0, 3).map((item) => { const question = questionById.get(item.questionId); return <button key={`${item.questionId}-${item.timestamp}`} type="button" onClick={() => openAction({ id: item.questionId, title: '', description: '', category: 'questoes', filters: { search: item.questionId } })} className="flex w-full items-center gap-4 p-4 text-left hover:bg-white/[0.035]"><span className={cn('flex size-10 shrink-0 items-center justify-center rounded-2xl', item.isCorrect ? 'bg-primary/10 text-primary' : 'bg-rose-400/10 text-rose-300')}>{item.isCorrect ? <Check size={17} /> : <X size={17} />}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-white">Questão de {question?.subject ?? 'estudo'} {item.isCorrect ? 'resolvida' : 'marcada para revisão'}</span><span className="mt-1 block truncate text-[10px] text-white/40">{question?.topic ?? 'Banco de questões'} • {new Date(item.timestamp).toLocaleDateString('pt-BR')}</span></span><span className="text-[9px] font-black uppercase tracking-wider text-primary">{item.isCorrect ? '+10 XP' : 'Revisar'}</span></button>; })}{sessions.slice(0, 1).map((session) => <button key={session.id} type="button" onClick={() => goTo('/foco')} className="flex w-full items-center gap-4 p-4 text-left hover:bg-white/[0.035]"><span className="flex size-10 items-center justify-center rounded-2xl bg-cyan-400/10 text-cyan-300"><Focus size={17} /></span><span className="flex-1"><span className="block text-sm font-bold text-white">Foco concluído em {session.subject}</span><span className="mt-1 block text-[10px] text-white/40">{session.duration} minutos</span></span><ChevronRight size={15} className="text-white/25" /></button>)}</div> : <EmptyState icon={CalendarClock} title="Sua atividade começa no próximo estudo" description="Questões, redações, simulados e sessões concluídas aparecerão aqui." />}</section>
+    </> : null}
+
+    <FilterSheet open={filterOpen} filters={filters} subjects={SUBJECT_NAMES} onChange={setFilters} onClear={clearFilters} onClose={() => setFilterOpen(false)} />
+    {bankStatus === 'loading' ? <span className="sr-only" role="status">Carregando banco de questões</span> : null}
+  </div>;
 };
 
 export default ExploreView;
