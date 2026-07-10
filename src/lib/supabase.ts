@@ -141,6 +141,7 @@ export interface Database {
           name: string;
           bio: string | null;
           profile_pic: string | null;
+          cover_pic: string | null;
           xp: number;
           level: number;
           streak: number;
@@ -157,6 +158,7 @@ export interface Database {
           name: string;
           bio?: string | null;
           profile_pic?: string | null;
+          cover_pic?: string | null;
           xp?: number;
           level?: number;
           streak?: number;
@@ -173,6 +175,7 @@ export interface Database {
           name?: string;
           bio?: string | null;
           profile_pic?: string | null;
+          cover_pic?: string | null;
           xp?: number;
           level?: number;
           streak?: number;

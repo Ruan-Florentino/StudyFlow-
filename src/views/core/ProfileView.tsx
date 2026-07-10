@@ -91,6 +91,46 @@ function extensionForProfileUpload(file: File): string {
   return 'jpg';
 }
 
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error ?? new Error('Falha ao ler imagem.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImageForProfile(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Imagem nao pode ser processada.'));
+    image.src = src;
+  });
+}
+
+async function createLocalProfileImageUrl(file: File, type: 'profile' | 'cover'): Promise<string> {
+  const rawDataUrl = await readFileAsDataUrl(file);
+
+  try {
+    const image = await loadImageForProfile(rawDataUrl);
+    const maxSize = type === 'cover' ? 1600 : 900;
+    const scale = Math.min(1, maxSize / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+    const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+    const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return rawDataUrl;
+    ctx.drawImage(image, 0, 0, width, height);
+    const compressed = canvas.toDataURL('image/jpeg', type === 'cover' ? 0.82 : 0.86);
+    return compressed.length < rawDataUrl.length ? compressed : rawDataUrl;
+  } catch {
+    return rawDataUrl;
+  }
+}
+
 const ProfileView = () => {
   const { goBack, goTo } = useAppNavigation();
   const { user } = useAuth();
@@ -198,45 +238,65 @@ const ProfileView = () => {
       return;
     }
 
-    if (!isSupabaseConfigured || !user?.id) {
-      toast.error('Erro', 'Entre na sua conta para salvar foto e capa.');
-      return;
-    }
     setUploading(true);
 
     try {
-      const fileExt = extensionForProfileUpload(file);
-      const fileName = `${type}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('profile-assets')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('profile-assets')
-        .getPublicUrl(filePath);
-
-      const url = data.publicUrl;
-
+      const localUrl = await createLocalProfileImageUrl(file, type);
       if (type === 'profile') {
-        setProfilePic(url);
-        const { error: dbError } = await supabase.from('users').update({ profile_pic: url }).eq('id', user.id);
-        if (dbError) throw dbError;
+        setProfilePic(localUrl);
       } else {
-        const { error: dbError } = await supabase.from('users').update({ cover_pic: url }).eq('id', user.id);
-        setCoverPic(url);
-        if (dbError) throw dbError;
+        setCoverPic(localUrl);
       }
-      toast.success("Sucesso", type === 'profile' ? "Foto de perfil atualizada!" : "Foto de capa atualizada!");
+
+      let syncedRemote = false;
+
+      if (isSupabaseConfigured && user?.id) {
+        try {
+          const fileExt = extensionForProfileUpload(file);
+          const fileName = `${type}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `${user.id}/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('profile-assets')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
+
+          if (uploadError) throw uploadError;
+
+          const { data } = supabase.storage
+            .from('profile-assets')
+            .getPublicUrl(filePath);
+
+          const remoteUrl = data.publicUrl;
+          if (!remoteUrl) throw new Error('URL publica nao retornada.');
+
+          if (type === 'profile') {
+            const { error: dbError } = await supabase.from('users').update({ profile_pic: remoteUrl }).eq('id', user.id);
+            if (dbError) throw dbError;
+            setProfilePic(remoteUrl);
+          } else {
+            const { error: dbError } = await supabase.from('users').update({ cover_pic: remoteUrl }).eq('id', user.id);
+            if (dbError) throw dbError;
+            setCoverPic(remoteUrl);
+          }
+          syncedRemote = true;
+        } catch (remoteError) {
+          console.warn('[ProfileView] Falha ao sincronizar imagem no Supabase; mantendo copia local.', remoteError);
+        }
+      }
+
+      toast.success(
+        'Sucesso',
+        syncedRemote
+          ? (type === 'profile' ? 'Foto de perfil atualizada!' : 'Foto de capa atualizada!')
+          : (type === 'profile' ? 'Foto salva neste aparelho.' : 'Capa salva neste aparelho.')
+      );
 
     } catch (err) {
-      toast.error('Erro', 'Nao foi possivel fazer o upload da imagem. Tente outra foto ou formato.');
+      console.error('[ProfileView] Falha ao processar imagem local.', err);
+      toast.error('Erro', 'Nao foi possivel carregar a imagem. Tente outra foto ou formato.');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -328,7 +388,7 @@ const ProfileView = () => {
           className="absolute left-4 top-4 z-20 sm:left-6 sm:top-6"
         />
         {coverPic ? (
-          <img src={coverPic} alt="Cover" className="absolute inset-0 h-full w-full rounded-[inherit] object-cover" />
+          <img src={coverPic} alt="Cover" className="absolute inset-0 h-full w-full rounded-[inherit] object-cover" onError={() => coverPic && setCoverPic('')} />
         ) : (
           <div className="absolute inset-0 rounded-[inherit] bg-[radial-gradient(circle_at_18%_18%,rgba(var(--hub-primary-rgb),0.22),transparent_30%),radial-gradient(circle_at_82%_18%,rgba(74,216,255,0.14),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.018)_42%,rgba(0,0,0,0.28))]" />
         )}
@@ -366,6 +426,7 @@ const ProfileView = () => {
                 src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`}
                 alt="Profile"
                 className="w-full h-full object-cover"
+                onError={() => profilePic && setProfilePic('')}
               />
             </div>
             {isEditing && (
