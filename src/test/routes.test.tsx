@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRouter } from '../app/router/AppRouter';
@@ -31,6 +31,26 @@ describe('AppRouter', () => {
     );
     
     expect(await screen.findByTestId('notes-view')).toBeInTheDocument();
+  });
+
+  it('renderiza o Modo Foco na rota /foco', async () => {
+    render(
+      <MemoryRouter initialEntries={['/foco']}>
+        <AppRouter />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Modo Foco' })).toBeInTheDocument();
+  });
+
+  it('renderiza o Ranking na rota /ranking', async () => {
+    render(
+      <MemoryRouter initialEntries={['/ranking']}>
+        <AppRouter />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Ranking StudyFlow' })).toBeInTheDocument();
   });
 
   it('redireciona rota inexistente para o Dashboard', async () => {

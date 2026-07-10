@@ -1,6 +1,7 @@
-import type { LeaderboardUserRow, QuestionHistory } from '../store/types';
+﻿import type { LeaderboardUserRow, QuestionHistory } from '../store/types';
 
-export type RankingPeriod = 'global' | 'weekly' | 'monthly';
+export type RankingPeriod = 'today' | 'weekly' | 'monthly' | 'global' | 'friends' | 'school';
+export type RankingLeague = 'bronze' | 'silver' | 'gold' | 'diamond' | 'master';
 
 export interface RankingRow {
   id: string;
@@ -12,15 +13,47 @@ export interface RankingRow {
   level: number;
   streak: number;
   accuracy: number;
+  league: RankingLeague;
+  previousPosition?: number;
   isSelf?: boolean;
 }
 
-const DAY_MS = 86400000;
+export const LEAGUES: Array<{
+  id: RankingLeague;
+  label: string;
+  minXp: number;
+  maxXp: number | null;
+  color: string;
+}> = [
+  { id: 'bronze', label: 'Bronze', minXp: 0, maxXp: 999, color: '#CD7F32' },
+  { id: 'silver', label: 'Prata', minXp: 1_000, maxXp: 2_999, color: '#C0C0C0' },
+  { id: 'gold', label: 'Ouro', minXp: 3_000, maxXp: 6_999, color: '#FFD700' },
+  { id: 'diamond', label: 'Diamante', minXp: 7_000, maxXp: 14_999, color: '#5FE7F2' },
+  { id: 'master', label: 'Mestre', minXp: 15_000, maxXp: null, color: '#B38CFF' },
+];
+
+const DAY_MS = 86_400_000;
 
 function inLastDays(timestamp: string, days: number) {
   const time = new Date(timestamp).getTime();
   if (!Number.isFinite(time)) return false;
-  return Date.now() - time <= days * DAY_MS;
+  return Date.now() - time <= days * DAY_MS && Date.now() >= time;
+}
+
+function scopeHistory(history: QuestionHistory[], period: RankingPeriod) {
+  if (period === 'today') return history.filter((entry) => inLastDays(entry.timestamp, 1));
+  if (period === 'weekly') return history.filter((entry) => inLastDays(entry.timestamp, 7));
+  if (period === 'monthly') return history.filter((entry) => inLastDays(entry.timestamp, 30));
+  return history;
+}
+
+export function getLeague(xp: number): RankingLeague {
+  const safeXp = Math.max(0, xp);
+  if (safeXp >= 15_000) return 'master';
+  if (safeXp >= 7_000) return 'diamond';
+  if (safeXp >= 3_000) return 'gold';
+  if (safeXp >= 1_000) return 'silver';
+  return 'bronze';
 }
 
 export function buildSelfRankingRow(params: {
@@ -34,50 +67,52 @@ export function buildSelfRankingRow(params: {
   period: RankingPeriod;
 }): RankingRow | null {
   const { id, name, xp, level, streak, profilePic, history, period } = params;
-  const scopedHistory = period === 'weekly'
-    ? history.filter((entry) => inLastDays(entry.timestamp, 7))
-    : period === 'monthly'
-      ? history.filter((entry) => inLastDays(entry.timestamp, 30))
-      : history;
+  if (period === 'friends' || period === 'school') return null;
 
+  const scopedHistory = scopeHistory(history, period);
   const questionsSolved = scopedHistory.length;
   const correct = scopedHistory.filter((entry) => entry.isCorrect).length;
-  const periodXp = period === 'global' ? xp : correct * 20;
+  const periodXp = period === 'global' ? Math.max(0, xp) : questionsSolved * 5 + correct * 10;
 
-  if (period !== 'global' && questionsSolved === 0 && periodXp === 0) return null;
-  if (period === 'global' && questionsSolved === 0 && periodXp === 0) return null;
+  if (questionsSolved === 0 && periodXp === 0) return null;
 
   return {
     id: id ?? 'self',
     name: name || 'Voce',
-    avatar: profilePic,
+    avatar: profilePic || undefined,
     questionsSolved,
     correct,
     xp: periodXp,
-    level,
-    streak,
+    level: Math.max(1, level),
+    streak: Math.max(0, streak),
     accuracy: questionsSolved === 0 ? 0 : Math.round((correct / questionsSolved) * 100),
+    league: getLeague(period === 'global' ? xp : periodXp),
     isSelf: true,
   };
 }
 
 export function mapRemoteLeaderboardRows(rows: LeaderboardUserRow[], selfId: string | null): RankingRow[] {
   return rows
-    .filter((row) => row?.id)
-    .map((row) => ({
-      id: row.id,
-      name: row.name || 'Estudante',
-      avatar: row.profile_pic || undefined,
-      questionsSolved: Math.max(0, Math.round((row.xp ?? 0) / 20)),
-      correct: Math.max(0, Math.round((row.xp ?? 0) / 25)),
-      xp: row.xp ?? 0,
-      level: row.level ?? 1,
-      streak: row.streak ?? 0,
-      accuracy: 0,
-      isSelf: selfId !== null && row.id === selfId,
-    }))
-    .filter((row) => row.xp > 0 || row.questionsSolved > 0)
-    .sort((a, b) => b.xp - a.xp);
+    .filter((row): row is LeaderboardUserRow & { id: string } => Boolean(row?.id))
+    .map((row) => {
+      const xp = Math.max(0, row.xp ?? 0);
+      const questionsSolved = Math.max(0, Math.round(xp / 15));
+      const correct = Math.min(questionsSolved, Math.max(0, Math.round(questionsSolved * 0.72)));
+      return {
+        id: row.id,
+        name: row.name || 'Estudante',
+        avatar: row.profile_pic || undefined,
+        questionsSolved,
+        correct,
+        xp,
+        level: Math.max(1, row.level ?? Math.floor(xp / 1_000) + 1),
+        streak: Math.max(0, row.streak ?? 0),
+        accuracy: questionsSolved === 0 ? 0 : Math.round((correct / questionsSolved) * 100),
+        league: getLeague(xp),
+        isSelf: selfId !== null && row.id === selfId,
+      } satisfies RankingRow;
+    })
+    .filter((row) => row.xp > 0 || row.questionsSolved > 0);
 }
 
 export function sortRankingRows(rows: RankingRow[]): RankingRow[] {
