@@ -130,8 +130,18 @@ export function useAthena(initialModel: AIModel, _context: string = 'home', cust
       setSessions(sortSessionsDesc(currentSessions));
 
     } catch (error: any) {
-      console.error('💥 [ATHENA] Erro no Stream:', error);
-      toast.error(error.message || 'Erro ao falar com Athena');
+      console.warn('ATHENA stream handled error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao falar com Athena';
+      const friendlyMessage = /autentic|supabase/i.test(errorMessage)
+        ? 'Nao consegui conectar a IA porque este ambiente ainda nao esta autenticado/configurado. Entre com uma sessao valida ou configure o Supabase para usar a ATHENA.'
+        : `Nao consegui responder agora. ${errorMessage}`;
+      setMessages([...newMessages, {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: friendlyMessage,
+        timestamp: Date.now()
+      }]);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

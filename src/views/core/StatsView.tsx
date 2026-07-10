@@ -281,8 +281,8 @@ const Reports = () => {
           </div>
         </div>
         <GlassCard className="premium-list-card p-6" glow>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="min-h-64 min-w-0">
+            <ResponsiveContainer width="100%" height={256}>
               <ComposedChart data={evolutionData}>
                 <defs>
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -355,8 +355,8 @@ const Reports = () => {
             <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Domínio por Matéria</h3>
           </div>
           <GlassCard className="premium-list-card p-6" glow>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="min-h-64 min-w-0">
+              <ResponsiveContainer width="100%" height={256}>
                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={subjectData}>
                   <PolarGrid stroke="#ffffff20" />
                   <PolarAngleAxis dataKey="name" tick={{ fill: '#ffffff80', fontSize: 10 }} />
@@ -443,8 +443,8 @@ const Reports = () => {
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Precisão de Respostas</h3>
         </div>
         <GlassCard className="premium-list-card p-6 relative overflow-hidden" glow>
-          <div className="h-64 flex items-center justify-center relative">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="min-h-64 min-w-0 flex items-center justify-center relative">
+            <ResponsiveContainer width="100%" height={256}>
               <PieChart>
                 <Pie
                   data={pieData}
@@ -500,8 +500,8 @@ const Reports = () => {
           <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Evolução Semanal</h3>
         </div>
         <GlassCard className="premium-list-card p-6" glow>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="min-h-64 min-w-0">
+            <ResponsiveContainer width="100%" height={256}>
               <LineChart data={last7Days}>
                 <defs>
                   <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
@@ -627,8 +627,8 @@ const Reports = () => {
             <div className="w-1 h-4 bg-primary rounded-full" />
             <h3 className="text-xs font-premium-mono font-bold text-text-secondary uppercase tracking-[0.2em]">Distribuição de Dificuldade</h3>
           </div>
-          <GlassCard className="premium-list-card p-6 h-64" glow>
-            <ResponsiveContainer width="100%" height="100%">
+          <GlassCard className="premium-list-card p-6" glow>
+            <ResponsiveContainer width="100%" height={256}>
               <BarChart data={difficultyData}>
                 <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} axisLine={false} tickLine={false} />
                 <Tooltip 
