@@ -451,6 +451,7 @@ export function filterQuestions(
     if (topic && normalize(question.topic) !== topic) return false;
     if (filters.difficulty && question.difficulty !== filters.difficulty) return false;
     if (filters.onlyWrong && !runtime.wrongIds?.has(question.id)) return false;
+    if (filters.onlyAnswered && !runtime.answeredIds?.has(question.id)) return false;
     if (filters.onlyFavorites && !runtime.favoriteIds?.has(question.id)) return false;
     if (filters.onlyReviewLater && !runtime.reviewLaterIds?.has(question.id)) return false;
     if (filters.onlyUnanswered && runtime.answeredIds?.has(question.id)) return false;

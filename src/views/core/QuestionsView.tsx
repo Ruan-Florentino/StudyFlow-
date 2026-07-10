@@ -53,12 +53,14 @@ const EMPTY_FILTERS: QuestionFilterState = {
   topic: '',
   difficulty: '',
   onlyWrong: false,
+  onlyAnswered: false,
   onlyFavorites: false,
   onlyReviewLater: false,
   onlyUnanswered: false,
 };
 
 const ALT_INDEX = { A: 0, B: 1, C: 2, D: 3, E: 4 } as const;
+const STATUS_FILTER_KEYS = ['onlyAnswered', 'onlyUnanswered', 'onlyWrong'] as const;
 
 const difficultySkin: Record<QuestionDifficulty, string> = {
   facil: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200',
@@ -72,6 +74,7 @@ const categoryIcons: Record<string, LucideIcon> = {
   vestibular: BookOpen,
   concurso: ClipboardList,
   militar: Shield,
+  answered: CheckCircle2,
   wrong: AlertCircle,
   favorites: Star,
   simulados: Timer,
@@ -193,6 +196,7 @@ function FilterSelect({
     topic: navFilters.topic ?? '',
     difficulty: normalizeDifficultyFromNav(navFilters.difficulty),
     examType: navFilters.examType ?? '',
+    onlyAnswered: navFilters.filterStatus === 'answered',
     onlyWrong: navFilters.filterStatus === 'wrong',
     onlyUnanswered: navFilters.filterStatus === 'unanswered',
     onlyFavorites: Boolean(navFilters.onlyFavorites),
@@ -217,6 +221,7 @@ function FilterSelect({
       topic: navFilters.topic ?? current.topic,
       difficulty: normalizeDifficultyFromNav(navFilters.difficulty) || current.difficulty,
       examType: navFilters.examType ?? current.examType,
+      onlyAnswered: navFilters.filterStatus === 'answered' ? true : current.onlyAnswered,
       onlyWrong: navFilters.filterStatus === 'wrong' ? true : current.onlyWrong,
       onlyUnanswered: navFilters.filterStatus === 'unanswered' ? true : current.onlyUnanswered,
       onlyFavorites: navFilters.onlyFavorites ?? current.onlyFavorites,
@@ -244,6 +249,7 @@ function FilterSelect({
     if (filters.subject) chips.push({ key: 'subject', label: String(filters.subject) });
     if (filters.topic) chips.push({ key: 'topic', label: String(filters.topic) });
     if (filters.difficulty) chips.push({ key: 'difficulty', label: QUESTION_DIFFICULTY_LABELS[filters.difficulty] });
+    if (filters.onlyAnswered) chips.push({ key: 'onlyAnswered', label: 'Respondidas' });
     if (filters.onlyWrong) chips.push({ key: 'onlyWrong', label: 'Erradas' });
     if (filters.onlyFavorites) chips.push({ key: 'onlyFavorites', label: 'Favoritas' });
     if (filters.onlyReviewLater) chips.push({ key: 'onlyReviewLater', label: 'Revisar depois' });
@@ -252,7 +258,15 @@ function FilterSelect({
   }, [filters]);
 
   const updateFilter = <K extends keyof QuestionFilterState>(key: K, value: QuestionFilterState[K]) => {
-    setFilters((current) => ({ ...current, [key]: value }));
+    setFilters((current) => {
+      const next = { ...current, [key]: value };
+      if (value === true && STATUS_FILTER_KEYS.includes(key as typeof STATUS_FILTER_KEYS[number])) {
+        STATUS_FILTER_KEYS.forEach((statusKey) => {
+          if (statusKey !== key) next[statusKey] = false;
+        });
+      }
+      return next;
+    });
   };
 
   const clearFilters = () => setFilters({ ...EMPTY_FILTERS });
@@ -262,8 +276,17 @@ function FilterSelect({
       toast.info('Banco de Questoes', 'Nenhuma questao encontrada para este treino.');
       return;
     }
+    const orderedQuestions = [...questions].sort((a, b) => {
+      const aAnswered = answeredIds.has(a.id);
+      const bAnswered = answeredIds.has(b.id);
+      if (aAnswered !== bAnswered) return aAnswered ? 1 : -1;
+      const aWrong = wrongIds.has(a.id);
+      const bWrong = wrongIds.has(b.id);
+      if (aWrong !== bWrong) return aWrong ? -1 : 1;
+      return 0;
+    });
     setSessionTitle(title);
-    setSessionQuestions(questions);
+    setSessionQuestions(orderedQuestions);
     setCurrentIndex(0);
     setSelectedAlternative(null);
     setConfirmed(false);
@@ -325,6 +348,7 @@ function FilterSelect({
       { id: 'vestibular', title: 'Vestibulares', subtitle: `${QUESTION_BANK_TARGETS.vestibular.toLocaleString('pt-BR')} itens entre Fuvest, Unicamp, UnB e mais`, filters: { examType: 'vestibular' as const } },
       { id: 'concurso', title: 'Concursos', subtitle: `${QUESTION_BANK_TARGETS.concurso.toLocaleString('pt-BR')} itens para carreiras publicas`, filters: { examType: 'concurso' as const } },
       { id: 'militar', title: 'Militares', subtitle: `${QUESTION_BANK_TARGETS.militar.toLocaleString('pt-BR')} itens para ITA, IME, ESA e estrategia`, filters: { examType: 'militar' as const } },
+      { id: 'answered', title: 'Respondidas', subtitle: 'Tudo que ja ficou salvo no historico', filters: { onlyAnswered: true } },
       { id: 'wrong', title: 'Revisar erros', subtitle: 'Ultimas tentativas erradas', filters: { onlyWrong: true } },
       { id: 'favorites', title: 'Favoritas', subtitle: 'Seu caderno de treino', filters: { onlyFavorites: true } },
       { id: 'simulados', title: 'Simulados', subtitle: 'Responder o banco inteiro ou o filtro atual', filters: {} },
@@ -364,6 +388,7 @@ function FilterSelect({
     }
 
     const answerIsCorrect = selectedAlternative === currentQuestion.correctAlternative;
+    const savedAttempt = latest.get(currentQuestion.id);
 
     return (
       <div className="app-shell-premium premium-page-stack pb-32 pt-5 md:pt-8">
@@ -392,6 +417,11 @@ function FilterSelect({
             <span className={cn('rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]', difficultySkin[currentQuestion.difficulty])}>{QUESTION_DIFFICULTY_LABELS[currentQuestion.difficulty]}</span>
             <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/25 px-3 py-1 text-[10px] font-premium-mono text-white/55"><Timer size={12} /> {formatSeconds(elapsedSeconds)}</span>
           </div>
+          {savedAttempt && !confirmed ? (
+            <div className={cn('rounded-2xl border px-4 py-3 text-sm', savedAttempt.isCorrect ? 'border-emerald-400/20 bg-emerald-400/8 text-emerald-100' : 'border-rose-400/20 bg-rose-400/8 text-rose-100')}>
+              <strong className="font-black">Questao ja respondida.</strong> Ultima tentativa salva: alternativa {currentQuestion.alternatives[savedAttempt.userAnswer]?.id ?? savedAttempt.userAnswer + 1}, {savedAttempt.isCorrect ? 'acerto' : 'erro'}.
+            </div>
+          ) : null}
 
           <p className="text-lg font-semibold leading-relaxed text-white sm:text-xl">{currentQuestion.statement}</p>
           {currentQuestion.imageUrl ? <img src={currentQuestion.imageUrl} alt="Imagem da questao" className="max-h-72 rounded-2xl border border-white/10 object-contain" /> : null}
@@ -488,8 +518,9 @@ function FilterSelect({
               <AnimatedButton onClick={() => setShowFilters((value) => !value)} variant="secondary" className="min-h-14"><Filter size={16} /> Filtros avancados</AnimatedButton>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 lg:grid-cols-1">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
             <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">{answeredIds.size}</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">resolvidas</p></GlassCard>
+            <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">{Math.max(0, allQuestions.length - answeredIds.size)}</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">nao feitas</p></GlassCard>
             <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">{correctCount(allQuestions, latest)}</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">acertos</p></GlassCard>
             <GlassCard enterAnimation={false} className="p-3 text-center"><p className="text-2xl font-black text-white">{accuracy(allQuestions, latest)}%</p><p className="text-[9px] font-black uppercase tracking-widest text-white/45">precisao</p></GlassCard>
           </div>
@@ -516,10 +547,11 @@ function FilterSelect({
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
+                  ['onlyAnswered', 'Respondidas'],
+                  ['onlyUnanswered', 'Nao resolvidas'],
                   ['onlyWrong', 'Apenas erradas'],
                   ['onlyFavorites', 'Apenas favoritas'],
                   ['onlyReviewLater', 'Revisar depois'],
-                  ['onlyUnanswered', 'Nao resolvidas'],
                 ].map(([key, label]) => {
                   const filterKey = key as keyof QuestionFilterState;
                   const active = Boolean(filters[filterKey]);
@@ -603,7 +635,9 @@ function FilterSelect({
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">{question.exam} {question.year}</Badge>
                         <span className={cn('rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-widest', difficultySkin[question.difficulty])}>{QUESTION_DIFFICULTY_LABELS[question.difficulty]}</span>
-                        {latestAttempt ? <span className={cn('rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest', latestAttempt.isCorrect ? 'bg-emerald-400/10 text-emerald-200' : 'bg-rose-400/10 text-rose-200')}>{latestAttempt.isCorrect ? 'Acertada' : 'Errada'}</span> : null}
+                        {latestAttempt ? <span className={cn('rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest', latestAttempt.isCorrect ? 'bg-emerald-400/10 text-emerald-200' : 'bg-rose-400/10 text-rose-200')}>{latestAttempt.isCorrect ? 'Acertada' : 'Errada'}</span> : <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white/45">Nao feita</span>}
+                        {favorites.includes(question.id) ? <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-primary">Favorita</span> : null}
+                        {reviewLater.includes(question.id) ? <span className="rounded-full bg-amber-400/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-amber-200">Revisar</span> : null}
                       </div>
                       <h3 className="line-clamp-2 text-base font-bold leading-snug text-white">{question.statement}</h3>
                       <p className="text-xs text-text-secondary">{question.subject} / {question.topic}</p>

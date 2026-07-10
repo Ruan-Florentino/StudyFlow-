@@ -34,6 +34,7 @@ export interface QuestionFilterState {
   topic?: string;
   difficulty?: QuestionDifficulty | '';
   onlyWrong?: boolean;
+  onlyAnswered?: boolean;
   onlyFavorites?: boolean;
   onlyReviewLater?: boolean;
   onlyUnanswered?: boolean;
