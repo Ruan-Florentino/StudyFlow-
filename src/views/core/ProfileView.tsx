@@ -29,7 +29,7 @@ import {
   Vibrate
 } from 'lucide-react';
 import { useStore } from '../../store';
-import { supabase } from '../../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { toast } from '../../store/useToastStore';
@@ -181,7 +181,7 @@ const ProfileView = () => {
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
     const file = e.target.files?.[0];
-    if (!file || !user?.id) return;
+    if (!file) return;
 
     const maxBytes = 10 * 1024 * 1024;
     if (file.size > maxBytes) {
@@ -198,7 +198,12 @@ const ProfileView = () => {
       return;
     }
 
+    if (!isSupabaseConfigured || !user?.id) {
+      toast.error('Erro', 'Entre na sua conta para salvar foto e capa.');
+      return;
+    }
     setUploading(true);
+
     try {
       const fileExt = extensionForProfileUpload(file);
       const fileName = `${type}_${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -220,13 +225,13 @@ const ProfileView = () => {
       const url = data.publicUrl;
 
       if (type === 'profile') {
+        setProfilePic(url);
         const { error: dbError } = await supabase.from('users').update({ profile_pic: url }).eq('id', user.id);
         if (dbError) throw dbError;
-        setProfilePic(url);
       } else {
         const { error: dbError } = await supabase.from('users').update({ cover_pic: url }).eq('id', user.id);
-        if (dbError) throw dbError;
         setCoverPic(url);
+        if (dbError) throw dbError;
       }
       toast.success("Sucesso", type === 'profile' ? "Foto de perfil atualizada!" : "Foto de capa atualizada!");
 

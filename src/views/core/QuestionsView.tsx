@@ -115,8 +115,14 @@ function accuracy(questions: StudyQuestion[], latest: Map<string, { isCorrect: b
   return Math.round((correctCount(answered, latest) / answered.length) * 100);
 }
 
+function progressBarWidth(progress: number, answered: number) {
+  if (answered > 0 && progress === 0) return '0.7%';
+  return `${progress}%`;
+}
+
 function FilterSelect({
   label,
+
   value,
   options,
   onChange,
@@ -256,6 +262,7 @@ function FilterSelect({
     if (filters.onlyUnanswered) chips.push({ key: 'onlyUnanswered', label: 'Nao resolvidas' });
     return chips;
   }, [filters]);
+  const hasActiveFilters = activeChips.length > 0;
 
   const updateFilter = <K extends keyof QuestionFilterState>(key: K, value: QuestionFilterState[K]) => {
     setFilters((current) => {
@@ -356,10 +363,13 @@ function FilterSelect({
     return base.map((card) => {
       const questions = filterQuestions(allQuestions, card.filters, runtimeFilters);
       const answered = questions.filter((question) => answeredIds.has(question.id)).length;
+      const remaining = Math.max(0, questions.length - answered);
       return {
         ...card,
         questions,
         count: questions.length,
+        answered,
+        remaining,
         progress: questions.length === 0 ? 0 : Math.round((answered / questions.length) * 100),
         correct: correctCount(questions, latest),
       };
@@ -583,6 +593,7 @@ function FilterSelect({
         </div>
       )}
 
+      {!hasActiveFilters && (
       <section className="space-y-4">
         <div className="premium-section-heading"><h2 className="premium-section-title">Categorias de treino</h2></div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -600,8 +611,9 @@ function FilterSelect({
                     <p className="text-xs text-text-secondary">{card.subtitle}</p>
                   </div>
                   <div className="mt-auto space-y-2">
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-white/45"><span>Progresso</span><span>{card.progress}% | {card.correct} acertos</span></div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/8"><div className="h-full rounded-full bg-primary" style={{ width: `${card.progress}%` }} /></div>
+                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-white/45"><span>{card.answered.toLocaleString('pt-BR')} / {card.count.toLocaleString('pt-BR')} respondidas</span><span>{card.remaining.toLocaleString('pt-BR')} faltam</span></div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-white/8"><div className="h-full rounded-full bg-primary" style={{ width: progressBarWidth(card.progress, card.answered) }} /></div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/45">{card.progress}% de progresso | {card.correct} acertos</div>
                     <AnimatedButton onClick={() => startPractice(card.questions, card.title)} variant="secondary" className="w-full text-xs font-black uppercase tracking-widest"><Zap size={15} /> Treinar</AnimatedButton>
                   </div>
                 </div>
@@ -610,10 +622,10 @@ function FilterSelect({
           })}
         </div>
       </section>
-
+      )}
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="premium-section-heading flex-1"><h2 className="premium-section-title">Resultados filtrados</h2></div>
+          <div className="premium-section-heading flex-1"><h2 className="premium-section-title">{hasActiveFilters ? 'Resultados do filtro' : 'Resultados filtrados'}</h2></div>
           <AnimatedButton onClick={() => startPractice(filteredQuestions, 'Filtro atual')} disabled={filteredQuestions.length === 0} glow><Sparkles size={15} /> Treinar filtro</AnimatedButton>
         </div>
 

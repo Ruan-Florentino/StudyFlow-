@@ -425,6 +425,9 @@ export function searchQuestions(query: string, questions: Question[] = getQuesti
       question.subject,
       question.topic,
       question.statement,
+      question.alternatives.map((alternative) => alternative.text).join(' '),
+      question.explanation,
+      question.correctAlternative,
       question.source,
     ].join(' '));
     return terms.every((term) => haystack.includes(term));
