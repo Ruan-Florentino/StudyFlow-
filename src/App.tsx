@@ -3,7 +3,6 @@ import { AppProviders } from './app/providers';
 import { lazy } from 'react';
 import { devAgentLog } from './lib/devAgentLog';
 import { shouldRunOpenRouterHealthCheckOnMount } from './lib/openRouterHealthCheck';
-import { AthenaSplash } from './components/brand/AthenaSplash';
 
 const PWAUpdatePrompt = lazy(() =>
   import('./components/shared/PWAUpdatePrompt').then((module) => ({ default: module.PWAUpdatePrompt }))
@@ -48,7 +47,7 @@ export default function App() {
   return (
     <AppProviders>
       <Suspense
-        fallback={<AthenaSplash />}
+        fallback={null}
       >
         <AppRouterProvider />
       </Suspense>

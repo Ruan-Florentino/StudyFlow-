@@ -7,7 +7,6 @@ import { AppShell, AnimatedPageOutlet } from './shell';
 import { initAudioUnlocker } from '../lib/studyUtils';
 import { devAgentLog } from '../lib/devAgentLog';
 import { preloadCoreRoutes } from './router/preload';
-import { AthenaSplash } from '../components/brand/AthenaSplash';
 
 const Onboarding = lazy(() =>
   import('../components/Onboarding').then((module) => ({ default: module.Onboarding }))
@@ -97,7 +96,7 @@ export function AppContent() {
   if (user && !hasCompletedOnboarding) {
     return (
       <div className="relative app-shell-viewport w-full bg-black flex justify-center selection:bg-primary selection:text-black">
-        <Suspense fallback={<AthenaSplash compact />}>
+        <Suspense fallback={null}>
           <Onboarding
             onComplete={(initialPath) => {
               completeOnboarding();
