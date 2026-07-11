@@ -6,7 +6,7 @@ Documento para **advogado** ou responsável legal validar antes de escalar tráf
 
 - [ ] Razão social e CNPJ corretos nos Termos e na Política de Privacidade.
 - [ ] Endereço e contato (e-mail do encarregado) conferem com registro societário e canais oficiais.
-- [ ] Nome do produto (**StudyFlow**) consistente em lojas, site e documentos.
+- [ ] Nome do produto (**Athena**) consistente em lojas, site e documentos.
 
 ## Assinatura e lojas
 

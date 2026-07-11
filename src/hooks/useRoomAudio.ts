@@ -87,8 +87,8 @@ export function useRoomAudio(audioSrc: string | undefined, fallbackSrc?: string,
         if ('mediaSession' in navigator) {
           navigator.mediaSession.metadata = new MediaMetadata({
             title: `${roomName} Ambient`,
-            artist: 'StudyFlow Study Rooms',
-            album: 'StudyFlow Lo-Fi & Ambience',
+            artist: 'Athena Study Rooms',
+            album: 'Athena Lo-Fi & Ambience',
             artwork: [
               { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
               { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },

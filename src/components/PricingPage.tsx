@@ -55,7 +55,7 @@ export const PricingPage = ({ onBack }: { onBack: () => void }) => {
           </motion.div>
           
           <div className="space-y-2">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">StudyFlow <span className="text-primary">Premium</span></h1>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Athena <span className="text-primary">Premium</span></h1>
             <p className="text-text-secondary text-base md:text-xl max-w-2xl mx-auto font-medium">
               Desbloqueie todo o potencial dos seus estudos com inteligência artificial de elite.
             </p>
@@ -181,7 +181,7 @@ export const PricingPage = ({ onBack }: { onBack: () => void }) => {
         </div>
         
         <footer className="text-center pt-12 text-[10px] text-white/20 uppercase tracking-[0.2em]">
-          <p>© 2026 StudyFlow AI • São Paulo, Brasil</p>
+          <p>© 2026 Athena • São Paulo, Brasil</p>
           <div className="flex justify-center gap-4 mt-2">
             <Link
               to="/perfil/termos-de-uso"

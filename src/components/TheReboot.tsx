@@ -5,14 +5,14 @@ export const TheReboot = ({ onComplete }: { onComplete: () => void }) => {
 
   useEffect(() => {
     const bootSequence = [
-      "StudyFlow BIOS (C) 2026 Antigravity Inc.",
-      "CPU: StudyFlow Core",
+      "Athena BIOS (C) 2026 Antigravity Inc.",
+      "CPU: Athena Core",
       "Memory Test: 9999999K OK",
       "Initializing USB Controllers .. Done.",
       "Recovering from Fatal Exception 0E...",
       "Restoring session state...",
       "Mounting /dev/study-profile ... OK",
-      "Starting StudyFlow OS...",
+      "Starting Athena OS...",
       " "
     ];
 

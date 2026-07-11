@@ -21,7 +21,7 @@ export function DevAccessPanel() {
   const setSimulateFree = useDevAccessStore((s) => s.setSimulateFree);
   const applyDevRoleToLocalPlan = useDevAccessStore((s) => s.applyDevRoleToLocalPlan);
   const resetOnboardingLocal = useDevAccessStore((s) => s.resetOnboardingLocal);
-  const clearStudyflowLocalCaches = useDevAccessStore((s) => s.clearStudyflowLocalCaches);
+  const clearAthenaLocalCaches = useDevAccessStore((s) => s.clearAthenaLocalCaches);
 
   const [open, setOpen] = useState(false);
 
@@ -150,8 +150,8 @@ export function DevAccessPanel() {
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm('Limpar caches StudyFlow no navegador e recarregar?')) {
-                    clearStudyflowLocalCaches();
+                  if (window.confirm('Limpar caches da Athena no navegador e recarregar?')) {
+                    clearAthenaLocalCaches();
                   }
                 }}
                 className="py-2 rounded-xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20"

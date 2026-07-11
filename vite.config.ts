@@ -14,14 +14,13 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        selfDestroying: true,
         devOptions: {
           enabled: false
         },
         includeAssets: ['favicon.ico', 'icons/*'],
         manifest: {
-          name: 'Study Flow',
-          short_name: 'Study Flow',
+          name: 'Athena',
+          short_name: 'Athena',
           lang: 'pt-BR',
           theme_color: '#22c55e',
           background_color: '#000000',

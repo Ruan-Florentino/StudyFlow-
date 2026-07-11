@@ -178,7 +178,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           >
             <div className="p-4 border-b border-border flex items-center gap-3">
               <Search size={20} className="text-text-secondary" aria-hidden />
-              <div className="sr-only" id="command-palette-title">Comandos do StudyFlow</div>
+              <div className="sr-only" id="command-palette-title">Comandos da Athena</div>
               <input
                 ref={inputRef}
                 value={query}

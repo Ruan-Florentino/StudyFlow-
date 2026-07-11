@@ -1,9 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 import { devAgentLog } from '../../lib/devAgentLog';
 import { routes } from './routes';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { AppContent } from '../AppContent';
+import { AuthWrapper } from '../AuthWrapper';
+
+const LoginPage = lazy(() => import('../../pages/LoginPage').then((module) => ({ default: module.LoginPage })));
 
 /**
  * RouterConfig
@@ -34,8 +37,20 @@ const NotFoundRedirect = () => {
 
 export const router = createBrowserRouter([
   {
+    path: '/login',
+    element: (
+      <Suspense fallback={<div className="app-shell-viewport bg-black text-white flex items-center justify-center">Carregando…</div>}>
+        <LoginPage />
+      </Suspense>
+    ),
+  },
+  {
     path: '/',
-    element: <AppContent />,
+    element: (
+      <AuthWrapper>
+        <AppContent />
+      </AuthWrapper>
+    ),
     errorElement: <ErrorLoader />,
     children: [
       ...routes.map(route => ({

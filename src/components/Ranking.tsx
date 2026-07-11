@@ -169,7 +169,7 @@ function LeaguesModal({ onClose }: { onClose: () => void }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <Badge variant="primary">Progressao</Badge>
-            <h2 id="league-title" className="mt-3 text-2xl font-premium-title text-white">Ligas StudyFlow</h2>
+            <h2 id="league-title" className="mt-3 text-2xl font-premium-title text-white">Ligas Athena</h2>
             <p className="mt-1 text-sm text-text-secondary">Ganhe XP estudando e avance de liga.</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Fechar" className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white"><X size={18} /></button>
@@ -230,7 +230,7 @@ export const Ranking: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 <Badge variant="primary">Temporada atual</Badge>
                 <button type="button" onClick={() => setShowLeagues(true)} className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-white/55 transition hover:border-primary/30 hover:text-primary">Ver ligas</button>
               </div>
-              <h1 className="mt-4 text-3xl font-premium-title text-white sm:text-5xl">Ranking StudyFlow</h1>
+              <h1 className="mt-4 text-3xl font-premium-title text-white sm:text-5xl">Ranking Athena</h1>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-text-secondary">Consistencia vence pressa. Resolva questoes, mantenha sua sequencia e avance de liga.</p>
             </div>
           </div>

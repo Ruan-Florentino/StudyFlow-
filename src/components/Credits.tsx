@@ -17,7 +17,7 @@ export const Credits = ({ onBack }: { onBack: () => void }) => {
           className="text-center space-y-24 w-full max-w-2xl px-8"
         >
           <div className="space-y-4">
-            <h1 className="text-4xl font-serif italic">StudyFlow OS</h1>
+            <h1 className="text-4xl font-serif italic">Athena OS</h1>
             <p className="text-xs uppercase tracking-[0.5em] opacity-40">A Simulação de Aprendizado Definitiva</p>
           </div>
 
@@ -29,7 +29,7 @@ export const Credits = ({ onBack }: { onBack: () => void }) => {
             
             <div>
               <h2 className="text-xs uppercase tracking-widest opacity-40 mb-2">Motor de Gênese</h2>
-              <p className="text-xl font-serif">Athena (StudyFlow IA)</p>
+              <p className="text-xl font-serif">Athena Intelligence</p>
             </div>
 
             <div>

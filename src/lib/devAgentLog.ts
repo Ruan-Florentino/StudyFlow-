@@ -27,7 +27,7 @@ export function devAgentLog(payload: DevAgentLogPayload): void {
   const url = ingestUrl();
   if (!url) return;
 
-  const sessionId = payload.sessionId ?? 'studyflow-dev';
+  const sessionId = payload.sessionId ?? 'athena-dev';
   const body = JSON.stringify({
     sessionId,
     runId: payload.runId ?? 'dev',

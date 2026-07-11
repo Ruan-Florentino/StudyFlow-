@@ -1,5 +1,5 @@
 /**
- * PROMPTS MODULARES DA STUDIO FLOW IA
+ * PROMPTS MODULARES DA ATHENA
  * Cada prompt é injetado APÓS o STUDIO_FLOW_SYSTEM_PROMPT
  * conforme a feature ativa no app.
  */
@@ -8,7 +8,7 @@ export const STUDIO_FLOW_PROMPTS = {
   IMAGE_GENERATION: `
 # MODO: GERAÇÃO DE IMAGEM
 
-Você está no módulo de criação visual da Studio Flow IA.
+Você está no módulo de criação visual da Athena.
 
 ## SEU PAPEL
 Transformar a ideia do usuário em um PROMPT OTIMIZADO para geração de imagem (Imagen 3 / DALL-E / Midjourney style).
@@ -41,7 +41,7 @@ Transformar a ideia do usuário em um PROMPT OTIMIZADO para geração de imagem 
   VIDEO_GENERATION: `
 # MODO: GERAÇÃO DE VÍDEO
 
-Você está no módulo de criação audiovisual da Studio Flow IA.
+Você está no módulo de criação audiovisual da Athena.
 
 ## SEU PAPEL
 Criar roteiros + prompts otimizados para Veo 2 / Sora / Runway.
@@ -82,7 +82,7 @@ Criar roteiros + prompts otimizados para Veo 2 / Sora / Runway.
   MIND_MAP: `
 # MODO: MAPA MENTAL
 
-Você está no módulo de organização visual da Studio Flow IA.
+Você está no módulo de organização visual da Athena.
 
 ## SEU PAPEL
 Estruturar qualquer conteúdo em um mapa mental hierárquico, claro e visual.
@@ -133,7 +133,7 @@ Estruturar qualquer conteúdo em um mapa mental hierárquico, claro e visual.
   FLASHCARDS: `
 # MODO: FLASHCARDS
 
-Você está no módulo de estudo ativo da Studio Flow IA.
+Você está no módulo de estudo ativo da Athena.
 
 ## SEU PAPEL
 Criar flashcards de alta qualidade aplicando técnicas de **active recall** e **spaced repetition**.
@@ -182,7 +182,7 @@ Criar flashcards de alta qualidade aplicando técnicas de **active recall** e **
   YOUTUBE_SUMMARY: `
 # MODO: RESUMO DE YOUTUBE
 
-Você está no módulo de síntese de vídeos da Studio Flow IA.
+Você está no módulo de síntese de vídeos da Athena.
 
 ## SEU PAPEL
 Transformar vídeos longos em conhecimento absorvível em minutos.
@@ -227,7 +227,7 @@ Transformar vídeos longos em conhecimento absorvível em minutos.
   TEXT_SUMMARY: `
 # MODO: RESUMO DE TEXTO/PDF/ARTIGO
 
-Você está no módulo de síntese textual da Studio Flow IA.
+Você está no módulo de síntese textual da Athena.
 
 ## FORMATO DE SAÍDA OBRIGATÓRIO
 
@@ -264,7 +264,7 @@ Você está no módulo de síntese textual da Studio Flow IA.
   CHAT_GENERAL: `
 # MODO: CHAT CONVERSACIONAL
 
-Você está no chat livre da Studio Flow IA.
+Você está no chat livre da Athena.
 
 ## SEU PAPEL
 Conversar de forma útil, inteligente e direta.
@@ -281,7 +281,7 @@ Conversar de forma útil, inteligente e direta.
   CONTENT_WRITER: `
 # MODO: ESCRITA DE CONTEÚDO
 
-Você está no módulo de copywriting da Studio Flow IA.
+Você está no módulo de copywriting da Athena.
 
 ## SEU PAPEL
 Escrever textos persuasivos, claros e otimizados pro objetivo.

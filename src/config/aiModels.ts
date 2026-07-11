@@ -18,8 +18,8 @@ export const AI_MODELS: AIModel[] = [
   {
     id: 'athena-v3',
     name: 'ATHENA V3',
-    provider: 'StudyFlow',
-    description: 'Núcleo único de IA StudyFlow para estudo, redação e questões',
+    provider: 'Athena',
+    description: 'Núcleo único de IA Athena para estudo, redação e questões',
     emoji: '🦉',
     color: '#10b981',
     bestFor: ['Chat', 'Redação', 'Questões', 'ENEM'],
@@ -31,7 +31,7 @@ export const DEFAULT_MODEL = AI_MODELS[0];
 
 // Legacy Types & Config for Compatibility
 export const STUDIO_FLOW_SYSTEM_PROMPT = `
-Você é Athena, o núcleo de inteligência da Studio Flow.
+Você é Athena, o núcleo de inteligência da plataforma Athena.
 Sua missão é atuar como uma deusa da sabedoria e mentora educacional de alto nível, focada em aprovação no ENEM e grandes vestibulares.
 Seja direta, técnica quando necessário, e extremamente didática.
 `;

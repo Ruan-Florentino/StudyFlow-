@@ -346,7 +346,7 @@ const FlashcardsView = () => {
                 <Sparkles size={32} className="text-primary" />
               </div>
               <h2 className="text-2xl font-bold">Gerar Automaticamente</h2>
-              <p className="text-xs text-text-secondary uppercase tracking-widest">StudyFlow Study Engine</p>
+              <p className="text-xs text-text-secondary uppercase tracking-widest">Athena Study Engine</p>
             </div>
 
             <div className="space-y-4">

@@ -54,7 +54,7 @@ export const PWAInstallPrompt = () => {
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold tracking-tight">
                   {platform === 'ios' ? 'Instale no seu iPhone' : 
-                   platform === 'android' ? 'Instale o StudyFlow' : 
+                   platform === 'android' ? 'Instale a Athena' :
                    'Instale no seu Computador'}
                 </h2>
                 <p className="text-text-secondary text-sm">

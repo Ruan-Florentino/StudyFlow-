@@ -332,7 +332,7 @@ export const Logo = ({ size = "md", className, showText = false }: { size?: "sm"
       {showText && (
         <div className="flex min-w-0 flex-col">
           <span className={cn("font-display font-black tracking-tighter text-white italic uppercase", sizes[size].text)}>
-            Study<span className="text-primary">Flow</span>
+            <span className="text-primary">Athena</span>
           </span>
           <span className="text-[8px] font-premium-mono font-bold text-white/50 uppercase tracking-[0.22em] -mt-1">Plataforma de Estudos</span>
         </div>

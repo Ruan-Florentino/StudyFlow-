@@ -28,7 +28,7 @@ export const InfinitePrompt = ({ onBack }: { onBack: () => void }) => {
 
     try {
       const response = await aiService.chat(
-        `O usuário chegou ao espaço de reflexão do StudyFlow. Responda de forma acolhedora, prática e clara, ajudando a organizar próximos passos de estudo. Input do usuário: ${userMsg}`,
+        `O usuário chegou ao espaço de reflexão da Athena. Responda de forma acolhedora, prática e clara, ajudando a organizar próximos passos de estudo. Input do usuário: ${userMsg}`,
         messages.map(m => ({ role: m.role, text: m.content }))
       );
       setMessages(prev => [...prev, { role: 'model', content: response }]);

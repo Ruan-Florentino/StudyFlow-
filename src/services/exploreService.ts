@@ -146,7 +146,7 @@ export function getSubjectAccuracy(subject: string, history: QuestionHistory[], 
 export function getRecommendedAction(history: QuestionHistory[], questions: Question[], essays: Essay[]): RecommendedAction {
   const weak = getWeakTopics(history, questions)[0];
   if (weak && weak.attempts >= 2) return { id: 'recommended-weak', eyebrow: 'Seu melhor próximo passo', title: `Revisar ${weak.subject} — ${weak.topic}`, description: `Sua precisão neste assunto está em ${weak.accuracy}%.`, reason: 'Prioridade calculada a partir do seu histórico de respostas.', category: 'treinos', filters: { subject: weak.subject, topic: weak.topic, onlyWrong: true } };
-  if (history.length === 0) return { id: 'recommended-diagnostic', eyebrow: 'Recomendado para você', title: 'Comece pelo diagnóstico', description: 'Responda 10 questões para o StudyFlow montar seu caminho.', reason: 'Ainda não há desempenho suficiente para personalizar a recomendação.', category: 'treinos', filters: {} };
+  if (history.length === 0) return { id: 'recommended-diagnostic', eyebrow: 'Recomendado para você', title: 'Comece pelo diagnóstico', description: 'Responda 10 questões para a Athena montar seu caminho.', reason: 'Ainda não há desempenho suficiente para personalizar a recomendação.', category: 'treinos', filters: {} };
   if (essays.length === 0) return { id: 'recommended-essay', eyebrow: 'Equilibre sua preparação', title: 'Treinar redação ENEM', description: 'Você ainda não registrou uma redação neste dispositivo.', reason: 'Uma prática de redação complementa seu histórico de questões.', category: 'redacao', path: '/redacao' };
   return { id: 'recommended-enem', eyebrow: 'Ritmo consistente', title: 'Continue sua trilha ENEM', description: 'Alterne conteúdo e prática para consolidar o que estudou.', reason: 'Sugestão baseada na sua atividade recente.', category: 'trilhas', filters: { examType: 'enem', onlyUnanswered: true } };
 }
@@ -180,7 +180,7 @@ export function getTrendingTopics(): ExploreAction[] {
   return ['Redação ENEM', 'Funções', 'Cinemática', 'Brasil Colônia', 'Probabilidade', 'Ecologia', 'Interpretação de texto'].map((title, index) => ({
     id: `suggested-${index}`,
     title,
-    description: 'Sugestão editorial do StudyFlow',
+    description: 'Sugestão editorial da Athena',
     category: title.includes('Redação') ? 'redacao' : 'questoes',
     ...(title.includes('Redação') ? { path: '/redacao' } : { filters: { search: title } }),
   }));

@@ -297,7 +297,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
               >
                 <div className="athena-hero-kicker mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-[0.16em]">
                   <Sparkles size={12} />
-                  StudyFlow Intelligence
+                  Athena Intelligence
                 </div>
                 <AthenaAvatar size={compact ? 'lg' : 'xl'} active className={compact ? 'mb-3' : 'mb-4 sm:mb-5'} />
 
@@ -381,7 +381,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
           <div className={'athena-input-footer flex items-center justify-between px-2 ' + (compact ? 'mt-2' : 'mt-4')}>
             <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/25">
               <Shield size={10} />
-              <span>{ATHENA_CONFIG.NAME} - StudyFlow Intelligence</span>
+              <span>{ATHENA_CONFIG.NAME} Intelligence</span>
             </div>
             {!compact ? (
               <div className="flex items-center gap-1 text-[9px] font-medium text-white/20">

@@ -56,7 +56,7 @@ class AthenaClient {
 
   private async buildAuthHeaders(): Promise<HeadersInit> {
     if (!isSupabaseConfigured) {
-      throw new Error('Autenticação indisponível. Configure o Supabase para usar a IA.');
+      return { 'Content-Type': 'application/json' };
     }
     const { data, error } = await supabase.auth.getSession();
     if (error) {

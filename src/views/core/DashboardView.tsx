@@ -224,7 +224,7 @@ const DashboardView = () => {
       <motion.div className="relative z-10 app-shell-premium pb-32 pt-5 md:pb-36 md:pt-8" variants={staggerContainer} initial="hidden" animate="show">
         <motion.header variants={staggerItem} className="mb-8 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.22em] text-primary/70">StudyFlow</p>
+            <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.22em] text-primary/70">Athena</p>
             <h1 className="mt-1 truncate text-[28px] font-premium-title italic tracking-tight text-white md:text-4xl">
               {getGreeting(now.getHours())}, {name || 'estudante'}.
             </h1>
@@ -236,7 +236,7 @@ const DashboardView = () => {
               <MetricPill icon={Zap} accent>{formatNumber.format(xp)} XP</MetricPill>
             </div>
             <button type="button" onClick={() => goTo('/perfil')} aria-label="Abrir perfil" className="size-11 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:border-primary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
-              <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'StudyFlow')}`} alt="Perfil" className="size-full object-cover" referrerPolicy="no-referrer" />
+              <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'Athena')}`} alt="Perfil" className="size-full object-cover" referrerPolicy="no-referrer" />
             </button>
           </div>
         </motion.header>
@@ -289,7 +289,7 @@ const DashboardView = () => {
               <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.14em] text-white/40">{recentQuestion ? 'Última questão' : 'Próximo treino'}</p>
               <p className="mt-3 text-lg font-black text-white">{recentQuestion ? `${recentQuestion.materia} · ${recentQuestion.assunto}` : 'Comece pelo banco de questões'}</p>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-                {recentQuestion ? `${answeredCount} questão${answeredCount === 1 ? '' : 'ões'} respondida${answeredCount === 1 ? '' : 's'} · ${accuracy}% de precisão` : 'Escolha uma matéria ou deixe o StudyFlow sugerir sua primeira lista.'}
+                {recentQuestion ? `${answeredCount} questão${answeredCount === 1 ? '' : 'ões'} respondida${answeredCount === 1 ? '' : 's'} · ${accuracy}% de precisão` : 'Escolha uma matéria ou deixe a Athena sugerir sua primeira lista.'}
               </p>
               <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${recentQuestion ? Math.max(18, accuracy) : 12}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} className="h-full rounded-full bg-primary" />

@@ -8,7 +8,7 @@ import { resolveExternalCheckoutUrl } from '../../config/checkoutUrls';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { createMpPreferenceCheckout } from '../../lib/supabase/createMpPreference';
 import { trackPremiumEvent } from '../../lib/premiumAnalytics';
-import { paymentService, type BillingPeriod, type PlanTier } from '../../services/paymentService';
+import type { BillingPeriod, PlanTier } from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../store/useToastStore';
 import { premiumConsumerCopy } from '../../lib/productDisclosure';
@@ -33,10 +33,10 @@ export function PremiumCheckoutPage() {
   const summary = (() => {
     if (plan === 'supremo') {
       const amt = period === 'monthly' ? supremo.priceMonthly : supremo.priceYearly;
-      return { label: 'StudyFlow Supremo', amount: amt, cadence: period === 'monthly' ? 'mensal' : 'anual' };
+      return { label: 'Athena Supremo', amount: amt, cadence: period === 'monthly' ? 'mensal' : 'anual' };
     }
     const amt = period === 'monthly' ? premium.priceMonthly : premium.priceYearly;
-    return { label: 'StudyFlow Premium', amount: amt, cadence: period === 'monthly' ? 'mensal' : 'anual' };
+    return { label: 'Athena Premium', amount: amt, cadence: period === 'monthly' ? 'mensal' : 'anual' };
   })();
 
   const externalCheckoutUrl = resolveExternalCheckoutUrl(plan, period);
@@ -84,14 +84,7 @@ export function PremiumCheckoutPage() {
         return;
       }
 
-      const { sessionId } = await paymentService.startCheckout({
-        plan,
-        period,
-        customerEmail: user?.email ?? null,
-      });
-      const { ok } = await paymentService.confirmMockPayment(sessionId);
-      if (!ok) throw new Error('Confirmação mock falhou');
-      navigate('/premium/success', { state: { plan, period, sessionId } });
+      toast.error('Pagamento indisponível', 'O checkout seguro ainda não foi configurado neste ambiente.');
     } catch (e) {
       toast.error('Pagamento', 'Não foi possível concluir. Tente novamente.');
     } finally {
@@ -159,7 +152,7 @@ export function PremiumCheckoutPage() {
 
             <AnimatedButton
               onClick={handlePay}
-              disabled={loading}
+              disabled={loading || !isLiveCheckout}
               className="w-full py-4 rounded-2xl bg-primary text-black font-bold border-primary uppercase tracking-widest text-xs"
               glow
             >
@@ -171,7 +164,7 @@ export function PremiumCheckoutPage() {
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   <CreditCard size={18} />
-                  {isLiveCheckout ? 'Ir para pagamento seguro' : `Pagar ${formatBrl(summary.amount)}`}
+                  {isLiveCheckout ? 'Ir para pagamento seguro' : 'Checkout indisponível'}
                 </span>
               )}
             </AnimatedButton>

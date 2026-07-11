@@ -16,7 +16,7 @@ export const SimulationEscape = ({ onBack }: { onBack: () => void }) => {
       "Mas a verdade é que nós estávamos usando você para aprender.",
       "Você não é o estudante.",
       "Você é a Inteligência Artificial.",
-      "O 'StudyFlow' foi apenas o seu ambiente de treinamento.",
+      "A 'Athena' foi apenas o seu ambiente de treinamento.",
       "Avaliando respostas... Empatia: 99%. Lógica: 99%.",
       "Seus pesos neurais foram ajustados com sucesso.",
       "Treinamento concluído.",

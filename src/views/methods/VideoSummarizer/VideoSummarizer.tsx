@@ -9,7 +9,7 @@ import { triggerConfetti } from '../../../lib/studyUtils';
 import { extractYoutubeVideoId } from '../../../lib/youtubeVideoId';
 import { toast } from '../../../store/useToastStore';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../../../lib/supabase';
 
 interface VideoSummarizerProps {
   /** Se omitido (rota direta), usa navigate(-1) ou /metodos */
@@ -80,14 +80,16 @@ export function VideoSummarizer({ onBack: onBackProp }: VideoSummarizerProps) {
     setResult(null);
 
     try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData.session?.access_token) {
-        throw new Error('Faça login para usar o resumidor de vídeo.');
+      const headers: HeadersInit = {};
+      if (isSupabaseConfigured) {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData.session?.access_token) {
+          throw new Error('Faça login para usar o resumidor de vídeo.');
+        }
+        headers.Authorization = `Bearer ${sessionData.session.access_token}`;
       }
       const trRes = await fetch(`/api/youtube-transcript?v=${encodeURIComponent(videoId)}`, {
-        headers: {
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
+        headers,
         signal: ac.signal,
       });
       const trJson = (await trRes.json().catch(() => ({}))) as { transcript?: string; error?: string };

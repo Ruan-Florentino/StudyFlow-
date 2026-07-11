@@ -1,4 +1,4 @@
-# Ambientes — StudyFlow / MyHUB.IA
+# Ambientes — Athena / MyHUB.IA
 
 Documento vivo do **passo 1** do plano operacional: o que é *staging*, o que é *produção*, quais variáveis existem e **quem pode ver o quê**.
 

@@ -1,4 +1,4 @@
-# Study Flow
+# Athena
 
 PWA de estudos com banco de 12k+ questões, simulados e estatísticas.
 

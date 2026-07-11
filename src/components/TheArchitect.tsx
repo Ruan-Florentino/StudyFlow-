@@ -68,7 +68,7 @@ export const TheArchitect = ({ onBack }: { onBack: () => void }) => {
             <h3 className="italic font-serif text-xs opacity-50 uppercase mb-4">Active Modules</h3>
             <div className="space-y-1">
               {[
-                { name: 'StudyFlow_v9.bin', icon: Database },
+                { name: 'Athena_v9.bin', icon: Database },
                 { name: 'Consciousness_Core', icon: Cpu },
                 { name: 'Reality_Sandbox', icon: Network },
                 { name: 'Singularity_Trigger', icon: Zap }

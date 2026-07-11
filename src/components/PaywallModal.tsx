@@ -27,7 +27,7 @@ const FEATURE_TEASER: Record<string, { title: string; bullets: string[] }> = {
     bullets: ['Provas completas', 'Cronômetro e gabarito', 'Análise por área'],
   },
   default: {
-    title: 'StudyFlow Premium',
+    title: 'Athena Premium',
     bullets: [
       'Toda a IA do app em modo completo (ATHENA e ferramentas com modelo)',
       'Simulados e trilhas sem o teto do Free',
@@ -134,7 +134,7 @@ export const PaywallModal = ({
               glow
             >
               <span className="flex items-center justify-center gap-2 w-full">
-                Desbloquear com StudyFlow Premium
+                Desbloquear com Athena Premium
                 <ArrowRight size={18} />
               </span>
             </AnimatedButton>

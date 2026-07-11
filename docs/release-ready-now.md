@@ -4,7 +4,7 @@
 
 ### 1) Pré-deploy
 
-`[DEPLOY][PRE] Iniciando deploy do StudyFlow em produção agora. Janela estimada: 15 min. Escopo: pacote de release operacional + otimizações de precache PWA. Risco: baixo.`
+`[DEPLOY][PRE] Iniciando deploy da Athena em produção agora. Janela estimada: 15 min. Escopo: pacote de release operacional + otimizações de precache PWA. Risco: baixo.`
 
 ### 2) Deploy em andamento
 

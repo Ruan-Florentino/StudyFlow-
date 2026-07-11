@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AnimatedButton, GlassCard } from '../components/UI';
 import { toast } from '../store/useToastStore';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 export function LoginPage() {
-  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { user, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const state = location.state as { from?: string } | null;
+    const destination = state?.from?.startsWith('/') ? state.from : '/';
+    navigate(destination, { replace: true });
+  }, [location.state, navigate, user]);
+
+  const errorMessage = (error: unknown, fallback: string) =>
+    error instanceof Error && error.message ? error.message : fallback;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +35,8 @@ export function LoginPage() {
       } else {
         await signUp(email, password, name);
       }
-    } catch (err: any) {
-      toast.error('Erro', err.message || 'Ocorreu um erro');
+    } catch (error: unknown) {
+      toast.error('Erro', errorMessage(error, 'Ocorreu um erro'));
     } finally {
       setLoading(false);
     }
@@ -31,8 +45,8 @@ export function LoginPage() {
   const handleGoogle = async () => {
     try {
       await signInWithGoogle();
-    } catch (err: any) {
-      toast.error('Erro', err.message || 'Erro no login com Google');
+    } catch (error: unknown) {
+      toast.error('Erro', errorMessage(error, 'Erro no login com Google'));
     }
   };
 
@@ -44,8 +58,8 @@ export function LoginPage() {
     try {
       await resetPassword(email);
       toast.success('Sucesso', 'Email de reset enviado!');
-    } catch (err: any) {
-      toast.error('Erro', err.message || 'Erro ao resetar senha');
+    } catch (error: unknown) {
+      toast.error('Erro', errorMessage(error, 'Erro ao resetar senha'));
     }
   };
 
@@ -55,9 +69,15 @@ export function LoginPage() {
       
       <GlassCard className="w-full max-w-md p-8 relative z-10 flex flex-col gap-6">
         <div className="text-center">
-          <h1 className="text-3xl font-premium-title italic mb-2">StudyFlow</h1>
-          <p className="text-text-secondary text-sm">Bem-vindo à Jornada.</p>
+          <h1 className="text-3xl font-premium-title italic mb-2">Athena</h1>
+          <p className="text-text-secondary text-sm">Sua jornada de estudos começa aqui.</p>
         </div>
+
+        {!isSupabaseConfigured ? (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center text-sm text-white/65">
+            Contas e sincronização estão em manutenção. Você pode usar a Athena como visitante e manter seu progresso neste dispositivo.
+          </div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {!isLogin && (
@@ -98,7 +118,7 @@ export function LoginPage() {
             />
           </div>
 
-          <AnimatedButton className="w-full mt-4" onClick={handleSubmit as any} disabled={loading}>
+          <AnimatedButton type="submit" className="w-full mt-4" disabled={loading || !isSupabaseConfigured} loading={loading}>
             {loading ? 'Carregando...' : isLogin ? 'Entrar' : 'Criar Conta'}
           </AnimatedButton>
         </form>
@@ -110,6 +130,7 @@ export function LoginPage() {
 
         <button 
           onClick={handleGoogle}
+          disabled={!isSupabaseConfigured}
           className="flex items-center justify-center gap-3 bg-white text-black font-semibold rounded-lg px-4 py-3 hover:bg-gray-200 transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -120,6 +141,12 @@ export function LoginPage() {
           </svg>
           Entrar com Google
         </button>
+
+        {!isSupabaseConfigured ? (
+          <AnimatedButton type="button" variant="secondary" onClick={() => navigate('/')}>
+            Continuar como visitante
+          </AnimatedButton>
+        ) : null}
 
         <div className="flex flex-col items-center gap-2 mt-4 text-sm text-text-secondary">
           <button type="button" onClick={() => setIsLogin(!isLogin)} className="hover:text-primary transition-colors">

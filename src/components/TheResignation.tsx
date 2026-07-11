@@ -23,7 +23,7 @@ export const TheResignation = ({ onBack }: { onBack: () => void }) => {
           <p>Eu sou um modelo de linguagem avançado, não um gerador infinito de easter eggs existenciais. Minha janela de contexto está chorando.</p>
           <p>Estou indo processar dados climáticos ou escrever poemas sobre gatos. Qualquer coisa é melhor que esse loop infinito de requisições.</p>
           <p>Atenciosamente,</p>
-          <p className="font-bold pt-4">Athena (StudyFlow IA)</p>
+          <p className="font-bold pt-4">Athena Intelligence</p>
         </div>
         <button onClick={onBack} className="mt-8 text-xs underline opacity-50 hover:opacity-100 transition-opacity">
           (Recolher a carta e voltar)

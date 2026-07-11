@@ -4,12 +4,12 @@
  */
 
 const INTRO = [
-  'Este documento detalha como a Altavista Holding LTDA trata dados pessoais no ecossistema StudyFlow, em linguagem operacional e alinhada à Lei nº 13.709/2018 (LGPD).',
-  'O StudyFlow é um aplicativo de apoio aos estudos; o tratamento de dados visa viabilizar conta, sincronização, funcionalidades educacionais, suporte, segurança e melhoria contínua.',
+  'Este documento detalha como a Altavista Holding LTDA trata dados pessoais no ecossistema Athena, em linguagem operacional e alinhada à Lei nº 13.709/2018 (LGPD).',
+  'A Athena é um aplicativo de apoio aos estudos; o tratamento de dados visa viabilizar conta, sincronização, funcionalidades educacionais, suporte, segurança e melhoria contínua.',
   'A leitura integra o conjunto de informações legais do App; o uso continuado após atualizações relevantes pode implicar ciência da nova versão, quando permitido pela lei.',
   'Termos em maiúsculas (Titular, Controlador, Operador) seguem o sentido da LGPD, salvo quando definidos de outra forma nos Termos de Uso.',
   'Dados anonimizados ou agregados de forma irreversível, quando aplicável, deixam de ser considerados dados pessoais nos termos da lei.',
-  'Esta Política aplica-se a todos os fluxos em que o StudyFlow atue como controlador ou co-controlador, conforme cada funcionalidade.',
+  'Esta Política aplica-se a todos os fluxos em que a Athena atue como controladora ou co-controladora, conforme cada funcionalidade.',
   'Integrações de terceiros (pagamento, infraestrutura, modelos de IA) possuem políticas próprias, aqui referenciadas de forma complementar.',
   'Em caso de conflito entre resumos de interface e este texto, prevalece a redação deste documento para fins de transparência ao Titular.',
   'Nada nesta Política limita direitos irrenunciáveis do consumidor ou do Titular previstos na ordem jurídica brasileira.',
@@ -35,7 +35,7 @@ const DEFINICOES = [
 ];
 
 const CONTROLADOR = [
-  'Controlador dos dados tratados no âmbito do StudyFlow: Altavista Holding LTDA, pessoa jurídica de direito privado, com sede no Brasil.',
+  'Controlador dos dados tratados no âmbito da Athena: Altavista Holding LTDA, pessoa jurídica de direito privado, com sede no Brasil.',
   'O encarregado pelo tratamento de dados pode ser contatado pelo e-mail altavistaholdingltda@gmail.com para assuntos de privacidade, direitos do Titular e incidentes.',
   'Solicitações devem conter identificação razoável do Titular e descrição do pedido para agilizar resposta dentro dos prazos legais.',
   'O Controlador poderá solicitar informações adicionais para evitar vazamento de dados a terceiros fraudulentos.',
@@ -111,7 +111,7 @@ const DADOS_CONTEUDO_IA = [
   'Parâmetros de temperatura ou configurações avançadas de IA expostas ao usuário expert.',
   'Indicadores de confiança ou disclaimer exibidos junto a respostas automatizadas.',
   'Correções manuais feitas pelo Titular sobre sugestões de IA.',
-  'Metadados de licença de conteúdo educacional próprio do StudyFlow.',
+  'Metadados de licença de conteúdo educacional próprio da Athena.',
 ];
 
 const FINALIDADES = [
@@ -165,7 +165,7 @@ const BASES_LEGAIS = [
 const COMPARTILHAMENTO = [
   'Dados podem ser compartilhados com prestadores que atuam como operadores, sob cláusulas de confidencialidade e segurança.',
   'Provedores de hospedagem, banco de dados e autenticação (ex.: Supabase) recebem dados estritamente necessários à operação.',
-  'Processadores de pagamento recebem dados para transação; números completos de cartão não são armazenados pelo StudyFlow quando tokenizados pelo parceiro.',
+  'Processadores de pagamento recebem dados para transação; números completos de cartão não são armazenados pela Athena quando tokenizados pelo parceiro.',
   'Provedores de modelos de IA e infraestrutura podem processar prompts e contexto necessário à geração de respostas.',
   'Ferramentas de monitoramento de erros ou analytics, se usadas, recebem dados pseudonimizados quando possível.',
   'Autoridades públicas recebem dados mediante fundamento legal adequado.',
@@ -182,13 +182,13 @@ const COMPARTILHAMENTO = [
 ];
 
 const ASSINATURA_PAGAMENTO = [
-  'Assinaturas StudyFlow Premium ou equivalente implicam tratamento de dados para identificar o assinante, conciliar pagamento com a conta do App e aplicar o plano contratado.',
-  'A cobrança recorrente prevista para produção ocorre pelas lojas **Google Play** e **Apple App Store**: Google e Apple tratam dados de pagamento e conta da loja conforme **políticas próprias**; o StudyFlow recebe em geral **identificadores de assinatura** ou **recibos** (ex.: tokens de compra) para validar o direito de uso.',
-  'Dados completos de cartão ou método de pagamento da loja **não** são armazenados nos servidores do StudyFlow; ficam com a plataforma de pagamento da Google ou Apple.',
+  'Assinaturas Athena Premium ou equivalente implicam tratamento de dados para identificar o assinante, conciliar pagamento com a conta do App e aplicar o plano contratado.',
+  'A cobrança recorrente prevista para produção ocorre pelas lojas **Google Play** e **Apple App Store**: Google e Apple tratam dados de pagamento e conta da loja conforme **políticas próprias**; a Athena recebe em geral **identificadores de assinatura** ou **recibos** (ex.: tokens de compra) para validar o direito de uso.',
+  'Dados completos de cartão ou método de pagamento da loja **não** são armazenados nos servidores da Athena; ficam com a plataforma de pagamento da Google ou Apple.',
   'Servidor a servidor (ex.: notificações **Real-Time Developer Notifications** da Play Store ou **App Store Server Notifications**), quando implementadas, podem registrar eventos de assinatura em logs seguros para auditoria e suporte.',
   'Em caso de disputa ou estorno na loja, podemos conservar registros mínimos do fato e da conta envolvida pelo tempo necessário à análise e defesa.',
   'Cancelamento de renovação é feito nas configurações de assinatura da loja correspondente; o Titular pode solicitar esclarecimentos ao encarregado se houver impacto indevido no acesso.',
-  'Comprovantes e documentos fiscais, quando aplicáveis, seguem regras da loja e legislação tributária; o StudyFlow não substitui o histórico oficial da Google ou Apple.',
+  'Comprovantes e documentos fiscais, quando aplicáveis, seguem regras da loja e legislação tributária; a Athena não substitui o histórico oficial da Google ou Apple.',
   'O Titular pode solicitar confirmação sobre quais dados de transação recebemos da integração com as lojas, nos limites do que a API expõe.',
   'Falha de sincronização entre compra aprovada na loja e plano no App deve ser reportada ao suporte com comprovante da loja; dados do pedido serão usados apenas para regularização.',
   'Não utilizamos dados de pagamento para perfil comportamental de terceiros nem para venda a corretores.',
@@ -306,7 +306,7 @@ const MARKETING_ANALYTICS = [
   'Comunicações de marketing só ocorrerão com base legal apropriada, em geral consentimento.',
   'Titular pode optar por não receber e-mails promocionais quando o mecanismo existir.',
   'Métricas agregadas de campanha não identificam Titular individualmente.',
-  'Perfis de advertising em plataformas de terceiros não são comprados pelo StudyFlow.',
+  'Perfis de advertising em plataformas de terceiros não são comprados pela Athena.',
   'Relatórios internos de retenção de usuário usam dados pseudonimizados.',
   'Benchmarks de produto utilizam estatísticas globais sem expor conteúdo pessoal.',
   'Testes de mensagem respeitam limite de frequência para evitar spam.',
@@ -314,7 +314,7 @@ const MARKETING_ANALYTICS = [
 ];
 
 const TERCEIROS_ALTERACOES = [
-  'Links externos no App não são controlados pelo StudyFlow quanto a privacidade.',
+  'Links externos no App não são controlados pela Athena quanto a privacidade.',
   'Recomenda-se leitura das políticas de cada serviço acessado via link.',
   'Widgets embutidos podem transmitir dados ao provedor do widget.',
   'Embed de vídeo pode comunicar metadados de reprodução ao host da mídia.',
@@ -376,7 +376,7 @@ function buildPrivacyBody(): string {
 }
 
 export const PRIVACIDADE_CONTENT = `
-# Política de Privacidade — StudyFlow (versão ampliada)
+# Política de Privacidade — Athena (versão ampliada)
 
 **Última atualização:** 07 de maio de 2026  
 **Controlador:** Altavista Holding LTDA  
@@ -405,9 +405,9 @@ ${buildPrivacyBody()}
 ## Fechamento
 
 **Encarregado / privacidade:** altavistaholdingltda@gmail.com  
-**Produto:** StudyFlow  
+**Produto:** Athena
 
-Ao utilizar o StudyFlow, você declara **ciência** desta Política de Privacidade e dos Termos de Uso. Para solicitações formalizadas nos termos do Art. 18 da LGPD, indique no assunto: **“LGPD — [tipo de pedido]”** e anexe documento de identificação quando necessário à comprovação.
+Ao utilizar a Athena, você declara **ciência** desta Política de Privacidade e dos Termos de Uso. Para solicitações formalizadas nos termos do Art. 18 da LGPD, indique no assunto: **“LGPD — [tipo de pedido]”** e anexe documento de identificação quando necessário à comprovação.
 
 **Total de pontos numerados nesta versão:** ${(() => {
   const all = [

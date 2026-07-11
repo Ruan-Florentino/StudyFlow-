@@ -1,6 +1,6 @@
 export const ATHENA_CONFIG = {
   NAME: 'ATHENA V3',
-  TAGLINE: 'Assistente de estudos do StudyFlow',
+  TAGLINE: 'Sua assistente inteligente de estudos',
   ICON: '\uD83E\uDD89',
   ICON_SRC: '/icons/app-icon.png?v=5',
   COLORS: {

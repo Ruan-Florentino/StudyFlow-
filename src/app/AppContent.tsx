@@ -93,7 +93,7 @@ export function AppContent() {
     document.documentElement.style.setProperty('--theme-primary', themeColor);
   }, [themeColor]);
 
-  if (false && !hasCompletedOnboarding) {
+  if (user && !hasCompletedOnboarding) {
     return (
       <div className="relative app-shell-viewport w-full bg-black flex justify-center selection:bg-primary selection:text-black">
         <Suspense fallback={<div className="text-white/60 text-sm font-mono pt-20">Carregando onboarding...</div>}>

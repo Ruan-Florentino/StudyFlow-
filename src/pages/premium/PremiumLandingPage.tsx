@@ -99,12 +99,12 @@ export function PremiumLandingPage({ onBack }: PremiumLandingPageProps) {
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [tIndex, setTIndex] = useState(0);
 
-  const { premium, supremo, socialProofStudentCount } = PAYMENT_CONFIG;
+  const { premium, supremo } = PAYMENT_CONFIG;
 
   useEffect(() => {
     trackPremiumEvent('premium_page_viewed', { path: '/premium' });
     const prevTitle = document.title;
-    document.title = 'StudyFlow Premium — Eleve seus estudos ao próximo nível';
+    document.title = 'Athena Premium — Eleve seus estudos ao próximo nível';
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -113,7 +113,7 @@ export function PremiumLandingPage({ onBack }: PremiumLandingPageProps) {
     }
     meta.setAttribute(
       'content',
-      'Premium e Supremo: uso completo de toda a IA do app (ATHENA e ferramentas com modelo). Simulados, trilhas e demais benefícios StudyFlow.'
+      'Premium e Supremo: uso completo de toda a IA do app e das ferramentas com modelo. Simulados, trilhas e demais benefícios Athena.'
     );
     return () => {
       document.title = prevTitle;
@@ -202,7 +202,7 @@ export function PremiumLandingPage({ onBack }: PremiumLandingPageProps) {
                 <ChevronLeft size={20} />
               </button>
             )}
-            <span className="text-[10px] font-bold uppercase tracking-[0.35em] text-primary/90">StudyFlow</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.35em] text-primary/90">Athena</span>
           </div>
           <div className="flex items-center gap-2 text-[10px] text-white/40 font-mono uppercase tracking-widest">
             <Shield size={12} className="text-primary/60" />
@@ -249,22 +249,9 @@ export function PremiumLandingPage({ onBack }: PremiumLandingPageProps) {
                 Ver planos
               </button>
             </div>
-            <div className="flex items-center gap-3 pt-4">
-              <div className="flex -space-x-2">
-                {['A', 'B', 'C', 'D'].map((x) => (
-                  <div
-                    key={x}
-                    className="w-9 h-9 rounded-full border-2 border-[#050808] bg-gradient-to-br from-white/20 to-white/5 text-[10px] flex items-center justify-center font-bold text-white/80"
-                  >
-                    {x}
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-white/45">
-                Junte-se a <span className="text-primary font-bold">+{socialProofStudentCount.toLocaleString('pt-BR')}</span>{' '}
-                estudantes
-              </p>
-            </div>
+            <p className="pt-4 text-xs text-white/45">
+              Evolua no seu ritmo com ferramentas de estudo, revisão e acompanhamento.
+            </p>
           </motion.div>
 
           <motion.div
@@ -592,7 +579,7 @@ export function PremiumLandingPage({ onBack }: PremiumLandingPageProps) {
             </span>
             <span>Google Play · App Store — billing nativo</span>
           </div>
-          <p className="text-[10px] text-white/25">© {new Date().getFullYear()} StudyFlow · Brasil</p>
+          <p className="text-[10px] text-white/25">© {new Date().getFullYear()} Athena · Brasil</p>
         </footer>
       </div>
     </div>

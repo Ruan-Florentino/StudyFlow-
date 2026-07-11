@@ -9,8 +9,8 @@ import './index.css';
 
 setupChunkErrorHandler();
 
-const PWA_CACHE_RESET_VERSION = 'studyflow-cache-reset-athena-chat-2026-07-09-v1';
-const PWA_CACHE_RESET_STORAGE_KEY = 'studyflow:pwa-cache-reset';
+const PWA_CACHE_RESET_VERSION = 'athena-cache-reset-pwa-2026-07-10-v2';
+const PWA_CACHE_RESET_STORAGE_KEY = 'athena:pwa-cache-reset';
 
 function hasCompletedPwaCacheReset() {
   try {

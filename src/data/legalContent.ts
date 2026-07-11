@@ -6,17 +6,17 @@
 export { PRIVACIDADE_CONTENT } from './privacyPolicyContent';
 
 export const TERMOS_DE_USO = `
-# Termos de Uso — StudyFlow
+# Termos de Uso — Athena
 
 **Última atualização:** 07 de maio de 2026
 
-**Leia com atenção.** Estes Termos regulam o uso do aplicativo e serviços StudyFlow. Em caso de dúvida, interrompa o uso e contate-nos antes de continuar.
+**Leia com atenção.** Estes Termos regulam o uso do aplicativo e serviços Athena. Em caso de dúvida, interrompa o uso e contate-nos antes de continuar.
 
 ---
 
 ## 1. Partes e aceitação
 
-1.1. Ao acessar, instalar, criar conta ou utilizar o StudyFlow (**"Serviço"**, **"Plataforma"** ou **"App"**), você (**"Usuário"**) declara que leu, compreendeu e **aceita integralmente** estes Termos de Uso (**"Termos"**).
+1.1. Ao acessar, instalar, criar conta ou utilizar a Athena (**"Serviço"**, **"Plataforma"** ou **"App"**), você (**"Usuário"**) declara que leu, compreendeu e **aceita integralmente** estes Termos de Uso (**"Termos"**).
 
 1.2. Se você **não concordar**, deve cessar imediatamente o uso e, quando aplicável, excluir o App.
 
@@ -28,7 +28,7 @@ export const TERMOS_DE_USO = `
 
 ## 2. Natureza do serviço e isenções educacionais
 
-2.1. O StudyFlow é uma **ferramenta digital de apoio aos estudos**, incluindo recursos como banco de questões, simulados, estatísticas, conteúdos educacionais, recursos de comunidade e funcionalidades que possam envolver **inteligência artificial** (**"IA"**).
+2.1. A Athena é uma **ferramenta digital de apoio aos estudos**, incluindo recursos como banco de questões, simulados, estatísticas, conteúdos educacionais, recursos de comunidade e funcionalidades que possam envolver **inteligência artificial** (**"IA"**).
 
 2.2. O Serviço **não é** instituição de ensino credenciada, cursinho presencial, consultoria educacional personalizada nem substituto de professor, orientador ou profissional habilitado.
 
@@ -58,9 +58,9 @@ export const TERMOS_DE_USO = `
 
 4.2. **Moeda e preço:** valores são apresentados em **Real (BRL)** (ou moeda local da loja, quando aplicável). A **periodicidade** (mensal, anual ou outra) e o **total devido** ou parcela são exibidos **antes** da conclusão do pagamento **na loja** ou no fluxo de checkout. Impostos ou encargos seguem a exibição da **Google**, **Apple** ou do processador utilizado.
 
-4.3. **Meio de pagamento:** a assinatura paga do StudyFlow está prevista para ser contratada e cobrada pelas **lojas oficiais** (**Google Play** e **Apple App Store**), nos termos, taxas e políticas de cada plataforma. Eventual **versão web** ou processador alternativo será **indicado na tela** antes da conclusão; ao pagar por qualquer meio, aplicam-se também os **termos do respectivo processador ou loja**.
+4.3. **Meio de pagamento:** a assinatura paga da Athena está prevista para ser contratada e cobrada pelas **lojas oficiais** (**Google Play** e **Apple App Store**), nos termos, taxas e políticas de cada plataforma. Eventual **versão web** ou processador alternativo será **indicado na tela** antes da conclusão; ao pagar por qualquer meio, aplicam-se também os **termos do respectivo processador ou loja**.
 
-4.4. **Natureza do produto pago:** o Premium **desbloqueia funcionalidades digitais** do StudyFlow (acesso a módulos, ferramentas e limites ampliados). **Não** constitui matrícula em instituição de ensino, nem promessa de aprovação em exames (vide Seção 2).
+4.4. **Natureza do produto pago:** o Premium **desbloqueia funcionalidades digitais** da Athena (acesso a módulos, ferramentas e limites ampliados). **Não** constitui matrícula em instituição de ensino, nem promessa de aprovação em exames (vide Seção 2).
 
 4.5. **Transparência (demo vs. real):** determinadas telas podem exibir **cenários ilustrativos** (por exemplo, posições em ranking entre perfis fictícios). Dados **reais** do seu uso (progresso, histórico no dispositivo/conta) continuam sendo os da sua experiência — vide Política de Privacidade. **Nada** nesses cenários de exemplo deve ser interpretado como garantia de desempenho educacional.
 
@@ -112,7 +112,7 @@ export const TERMOS_DE_USO = `
 
 ## 7. Propriedade intelectual
 
-7.1. Marca, layout, código, bases de questões próprias, textos da Empresa, logos e demais elementos do StudyFlow são de **titularidade da Altavista** ou licenciados, **salvo** indicação em contrário.
+7.1. Marca, layout, código, bases de questões próprias, textos da Empresa, logos e demais elementos da Athena são de **titularidade da Altavista** ou licenciados, **salvo** indicação em contrário.
 
 7.2. É proibida cópia, distribuição pública não autorizada ou criação de obra derivada que viole direitos autorais ou marcas, **salvo** limites legais de citação ou uso permitido.
 
@@ -184,9 +184,9 @@ export const TERMOS_DE_USO = `
 
 **Razão social:** Altavista Holding LTDA  
 **E-mail:** altavistaholdingltda@gmail.com  
-**Produto:** StudyFlow
+**Produto:** Athena
 
 ---
 
-**Ao utilizar o StudyFlow, você reconhece que leu e concorda com estes Termos de Uso.**
+**Ao utilizar a Athena, você reconhece que leu e concorda com estes Termos de Uso.**
 `;

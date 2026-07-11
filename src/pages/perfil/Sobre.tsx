@@ -11,7 +11,7 @@ export const Sobre = () => {
             <ChevronLeft size={20} /> Voltar
           </button>
           <GlassCard className="p-8 space-y-6">
-            <h1 className="text-2xl font-bold">StudyFlow</h1>
+            <h1 className="text-2xl font-bold">Athena</h1>
             <p className="text-white/60">Versão 1.0.0</p>
             <p className="text-sm">Plataforma educacional dedicada a auxiliar estudantes em sua jornada de aprendizagem.</p>
             <div className="border-t border-white/10 pt-6 text-sm text-white/40">

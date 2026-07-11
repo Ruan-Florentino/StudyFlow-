@@ -24,6 +24,4 @@ export const PAYMENT_CONFIG = {
     currency: 'BRL',
     badge: 'Melhor custo-benefício anual',
   },
-  /** Social proof — substituir por métricas reais quando houver */
-  socialProofStudentCount: 12800,
 } as const;

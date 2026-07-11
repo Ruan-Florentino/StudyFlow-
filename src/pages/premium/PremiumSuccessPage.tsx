@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import { CheckCircle2, Sparkles } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatedButton, GlassCard } from '../../components/UI';
-import { useUIStore } from '../../store/useUIStore';
+import { useUserStore } from '../../store/useUserStore';
 import { trackPremiumEvent } from '../../lib/premiumAnalytics';
 import type { BillingPeriod, PlanTier } from '../../services/paymentService';
 
@@ -21,7 +21,7 @@ export function PremiumSuccessPage() {
   const location = useLocation();
   const reduceMotion = useReducedMotion();
   const fired = useRef(false);
-  const setPlan = useUIStore((s) => s.setPlan);
+  const billingPlan = useUserStore((state) => state.billingPlan);
 
   const searchParams = new URLSearchParams(location.search);
   const fromMp = searchParams.get('source') === 'mp';
@@ -29,7 +29,8 @@ export function PremiumSuccessPage() {
   const state = location.state as { plan?: PlanTier; period?: BillingPeriod; sessionId?: string } | null;
   const plan = state?.plan ?? planFromQuery(searchParams.get('plan'));
   const period = state?.period ?? periodFromQuery(searchParams.get('period'));
-  const sessionId = state?.sessionId ?? (fromMp ? 'mercadopago' : undefined);
+  const sessionId = fromMp ? 'mercadopago' : undefined;
+  const paymentConfirmed = billingPlan === 'premium' || billingPlan === 'pro';
 
   useEffect(() => {
     if (!sessionId) {
@@ -40,9 +41,8 @@ export function PremiumSuccessPage() {
       plan,
       period,
       sessionId,
-      source: fromMp ? 'mercadopago' : 'mock',
+      source: 'mercadopago',
     });
-    setPlan('premium');
 
     if (reduceMotion || fired.current) return;
     fired.current = true;
@@ -65,7 +65,7 @@ export function PremiumSuccessPage() {
       if (Date.now() < end) requestAnimationFrame(frame);
     };
     frame();
-  }, [sessionId, navigate, plan, period, setPlan, reduceMotion, fromMp]);
+  }, [sessionId, navigate, plan, period, reduceMotion, fromMp]);
 
   if (!sessionId) return null;
 
@@ -80,7 +80,9 @@ export function PremiumSuccessPage() {
           <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 size={36} className="text-primary" />
           </div>
-          <h1 className="text-3xl font-black mb-2">Bem-vindo ao Premium!</h1>
+          <h1 className="text-3xl font-black mb-2">
+            {paymentConfirmed ? 'Premium confirmado!' : 'Pagamento em processamento'}
+          </h1>
           <p className="text-white/50 text-sm mb-8">
             {fromMp ? (
               <>

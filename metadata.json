@@ -1,5 +1,5 @@
 {
-  "name": "StudyFlow",
+  "name": "Athena",
   "description": "Premium AI study platform with smart recommendations, video summarization, mastery tracking, and voice-enabled AI tutor.",
   "requestFramePermissions": ["camera"]
 }

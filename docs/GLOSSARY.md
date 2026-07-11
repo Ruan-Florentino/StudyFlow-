@@ -47,7 +47,7 @@ Referência para **nav**, **command palette**, **marketing** e **suporte**. Alin
 
 | Usar | Evitar |
 |------|--------|
-| **StudyFlow Premium**, **Plus** | “Desbloqueie IA infinita” como promessa vaga |
+| **Athena Premium**, **Plus** | “Desbloqueie IA infinita” como promessa vaga |
 | **Mentoria ilimitada** (se for o benefício real) | “Poder neural”, “modo deus” |
 
 ---

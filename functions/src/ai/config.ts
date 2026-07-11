@@ -1,6 +1,6 @@
 // functions/src/ai/config.ts
 
-/** Modelo único StudyFlow — mesmo slug do app (OpenRouter). */
+/** Modelo único Athena — mesmo slug do app (OpenRouter). */
 export const ATHENA_V3_OPENROUTER_ID = 'deepseek/deepseek-chat';
 
 export const AI_MODELS = {

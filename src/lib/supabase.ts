@@ -54,8 +54,12 @@ const createMockClient = () => {
   return {
     auth: {
       signInWithOAuth: mockPromise,
+      signInWithPassword: mockPromise,
+      signUp: mockPromise,
+      resetPasswordForEmail: mockPromise,
       signOut: async () => ({ error: null as null }),
       getSession: mockGetSession,
+      getUser: async () => ({ data: { user: null }, error: mockErr }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
     },
     from: () => ({
@@ -96,6 +100,7 @@ export const supabase = new Proxy({} as any, {
             autoRefreshToken: true,
             detectSessionInUrl: true,
             storage: createAuthPersistStorage(),
+            // Chave legada mantida para preservar sessões existentes durante o rebranding para Athena.
             storageKey: 'studioflow-auth',
           },
         });

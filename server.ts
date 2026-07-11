@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createServer as createViteServer } from "vite";
 import * as dotenv from 'dotenv';
-import { DEFAULT_OPENROUTER_CHAT_MODEL, OPENROUTER_PROXY_FALLBACK_MODELS } from "./src/config/openRouter";
+import { DEFAULT_OPENROUTER_CHAT_MODEL, OPENROUTER_PROXY_FALLBACK_MODELS } from "./src/config/openRouter.js";
+dotenv.config({ path: '.env.local' });
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +18,16 @@ function buildOpenRouterModelChain(primary: string): string[] {
   add(primary);
   for (const m of OPENROUTER_PROXY_FALLBACK_MODELS) add(m);
   return out;
+}
+
+function buildGatewayModelChain(requested: string): string[] {
+  const migrated =
+    requested === "deepseek/deepseek-chat" || requested === "openrouter/free"
+      ? "deepseek/deepseek-v3.2"
+      : requested;
+  return Array.from(
+    new Set([migrated, "google/gemini-3-flash", "openai/gpt-5.4-mini"])
+  );
 }
 
 /**
@@ -77,6 +87,8 @@ type RateLimitBucket = {
 type AuthenticatedUser = {
   id: string;
   email?: string;
+  plan: string;
+  role: string;
 };
 
 type SecuritySeverity = "low" | "medium" | "high" | "critical";
@@ -152,7 +164,7 @@ async function hitRateLimitHybrid(
   } else if (!warnedDistributedRateLimit) {
     warnedDistributedRateLimit = true;
     console.warn(
-      "[StudyFlow] Rate limit em memória: defina SUPABASE_SERVICE_ROLE_KEY e aplique a migration check_api_rate_limit para limitação distribuída."
+      "[Athena] Rate limit em memória: defina SUPABASE_SERVICE_ROLE_KEY e aplique a migration check_api_rate_limit para limitação distribuída."
     );
   }
   return hitRateLimit(key, now, maxRequests, windowMs);
@@ -208,7 +220,12 @@ function buildAllowedOrigins(): Set<string> {
     "http://127.0.0.1:3000",
     "https://studyflow.app",
     "https://www.studyflow.app",
+    "https://athena.studyflow.app",
+    "https://study-flow-ruan9.vercel.app",
   ];
+  if (process.env.VERCEL_URL) {
+    defaults.push(`https://${process.env.VERCEL_URL}`);
+  }
   const raw = process.env.CORS_ALLOWED_ORIGINS ?? "";
   const extra = raw
     .split(",")
@@ -223,6 +240,14 @@ function sanitizeUpstreamErrorMessage(raw: unknown): string {
 }
 
 function clientFacingOpenRouterError(status: number, data: unknown): Record<string, unknown> {
+  if (status === 402 || /customer_verification_required|valid credit card/i.test(JSON.stringify(data))) {
+    return {
+      error: {
+        message: "O serviço de IA está aguardando ativação de faturamento no provedor.",
+        code: status,
+      },
+    };
+  }
   if (process.env.NODE_ENV === "production") {
     return {
       error: {
@@ -272,10 +297,37 @@ async function verifySupabaseToken(token: string): Promise<AuthenticatedUser | n
     if (!response.ok) return null;
     const user = (await response.json()) as { id?: string; email?: string };
     if (!user.id) return null;
-    return { id: user.id, email: user.email };
+    const profileResponse = await fetch(
+      `${cfg.url}/rest/v1/users?id=eq.${encodeURIComponent(user.id)}&select=plan,role&limit=1`,
+      {
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!profileResponse.ok) return null;
+    const profiles = (await profileResponse.json()) as Array<{ plan?: string; role?: string }>;
+    const profile = profiles[0];
+    return {
+      id: user.id,
+      email: user.email,
+      plan: profile?.plan ?? "free",
+      role: profile?.role ?? "free",
+    };
   } catch {
     return null;
   }
+}
+
+function hasPaidAccess(user: AuthenticatedUser): boolean {
+  return (
+    user.plan === "premium" ||
+    user.plan === "pro" ||
+    user.role === "premium" ||
+    user.role === "supremo" ||
+    user.role === "admin"
+  );
 }
 
 async function logSecurityEvent(params: {
@@ -332,6 +384,9 @@ async function authenticateSupabaseUser(
 ): Promise<AuthenticatedUser | null> {
   const ip = getClientIp(req);
   const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
+  if (!getSupabaseConfig()) {
+    return { id: "guest", plan: "free", role: "free" };
+  }
   const token = getBearerToken(req);
   if (!token) {
     void logSecurityEvent({
@@ -393,9 +448,10 @@ function isValidAiRequestBody(body: unknown): body is {
   return true;
 }
 
-async function startServer() {
+type FrontendMode = "none" | "vite" | "static";
+
+export async function createApp(frontendMode: FrontendMode = "none") {
   const app = express();
-  const PORT = Number(process.env.PORT || 3000);
   const allowedOrigins = buildAllowedOrigins();
 
   app.disable("x-powered-by");
@@ -482,7 +538,13 @@ async function startServer() {
     const ip = getClientIp(req);
     const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
     const limitKey = `yt:${authenticatedUser.id}:${ip}`;
-    const rate = await hitRateLimitHybrid(limitKey, Date.now(), 30, 10 * 60_000);
+    const paidAccess = hasPaidAccess(authenticatedUser);
+    const rate = await hitRateLimitHybrid(
+      limitKey,
+      Date.now(),
+      paidAccess ? 30 : 2,
+      paidAccess ? 10 * 60_000 : 24 * 60 * 60_000
+    );
     if (rate.limited) {
       void logSecurityEvent({
         actorUserId: authenticatedUser.id,
@@ -562,7 +624,13 @@ async function startServer() {
     const ip = getClientIp(req);
     const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
     const limitKey = `ai:${authenticatedUser.id}:${ip}`;
-    const rate = await hitRateLimitHybrid(limitKey, Date.now(), 20, 5 * 60_000);
+    const paidAccess = hasPaidAccess(authenticatedUser);
+    const rate = await hitRateLimitHybrid(
+      limitKey,
+      Date.now(),
+      paidAccess ? 20 : 3,
+      paidAccess ? 5 * 60_000 : 24 * 60 * 60_000
+    );
     if (rate.limited) {
       void logSecurityEvent({
         actorUserId: authenticatedUser.id,
@@ -592,24 +660,39 @@ async function startServer() {
     }
     const { messages, model, temperature } = req.body;
     const API_KEY = process.env.OPENROUTER_API_KEY;
+    // Em Functions, a Vercel fornece o token OIDC no request — não em process.env.
+    // Em desenvolvimento local, `vercel env pull` o disponibiliza como variável.
+    const GATEWAY_TOKEN =
+      process.env.AI_GATEWAY_API_KEY ??
+      req.header("x-vercel-oidc-token") ??
+      process.env.VERCEL_OIDC_TOKEN;
+    const useGateway = !API_KEY && Boolean(GATEWAY_TOKEN);
 
-    if (!API_KEY) {
-      console.error("❌ Erro: OPENROUTER_API_KEY não configurada no ambiente.");
-      return res.status(500).json({ error: "Configuração do servidor incompleta (API Key ausente)" });
+    if (!API_KEY && !GATEWAY_TOKEN) {
+      console.error("❌ Erro: provedor de IA não configurado no ambiente.");
+      return res.status(503).json({ error: "Serviço de IA temporariamente indisponível." });
     }
 
     try {
       const resolvedModel = model || DEFAULT_OPENROUTER_CHAT_MODEL;
-      const modelChain = buildOpenRouterModelChain(resolvedModel);
+      const modelChain = useGateway
+        ? buildGatewayModelChain(resolvedModel)
+        : buildOpenRouterModelChain(resolvedModel);
       const isStream = !!req.body.stream;
+      const retryRounds = useGateway ? 1 : OPENROUTER_429_MAX_ROUNDS;
+      const upstreamUrl = useGateway
+        ? "https://ai-gateway.vercel.sh/v1/chat/completions"
+        : "https://openrouter.ai/api/v1/chat/completions";
       debugAgentLog("chain_start", "H1-H3", {
         hasOpenRouterKey: Boolean(process.env.OPENROUTER_API_KEY),
+        hasGatewayToken: Boolean(GATEWAY_TOKEN),
+        provider: useGateway ? "vercel-ai-gateway" : "openrouter",
         requestedModel: model,
         resolvedModel,
         chainLen: modelChain.length,
         isStream,
       });
-      console.log(`📡 Servidor: Encaminhando requisição para OpenRouter (${model})`);
+      console.log(`📡 Servidor: encaminhando requisição para ${useGateway ? "Vercel AI Gateway" : "OpenRouter"} (${resolvedModel})`);
 
       const upstreamSignal =
         typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
@@ -620,14 +703,18 @@ async function startServer() {
         const tryModel = modelChain[attempt];
         let advanceToNextModel = false;
 
-        for (let r429Round = 0; r429Round < OPENROUTER_429_MAX_ROUNDS; r429Round++) {
-          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        for (let r429Round = 0; r429Round < retryRounds; r429Round++) {
+          const response = await fetch(upstreamUrl, {
             method: "POST",
             headers: {
-              "Authorization": `Bearer ${API_KEY}`,
+              "Authorization": `Bearer ${useGateway ? GATEWAY_TOKEN : API_KEY}`,
               "Content-Type": "application/json",
-              "HTTP-Referer": "https://studyflow.app",
-              "X-Title": "StudyFlow AI Proxy",
+              ...(useGateway
+                ? {}
+                : {
+                    "HTTP-Referer": "https://athena.studyflow.app",
+                    "X-Title": "Athena AI Proxy",
+                  }),
             },
             body: JSON.stringify({
               model: tryModel,
@@ -661,7 +748,7 @@ async function startServer() {
             const retryNextStream =
               openRouterErrorRetryable(response.status, raw) && attempt < modelChain.length - 1;
             const willBackoff429 =
-              response.status === 429 && r429Round < OPENROUTER_429_MAX_ROUNDS - 1;
+              response.status === 429 && r429Round < retryRounds - 1;
             debugAgentLog("upstream_response", "H1-H4-H5", {
               branch: "stream",
               tryModel,
@@ -672,7 +759,7 @@ async function startServer() {
               willBackoff429,
               retryNext: retryNextStream,
             });
-            if (response.status === 429 && r429Round < OPENROUTER_429_MAX_ROUNDS - 1) {
+            if (response.status === 429 && r429Round < retryRounds - 1) {
               const backoffMs = openRouter429BackoffMs(r429Round);
               await new Promise((r) => setTimeout(r, backoffMs));
               continue;
@@ -716,7 +803,7 @@ async function startServer() {
           const retryNextJson =
             openRouterErrorRetryable(response.status, raw) && attempt < modelChain.length - 1;
           const willBackoff429Json =
-            response.status === 429 && r429Round < OPENROUTER_429_MAX_ROUNDS - 1;
+            response.status === 429 && r429Round < retryRounds - 1;
           debugAgentLog("upstream_response", "H1-H4-H5", {
             branch: "json",
             tryModel,
@@ -727,7 +814,7 @@ async function startServer() {
             willBackoff429: willBackoff429Json,
             retryNext: retryNextJson,
           });
-          if (response.status === 429 && r429Round < OPENROUTER_429_MAX_ROUNDS - 1) {
+          if (response.status === 429 && r429Round < retryRounds - 1) {
             const backoffMs = openRouter429BackoffMs(r429Round);
             await new Promise((r) => setTimeout(r, backoffMs));
             continue;
@@ -785,13 +872,14 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  if (frontendMode === "vite") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
+  } else if (frontendMode === "static") {
     // Serving static files in production
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
@@ -800,9 +888,20 @@ async function startServer() {
     });
   }
 
+  return app;
+}
+
+export async function startServer() {
+  const PORT = Number(process.env.PORT || 3000);
+  const frontendMode: FrontendMode = process.env.NODE_ENV === "production" ? "static" : "vite";
+  const app = await createApp(frontendMode);
+
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Servidor pronto em http://localhost:${PORT}`);
   });
 }
 
-startServer();
+const isDirectExecution = Boolean(process.argv[1]) && path.resolve(process.argv[1]) === __filename;
+if (isDirectExecution) {
+  void startServer();
+}

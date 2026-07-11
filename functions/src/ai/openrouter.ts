@@ -98,8 +98,8 @@ export const chatWithAI = functions
             headers: {
               'Authorization': `Bearer ${openRouterKey.value()}`,
               'Content-Type': 'application/json',
-              'HTTP-Referer': 'https://studyflow.app',
-              'X-Title': 'StudyFlow',
+              'HTTP-Referer': 'https://athena.studyflow.app',
+              'X-Title': 'Athena',
             },
             body: JSON.stringify({
               model: modelInfo.id,

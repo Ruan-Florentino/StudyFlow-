@@ -12,7 +12,7 @@ export interface DevAccessStore {
   setSimulateFree: (v: boolean) => void;
   applyDevRoleToLocalPlan: (role: UserRole | null) => void;
   resetOnboardingLocal: () => void;
-  clearStudyflowLocalCaches: () => void;
+  clearAthenaLocalCaches: () => void;
 }
 
 export const useDevAccessStore = create<DevAccessStore>()(
@@ -40,7 +40,7 @@ export const useDevAccessStore = create<DevAccessStore>()(
         });
       },
 
-      clearStudyflowLocalCaches: () => {
+      clearAthenaLocalCaches: () => {
         try {
           const keys = Object.keys(localStorage).filter(
             (k) =>
@@ -51,7 +51,7 @@ export const useDevAccessStore = create<DevAccessStore>()(
           );
           for (const k of keys) localStorage.removeItem(k);
         } catch (e) {
-          console.error('[FASE-1] clearStudyflowLocalCaches', e);
+          console.error('[FASE-1] clearAthenaLocalCaches', e);
         }
         window.location.reload();
       },

@@ -17,7 +17,7 @@ export const Suporte = () => {
   const [templateOpen, setTemplateOpen] = useState(false);
 
   const handleSendEmail = () => {
-    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Suporte StudyFlow')}`;
+    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Suporte Athena')}`;
   };
 
   const handleCopyEmail = async () => {
@@ -51,7 +51,7 @@ export const Suporte = () => {
           </div>
 
           <h1 className="text-2xl font-bold">Suporte oficial</h1>
-          <p className="text-white/60">Altavista Holding LTDA · StudyFlow</p>
+          <p className="text-white/60">Altavista Holding LTDA · Athena</p>
 
           <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
             <p className="text-lg font-mono break-all">{SUPPORT_EMAIL}</p>

@@ -50,7 +50,7 @@ describe('AppRouter', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByRole('heading', { name: 'Ranking StudyFlow' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Ranking Athena' })).toBeInTheDocument();
   });
 
   it('redireciona rota inexistente para o Dashboard', async () => {

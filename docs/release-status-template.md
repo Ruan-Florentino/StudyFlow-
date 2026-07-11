@@ -2,7 +2,7 @@
 
 ## 1) Pré-deploy
 
-`[DEPLOY][PRE] Iniciando deploy do StudyFlow em produção às __:__. Janela estimada: __ min. Escopo: __. Risco: baixo/médio.`
+`[DEPLOY][PRE] Iniciando deploy da Athena em produção às __:__. Janela estimada: __ min. Escopo: __. Risco: baixo/médio.`
 
 ## 2) Deploy em andamento
 

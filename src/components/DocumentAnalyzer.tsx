@@ -128,7 +128,7 @@ Retorne APENAS um JSON válido (UTF-8), sem markdown:
     }
   };
 
-  const handleSaveToStudyFlow = () => {
+  const handleSaveToAthena = () => {
     if (!result) return;
 
     const noteContent = `# ${file?.name || 'Documento Analisado'}\n\n## Resumo\n${result.summary}\n\n## Tópicos Principais\n${result.topics.map((t) => `- ${t}`).join('\n')}`;
@@ -158,7 +158,7 @@ Retorne APENAS um JSON válido (UTF-8), sem markdown:
     }
 
     setSaved(true);
-    toast.success('StudyFlow', 'Resumo e flashcards salvos.');
+    toast.success('Athena', 'Resumo e flashcards salvos.');
   };
 
   return (
@@ -253,13 +253,13 @@ Retorne APENAS um JSON válido (UTF-8), sem markdown:
             <h2 className="text-2xl font-bold">Resultados da análise</h2>
             <AnimatedButton
               type="button"
-              onClick={handleSaveToStudyFlow}
+              onClick={handleSaveToAthena}
               disabled={saved}
               variant={saved ? 'secondary' : 'primary'}
             >
               {saved ? (
                 <>
-                  <CheckCircle2 /> Salvo no StudyFlow
+                  <CheckCircle2 /> Salvo na Athena
                 </>
               ) : (
                 <>

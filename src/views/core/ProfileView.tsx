@@ -334,7 +334,7 @@ const ProfileView = () => {
         scale: 2,
       });
       const link = document.createElement('a');
-      link.download = 'meu-progresso-studyflow.png';
+      link.download = 'meu-progresso-athena.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
@@ -354,7 +354,7 @@ const ProfileView = () => {
             </div>
             <div>
               <h2 className="text-2xl font-premium-title italic text-white uppercase">{name}</h2>
-              <p className="text-[#00ff94] font-premium-mono font-bold text-xs">NIVEL {level} - STUDYFLOW</p>
+              <p className="text-[#00ff94] font-premium-mono font-bold text-xs">NÍVEL {level} - ATHENA</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -374,7 +374,7 @@ const ProfileView = () => {
           </div>
           <div className="text-center pt-2">
             <p className="text-[8px] font-premium-mono text-text-secondary uppercase tracking-[0.3em]">
-              StudyFlow - resumo do seu progresso no app
+              Athena - resumo do seu progresso no app
             </p>
           </div>
         </div>
@@ -396,7 +396,7 @@ const ProfileView = () => {
         <div className="pointer-events-none absolute inset-x-5 bottom-5 hidden items-end justify-between gap-5 sm:flex">
           <div className="ml-28 min-w-0">
             <span className="inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[9px] font-premium-mono font-black uppercase tracking-[0.2em] text-primary/90 backdrop-blur-xl">
-              Perfil StudyFlow
+              Perfil Athena
             </span>
             <p className="mt-2 truncate text-2xl font-premium-title font-black tracking-tight text-white/90">
               {name || 'Estudante'}
@@ -716,7 +716,7 @@ const ProfileView = () => {
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `studyflow-backup-${new Date().toISOString().split('T')[0]}.json`;
+              a.download = `athena-backup-${new Date().toISOString().split('T')[0]}.json`;
               a.click();
               URL.revokeObjectURL(url);
             }}>
@@ -788,7 +788,7 @@ const ProfileView = () => {
                   },
                   {
                     label: 'Termos de Uso',
-                    hint: 'Contrato de uso do StudyFlow e limites do serviço',
+                    hint: 'Contrato de uso da Athena e limites do serviço',
                     icon: Scale,
                     path: '/perfil/termos-de-uso',
                   },
@@ -803,7 +803,7 @@ const ProfileView = () => {
                     hint: 'Art. 18, incidentes, portabilidade e dúvidas de tratamento',
                     icon: Mail,
                     mailto:
-                      'mailto:altavistaholdingltda@gmail.com?subject=StudyFlow%20%E2%80%94%20LGPD%20%2F%20Privacidade',
+                      'mailto:altavistaholdingltda@gmail.com?subject=Athena%20%E2%80%94%20LGPD%20%2F%20Privacidade',
                   },
                   {
                     label: 'Suporte oficial',
@@ -812,7 +812,7 @@ const ProfileView = () => {
                     path: '/perfil/suporte',
                   },
                   {
-                    label: 'Sobre o StudyFlow',
+                    label: 'Sobre a Athena',
                     hint: 'Informações do app e canais institucionais',
                     icon: Info,
                     path: '/perfil/sobre',

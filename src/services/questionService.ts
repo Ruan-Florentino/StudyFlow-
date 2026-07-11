@@ -29,9 +29,9 @@ export const QUESTION_BANK_TOTAL_TARGET = Object.values(QUESTION_BANK_TARGETS).r
 
 const MILITARY_EXAMS = new Set(['ita', 'ime', 'esa', 'espcex', 'afa', 'efomm']);
 const CONCURSO_EXAMS = new Set(['banco do brasil', 'bb', 'caixa', 'inss', 'ibge', 'correios', 'petrobras', 'prf', 'policia federal']);
-const STUDYFLOW_PRACTICE_INSTITUTION = 'StudyFlow Practice';
-const STUDYFLOW_PRACTICE_SOURCE =
-  'Pratica StudyFlow. Item autoral/legado para treino respondivel; nao e questao oficial. Importacao real por JSON/CSV/API segue pronta para fontes oficiais licenciadas.';
+const ATHENA_PRACTICE_INSTITUTION = 'Athena Practice';
+const ATHENA_PRACTICE_SOURCE =
+  'Prática Athena. Item autoral/legado para treino respondível; não é questão oficial. Importação real por JSON/CSV/API segue pronta para fontes oficiais licenciadas.';
 
 const PRACTICE_EXAMS: Record<QuestionExamType, string[]> = {
   enem: ['ENEM'],
@@ -136,25 +136,25 @@ function canonicalSubject(value: unknown): string {
   return SUBJECT_ALIASES[normalize(repaired)] ?? repaired;
 }
 
-function legacyDifficultyToStudyFlow(difficulty: LegacyQuestion['difficulty']): QuestionDifficulty {
+function legacyDifficultyToAthena(difficulty: LegacyQuestion['difficulty']): QuestionDifficulty {
   if (difficulty === 'Easy') return 'facil';
   if (difficulty === 'Hard') return 'dificil';
   return 'medio';
 }
 
-function isStudyFlowPracticeLegacy(question: LegacyQuestion): boolean {
+function isAthenaPracticeLegacy(question: LegacyQuestion): boolean {
   return question.id.startsWith('bulk-') || question.id.startsWith('12k-');
 }
 
 function legacyInstitution(question: LegacyQuestion, exam: string, examType: QuestionExamType): string {
-  if (isStudyFlowPracticeLegacy(question)) return STUDYFLOW_PRACTICE_INSTITUTION;
-  if (examType === 'enem') return STUDYFLOW_PRACTICE_INSTITUTION;
-  return exam || STUDYFLOW_PRACTICE_INSTITUTION;
+  if (isAthenaPracticeLegacy(question)) return ATHENA_PRACTICE_INSTITUTION;
+  if (examType === 'enem') return ATHENA_PRACTICE_INSTITUTION;
+  return exam || ATHENA_PRACTICE_INSTITUTION;
 }
 
 function legacySource(question: LegacyQuestion): string {
-  if (isStudyFlowPracticeLegacy(question)) return STUDYFLOW_PRACTICE_SOURCE;
-  return 'Seed autoral StudyFlow legado para treino. Nao e item oficial de prova.';
+  if (isAthenaPracticeLegacy(question)) return ATHENA_PRACTICE_SOURCE;
+  return 'Seed autoral Athena legado para treino. Não é item oficial de prova.';
 }
 
 function fromLegacyQuestion(question: LegacyQuestion): Question | null {
@@ -178,7 +178,7 @@ function fromLegacyQuestion(question: LegacyQuestion): Question | null {
     year: Number(question.ano) || new Date().getFullYear(),
     subject: canonicalSubject(question.materia),
     topic: repairText(question.assunto),
-    difficulty: legacyDifficultyToStudyFlow(question.difficulty),
+    difficulty: legacyDifficultyToAthena(question.difficulty),
     statement: repairText(question.pergunta),
     alternatives,
     correctAlternative,
@@ -222,10 +222,10 @@ function buildPracticeQuestion(examType: QuestionExamType, index: number, existi
     id: uniquePracticeId(examType, index, existingIds),
     exam,
     examType,
-    institution: STUDYFLOW_PRACTICE_INSTITUTION,
+    institution: ATHENA_PRACTICE_INSTITUTION,
     year,
     difficulty,
-    source: STUDYFLOW_PRACTICE_SOURCE,
+    source: ATHENA_PRACTICE_SOURCE,
   };
 
   if (template === 0) {

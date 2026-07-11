@@ -4,7 +4,7 @@ import { ChevronLeft, Code2, Terminal, Save, AlertCircle, Cpu } from 'lucide-rea
 
 export const TheSourceCode = ({ onBack }: { onBack: () => void }) => {
   const [code, setCode] = useState(`// STUDY_KERNEL v2.0
-// AUTHOR: STUDYFLOW TEAM
+// AUTHOR: ATHENA TEAM
 // STATUS: ACTIVE
 
 const Universe = {

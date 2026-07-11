@@ -125,7 +125,7 @@ export const initAudioUnlocker = () => {
     // We can consider it unlocked after any interaction even if silent play fails
     // as the next call (from a real interaction) will work.
     // But setting it to true here might be premature if the silent play failed.
-    // However, for studyFlow, we want to allow audio as soon as a click happens.
+    // Na Athena, liberamos o áudio assim que uma interação válida acontece.
     audioUnlocked = true;
 
     // Remove listeners once unlocked

@@ -44,7 +44,7 @@ function resolveUnitPrice(plan: Plan, period: Period): number {
 
 function itemTitle(plan: Plan, period: Period): string {
   const cadence = period === 'yearly' ? 'anual' : 'mensal';
-  return plan === 'supremo' ? `StudyFlow Supremo — ${cadence}` : `StudyFlow Premium — ${cadence}`;
+  return plan === 'supremo' ? `Athena Supremo — ${cadence}` : `Athena Premium — ${cadence}`;
 }
 
 Deno.serve(async (req) => {
