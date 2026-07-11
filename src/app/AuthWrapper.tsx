@@ -2,7 +2,6 @@ import React, { ReactNode, useEffect } from 'react';
 
 import { devAgentLog } from '../lib/devAgentLog';
 import { useAuth } from '../contexts/AuthContext';
-import { useUserStore } from '../store/useUserStore';
 
 /**
  * AuthWrapper
@@ -15,18 +14,17 @@ interface AuthWrapperProps {
 export function AuthWrapper({ children }: AuthWrapperProps) {
   const { user, loading } = useAuth();
 
-  const isAuthReady = useUserStore((s) => s.isAuthReady);
 
-  const blockingAuth = loading || (Boolean(user) && !isAuthReady);
+  const blockingAuth = loading;
 
   useEffect(() => {
     devAgentLog({
       hypothesisId: 'H1',
       location: 'src/app/AuthWrapper.tsx',
       message: 'AuthWrapper state',
-      data: { loading, hasUser: Boolean(user), isAuthReady, blockingAuth },
+      data: { loading, hasUser: Boolean(user), blockingAuth },
     });
-  }, [loading, user, isAuthReady, blockingAuth]);
+  }, [loading, user, blockingAuth]);
 
   if (blockingAuth) {
     return (
