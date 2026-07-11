@@ -17,13 +17,13 @@ export default defineConfig(({mode}) => {
         devOptions: {
           enabled: false
         },
-        includeAssets: ['favicon.ico', 'icons/*'],
+        includeAssets: ['icons/*'],
         manifest: {
           name: 'Athena',
           short_name: 'Athena',
           lang: 'pt-BR',
-          theme_color: '#22c55e',
-          background_color: '#000000',
+          theme_color: '#00E88F',
+          background_color: '#050505',
           display: 'standalone',
           orientation: 'any',
           start_url: '/',

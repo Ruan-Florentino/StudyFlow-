@@ -1,8 +1,8 @@
 export const ATHENA_CONFIG = {
-  NAME: 'ATHENA V3',
+  NAME: 'ATHENA',
   TAGLINE: 'Sua assistente inteligente de estudos',
-  ICON: '\uD83E\uDD89',
-  ICON_SRC: '/icons/app-icon.png?v=5',
+  ICON: '✦',
+  ICON_SRC: '/brand/athena-symbol.png',
   COLORS: {
     PRIMARY: '#00E88F',
     SECONDARY: '#0A0A0A',

@@ -80,7 +80,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder || 'Pergunte sobre ENEM, redacao ou questoes...'}
           rows={1}
-          aria-label="Mensagem para ATHENA V3"
+          aria-label="Mensagem para ATHENA"
           className="max-h-[200px] min-h-[44px] flex-1 resize-none border-none bg-transparent py-3 text-sm font-medium leading-relaxed text-white outline-none scrollbar-none placeholder:text-white/25"
           disabled={disabled}
         />

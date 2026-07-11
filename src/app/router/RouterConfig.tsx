@@ -5,6 +5,7 @@ import { routes } from './routes';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { AppContent } from '../AppContent';
 import { AuthWrapper } from '../AuthWrapper';
+import { AthenaSplash } from '../../components/brand/AthenaSplash';
 
 const LoginPage = lazy(() => import('../../pages/LoginPage').then((module) => ({ default: module.LoginPage })));
 
@@ -39,7 +40,7 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: (
-      <Suspense fallback={<div className="app-shell-viewport bg-black text-white flex items-center justify-center">Carregando…</div>}>
+      <Suspense fallback={<AthenaSplash compact />}>
         <LoginPage />
       </Suspense>
     ),

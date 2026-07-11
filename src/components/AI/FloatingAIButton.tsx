@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { useAIUI } from '../../hooks/useAIUI';
 import { ATHENA_CONFIG } from '../../features/athena/constants/config';
 import { springs } from '../../lib/animations/easings';
+import { AthenaLogo } from '../brand/AthenaLogo';
 
 type FlightState = {
   x: number;
@@ -421,7 +422,6 @@ export function FloatingAIButton() {
   const [hover, setHover] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
   const [ripple, setRipple] = React.useState(0);
-  const [blink, setBlink] = React.useState(false);
   const [routeMotion, setRouteMotion] = React.useState<RouteMotion>({ behind: false, pulse: 0 });
   const previousPathRef = React.useRef(location.pathname);
   const routeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -518,7 +518,6 @@ export function FloatingAIButton() {
   }, []);
   useEffect(() => {
     const liteMotion = reduced || mobileMotion;
-    let blinkTimer: ReturnType<typeof setTimeout>;
     let releaseTimer: ReturnType<typeof setTimeout>;
     let rafId: number | null = null;
     let lastTop = 0;
@@ -563,14 +562,6 @@ export function FloatingAIButton() {
         distanceAfter,
         active: liteMotion ? scrollSpeed > 0.08 || energy > 0.08 : scrollSpeed > 0.08 || energy > 0.038 || distanceAfter > 0.48,
       };
-    };
-
-    const scheduleBlink = () => {
-      blinkTimer = setTimeout(() => {
-        setBlink(true);
-        window.setTimeout(() => setBlink(false), 130);
-        scheduleBlink();
-      }, 3400 + Math.random() * 3800);
     };
 
     const settleFlight = (delay = 260) => {
@@ -658,8 +649,6 @@ export function FloatingAIButton() {
     lastLeft = initial.left;
     const initialFlight = getFlightTarget(initial, manualOffsetRef.current);
     commitFlight((current) => ({ ...current, x: initialFlight.x, y: initialFlight.y, energy: 0 }));
-    scheduleBlink();
-
     const main = document.getElementById('app-main-scroll');
     const visualViewport = window.visualViewport;
     main?.addEventListener('scroll', requestSync, { passive: true });
@@ -673,7 +662,6 @@ export function FloatingAIButton() {
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
 
     return () => {
-      clearTimeout(blinkTimer);
       clearTimeout(releaseTimer);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
       main?.removeEventListener('scroll', requestSync);
@@ -911,7 +899,7 @@ export function FloatingAIButton() {
         )}
       </AnimatePresence>
       <motion.span
-        className="athena-owl-shell relative z-10 flex h-full w-full items-center justify-center rounded-full p-[0.12rem]"
+        className="athena-brand-shell relative z-10 flex h-full w-full items-center justify-center rounded-full p-[0.12rem]"
         animate={{
           rotateY: routeMotion.behind
             ? mobileMotion ? 176 : [flight.flip === -1 ? 180 : 0, flight.flip === -1 ? 18 : 166, 176]
@@ -934,7 +922,7 @@ export function FloatingAIButton() {
                 : 'drop-shadow(0 0 21px rgba(var(--hub-primary-rgb),0.28)) drop-shadow(0 12px 22px rgba(0,0,0,0.28))',
         }}
       >
-        <AthenaOwl blinking={blink} active={hover || flight.gliding} gliding={flight.gliding} intensity={flight.energy} lite={liteMotion} />
+        <AthenaLogo variant="badge-glow" size={86} decorative />
         <span className="absolute right-[1.05rem] top-[1.18rem] h-2.5 w-2.5 rounded-full border-2 border-[#06100d] bg-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.82)]" />
       </motion.span>
     </motion.button>

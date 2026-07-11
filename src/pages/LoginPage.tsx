@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { AnimatedButton, GlassCard } from '../components/UI';
 import { toast } from '../store/useToastStore';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { AthenaLogo } from '../components/brand/AthenaLogo';
 
 export function LoginPage() {
   const { user, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
@@ -68,9 +69,9 @@ export function LoginPage() {
       <div className="absolute inset-0 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
       
       <GlassCard className="w-full max-w-md p-8 relative z-10 flex flex-col gap-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-premium-title italic mb-2">Athena</h1>
-          <p className="text-text-secondary text-sm">Sua jornada de estudos começa aqui.</p>
+        <div className="flex flex-col items-center text-center">
+          <AthenaLogo variant="horizontal" size={74} animated accessibilityLabel="Athena — sua IA de estudos" />
+          <p className="mt-2 text-sm text-text-secondary">Sua jornada de estudos começa aqui.</p>
         </div>
 
         {!isSupabaseConfigured ? (

@@ -7,6 +7,7 @@ import { springs } from '../lib/animations/easings';
 import { playInteractionFeedback } from '../lib/feedback';
 import { useAppNavigation } from '../app/router/useAppNavigation';
 import { preloadRoute } from '../app/router/preload';
+import { AthenaLogo } from './brand/AthenaLogo';
 
 type NavItem = {
   id: 'home' | 'questions' | 'explore' | 'ranking' | 'focus' | 'profile';
@@ -15,12 +16,13 @@ type NavItem = {
   icon: typeof Home;
   path: string;
   badge?: boolean;
+  brandIcon?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'home', label: 'INICIO', labelCompact: 'INICIO', icon: Home, path: '/' },
   { id: 'questions', label: 'QUESTOES', labelCompact: 'QUEST', icon: Target, path: '/questoes', badge: true },
-  { id: 'explore', label: 'EXPLORAR', labelCompact: 'EXPLORAR', icon: Compass, path: '/explorar' },
+  { id: 'explore', label: 'EXPLORAR', labelCompact: 'EXPLORAR', icon: Compass, path: '/explorar', brandIcon: true },
   { id: 'ranking', label: 'RANKING', labelCompact: 'RANK', icon: Trophy, path: '/ranking' },
   { id: 'focus', label: 'FOCO', labelCompact: 'FOCO', icon: Timer, path: '/foco' },
   { id: 'profile', label: 'PERFIL', labelCompact: 'PERFIL', icon: User, path: '/perfil' },
@@ -74,7 +76,13 @@ export function BottomNav() {
                     />
                   )}
                   <div className="relative z-10">
-                    <item.icon size={18} strokeWidth={isActive ? 2.35 : 2} className={isActive ? 'text-primary drop-shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.35)]' : 'text-white/70'} />
+                    {item.brandIcon ? (
+                      <motion.span animate={{ scale: isActive ? 1.08 : 0.96 }} transition={springs.snappy} className={isActive ? 'block opacity-100' : 'block grayscale opacity-55'}>
+                        <AthenaLogo variant="mini" size={22} decorative />
+                      </motion.span>
+                    ) : (
+                      <item.icon size={18} strokeWidth={isActive ? 2.35 : 2} className={isActive ? 'text-primary drop-shadow-[0_0_10px_rgba(var(--hub-primary-rgb),0.35)]' : 'text-white/70'} />
+                    )}
                     {item.badge && <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary" />}
                   </div>
                   <span className={isActive ? 'relative z-10 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] text-primary drop-shadow-[0_0_8px_rgba(var(--hub-primary-rgb),0.25)] md:block' : 'relative z-10 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.06em] text-white/60 md:block'}>{item.label}</span>

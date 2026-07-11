@@ -28,6 +28,8 @@ import { useUserAccess } from '../../hooks/useUserAccess';
 import { staggerContainer, staggerItem } from '../../lib/animations/variants';
 import { calculateDaysLeft } from '../../lib/studyUtils';
 import { useStore } from '../../store';
+import { AthenaLogo } from '../../components/brand/AthenaLogo';
+import { AthenaNotificationBadge } from '../../components/brand/AthenaNotificationBadge';
 
 const formatNumber = new Intl.NumberFormat('pt-BR');
 const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'] as const;
@@ -224,7 +226,10 @@ const DashboardView = () => {
       <motion.div className="relative z-10 app-shell-premium pb-32 pt-5 md:pb-36 md:pt-8" variants={staggerContainer} initial="hidden" animate="show">
         <motion.header variants={staggerItem} className="mb-8 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.22em] text-primary/70">Athena</p>
+            <div className="flex items-center gap-2">
+              <AthenaLogo variant="mini" size={24} decorative />
+              <p className="text-[10px] font-premium-mono font-bold uppercase tracking-[0.22em] text-primary/80">ATHENA</p>
+            </div>
             <h1 className="mt-1 truncate text-[28px] font-premium-title italic tracking-tight text-white md:text-4xl">
               {getGreeting(now.getHours())}, {name || 'estudante'}.
             </h1>
@@ -235,6 +240,9 @@ const DashboardView = () => {
               <MetricPill icon={Flame}>{streak || 0} dias</MetricPill>
               <MetricPill icon={Zap} accent>{formatNumber.format(xp)} XP</MetricPill>
             </div>
+            <button type="button" onClick={openWrongReview} className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60" title="Abrir revisões pendentes">
+              <AthenaNotificationBadge count={wrongCount} label="Revisões pendentes" />
+            </button>
             <button type="button" onClick={() => goTo('/perfil')} aria-label="Abrir perfil" className="size-11 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:border-primary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
               <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'Athena')}`} alt="Perfil" className="size-full object-cover" referrerPolicy="no-referrer" />
             </button>

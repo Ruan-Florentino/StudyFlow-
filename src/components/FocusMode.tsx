@@ -159,7 +159,11 @@ export const FocusMode = ({ onBack }: { onBack: () => void }) => {
     }
 
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      new Notification('Sessao concluida', { body: 'Voce ganhou 25 XP. Hora de respirar.' });
+      new Notification('Sessão concluída', {
+        body: 'Você ganhou 25 XP. Hora de respirar.',
+        icon: '/icons/icon-192.png',
+        badge: '/icons/favicon-48.png',
+      });
     }
   }, [addXP, focusSessions.length, userId]);
 

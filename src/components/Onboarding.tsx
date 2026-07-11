@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Target, Clock, BookOpen, Home, Compass } from 'lucide-react';
+import { ArrowRight, BookOpen, Home, Compass } from 'lucide-react';
 import { AnimatedButton } from './UI';
 import { useStore } from '../store';
+import { AthenaLogo } from './brand/AthenaLogo';
 
 export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) => void }) => {
   const [step, setStep] = useState(1);
@@ -50,9 +51,8 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
               className="space-y-8"
             >
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <Target size={32} className="text-primary" />
-                </div>
+                <AthenaLogo variant="vertical" size={108} animated className="mx-auto" accessibilityLabel="Conheça a Athena" />
+                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-primary">Conheça a Athena</p>
                 <h2 className="text-3xl md:text-4xl font-bold">Qual seu objetivo principal?</h2>
                 <p className="text-text-secondary">Isso nos ajuda a personalizar sua jornada de estudos.</p>
               </div>
@@ -82,9 +82,8 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
               className="space-y-8"
             >
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <Clock size={32} className="text-primary" />
-                </div>
+                <AthenaLogo variant="mini" size={64} animated className="mx-auto" decorative />
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">Seu plano de estudos em movimento</p>
                 <h2 className="text-3xl md:text-4xl font-bold">Quantas horas você estuda por dia?</h2>
                 <p className="text-text-secondary">Seja honesto. A constância vence a intensidade.</p>
               </div>
@@ -114,9 +113,8 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
               className="space-y-8"
             >
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <BookOpen size={32} className="text-primary" />
-                </div>
+                <AthenaLogo variant="badge-glow" size={72} animated className="mx-auto" decorative />
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">Estude com foco. Evolua todos os dias.</p>
                 <h2 className="text-3xl md:text-4xl font-bold">Quais matérias são sua maior dificuldade?</h2>
                 <p className="text-text-secondary">Selecione quantas quiser. Nossa IA focará em suas fraquezas.</p>
               </div>
@@ -165,9 +163,7 @@ export const Onboarding = ({ onComplete }: { onComplete: (initialPath: string) =
               className="space-y-8"
             >
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <BookOpen size={32} className="text-primary" />
-                </div>
+                <AthenaLogo variant="badge-dark" size={72} animated className="mx-auto" decorative />
                 <h2 className="text-3xl md:text-4xl font-bold">Seu primeiro passo (rápido)</h2>
                 <p className="text-text-secondary max-w-md mx-auto">
                   Escolha uma ação para sentir o app agora. Você pode mudar de ideia depois — o objetivo é uma vitória

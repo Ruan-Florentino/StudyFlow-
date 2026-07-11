@@ -25,7 +25,7 @@ export function AIHub() {
               <span className="relative z-10 text-3xl sm:text-4xl">{ATHENA_CONFIG.ICON}</span>
             </div>
             <div className="min-w-0">
-              <div className="premium-kicker mb-2">Athena V3</div>
+              <div className="premium-kicker mb-2">ATHENA</div>
               <h1 className="truncate text-3xl font-black tracking-tight text-white sm:text-4xl">
                 <span className="neon-text-soft">Athena</span> Command
               </h1>

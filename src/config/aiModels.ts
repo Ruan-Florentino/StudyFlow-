@@ -17,7 +17,7 @@ export interface AIModelConfig extends AIModel {
 export const AI_MODELS: AIModel[] = [
   {
     id: 'athena-v3',
-    name: 'ATHENA V3',
+    name: 'ATHENA',
     provider: 'Athena',
     description: 'Núcleo único de IA Athena para estudo, redação e questões',
     emoji: '🦉',

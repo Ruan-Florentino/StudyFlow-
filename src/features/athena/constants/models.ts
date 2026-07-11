@@ -7,7 +7,7 @@ export const ATHENA_MODELS: AIModel[] = [
   {
     id: 'athena-v3',
     modelId: MID,
-    name: 'ATHENA V3',
+    name: 'ATHENA',
     provider: 'Athena',
     description: 'Modelo único Athena para raciocínio, redação e questões.',
     isFree: true,

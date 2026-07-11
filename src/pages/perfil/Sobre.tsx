@@ -2,6 +2,7 @@ import React from 'react';
 import { GlassCard } from '../../components/UI';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AthenaLogo } from '../../components/brand/AthenaLogo';
 
 export const Sobre = () => {
     const navigate = useNavigate();
@@ -11,9 +12,11 @@ export const Sobre = () => {
             <ChevronLeft size={20} /> Voltar
           </button>
           <GlassCard className="p-8 space-y-6">
-            <h1 className="text-2xl font-bold">Athena</h1>
+            <AthenaLogo variant="horizontal" size={72} accessibilityLabel="Athena — sua IA de estudos" />
+            <h1 className="sr-only">Athena</h1>
             <p className="text-white/60">Versão 1.0.0</p>
-            <p className="text-sm">Plataforma educacional dedicada a auxiliar estudantes em sua jornada de aprendizagem.</p>
+            <p className="text-sm">Sua inteligência de estudos para organizar o foco, praticar questões e evoluir com clareza.</p>
+            <p className="text-xs leading-relaxed text-white/45">Identidade Athena: capacete, sabedoria e estratégia aplicados à aprendizagem.</p>
             <div className="border-t border-white/10 pt-6 text-sm text-white/40">
                 <p>&copy; 2026 Altavista Holding LTDA</p>
                 <p>Todos os direitos reservados.</p>

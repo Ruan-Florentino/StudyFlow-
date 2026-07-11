@@ -9,7 +9,7 @@ import './index.css';
 
 setupChunkErrorHandler();
 
-const PWA_CACHE_RESET_VERSION = 'athena-cache-reset-pwa-2026-07-10-v2';
+const PWA_CACHE_RESET_VERSION = 'athena-brand-system-pwa-2026-07-10-v3';
 const PWA_CACHE_RESET_STORAGE_KEY = 'athena:pwa-cache-reset';
 
 function hasCompletedPwaCacheReset() {

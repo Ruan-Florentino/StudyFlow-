@@ -1,12 +1,12 @@
 /**
- * Modelo único da Athena V3.
+ * Modelo único da Athena.
  */
 export const ATHENA_V3_OPENROUTER_ID = 'deepseek/deepseek-chat' as const;
 
 export const AI_MODELS = {
   ATHENA_V3: {
     id: ATHENA_V3_OPENROUTER_ID,
-    name: 'ATHENA V3',
+    name: 'ATHENA',
     context: 128000,
     strengths: ['geral', 'redação', 'raciocínio', 'ENEM', 'questões'],
     speed: 'médio',

@@ -33,6 +33,7 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { toast } from '../../store/useToastStore';
+import { AthenaLogo } from '../../components/brand/AthenaLogo';
 import {
   AnimatedButton,
   GlassCard,
@@ -350,7 +351,7 @@ const ProfileView = () => {
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#00ff94]/10 blur-3xl rounded-full" />
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-2xl border-2 border-[#00ff94]/30 overflow-hidden">
-              <img src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} alt="" className="w-full h-full object-cover" />
+              {profilePic ? <img src={profilePic} alt="" className="h-full w-full object-cover" /> : <AthenaLogo variant="mini" size={80} decorative />}
             </div>
             <div>
               <h2 className="text-2xl font-premium-title italic text-white uppercase">{name}</h2>
@@ -422,12 +423,13 @@ const ProfileView = () => {
         <div className="absolute -bottom-10 left-1/2 z-20 -translate-x-1/2 sm:-bottom-12 sm:left-6 sm:translate-x-0">
           <div className="relative group">
             <div className="profile-avatar-shell h-20 w-20 overflow-hidden rounded-full border-4 border-background bg-card shadow-[0_18px_40px_rgba(0,0,0,0.38)] ring-1 ring-white/15 sm:h-24 sm:w-24">
-              <img
-                src={profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`}
-                alt="Profile"
-                className="w-full h-full object-cover"
-                onError={() => profilePic && setProfilePic('')}
-              />
+              {profilePic ? (
+                <img src={profilePic} alt="Foto de perfil" className="h-full w-full object-cover" onError={() => setProfilePic('')} />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center bg-[#07110e]">
+                  <AthenaLogo variant="mini" size={58} accessibilityLabel="Avatar padrão da Athena" />
+                </span>
+              )}
             </div>
             {isEditing && (
               <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/40 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">

@@ -23,6 +23,7 @@ import { useAthena } from '../hooks/useAthena';
 import { ATHENA_MODELS, DEFAULT_MODEL } from '../constants/models';
 import type { ChatSession } from '../types/chat.types';
 import { ATHENA_CONFIG } from '../constants/config';
+import { AthenaPulse } from '../../../components/brand/AthenaLoaders';
 import { AIModel } from '../types/model.types';
 
 const ATHENA_EMPTY_SUGGESTIONS = [
@@ -302,10 +303,10 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
                 <AthenaAvatar size={compact ? 'lg' : 'xl'} active className={compact ? 'mb-3' : 'mb-4 sm:mb-5'} />
 
                 <h2 className={compact ? 'mb-1 text-base font-bold text-white' : 'mb-2 text-lg font-bold text-white sm:text-2xl'}>
-                  {greeting || 'Ola, eu sou a ' + ATHENA_CONFIG.NAME}
+                  {greeting || 'Olá, eu sou a Athena'}
                 </h2>
                 <p className={compact ? 'mx-auto max-w-sm text-[11px] leading-relaxed text-white/58' : 'mx-auto max-w-md text-sm leading-relaxed text-white/58'}>
-                  Sua tutora inteligente para ENEM, redacao e questoes.
+                  Sua tutora inteligente para estudos, redação e questões.
                 </p>
                 {!compact ? (
                   <p className="athena-hero-subline mt-2 max-w-md text-xs leading-relaxed text-white/34">
@@ -343,7 +344,7 @@ export const AthenaChat: React.FC<AthenaChatProps> = ({
 
             {loading ? (
               <div className="athena-message-row athena-thinking-row flex items-center gap-3 py-5">
-                <AthenaAvatar size="sm" active />
+                <AthenaPulse size={36} label="Athena está pensando" />
                 <div className="flex gap-1">
                   <motion.div
                     animate={reduceMotion ? { opacity: [0.35, 1, 0.35] } : { y: [0, -5, 0] }}

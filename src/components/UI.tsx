@@ -5,8 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { LucideIcon, ChevronLeft, Flame, Sparkle, Loader2 } from 'lucide-react';
 import { easings, springs, tweens } from '../lib/animations/easings';
 import { playInteractionFeedback } from '../lib/feedback';
-
-const APP_ICON_SRC = '/icons/app-icon.png?v=5';
+import { AthenaLogo } from './brand/AthenaLogo';
 
 const ICON_THEMES = {
   primary: { color: '#00E88F', glow: 'rgba(var(--hub-primary-rgb), 0.35)' },
@@ -285,15 +284,7 @@ export const QuickAccessCard = ({ icon: Icon, title, subtitle, onClick, color = 
 };
 
 export const LogoIcon = ({ size = 24 }: { size?: number }) => (
-  <img
-    src={APP_ICON_SRC}
-    alt=""
-    width={size}
-    height={size}
-    className="object-contain select-none pointer-events-none drop-shadow-[0_0_16px_rgba(var(--hub-primary-rgb),0.36)]"
-    decoding="async"
-    draggable={false}
-  />
+  <AthenaLogo variant={size <= 32 ? 'mini' : 'symbol'} size={size} decorative />
 );
 
 export const Logo = ({ size = "md", className, showText = false }: { size?: "sm" | "md" | "lg" | "xl" | "xxl"; className?: string; showText?: boolean }) => {
@@ -313,28 +304,19 @@ export const Logo = ({ size = "md", className, showText = false }: { size?: "sm"
       transition={reduceMotion ? tweens.micro : tweens.normal}
       className={cn("flex items-center gap-3", className)}
     >
-      <div className={cn(
-        "relative flex items-center justify-center rounded-2xl liquid-glass glass-sheen overflow-hidden group",
-        sizes[size].container
-      )}>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-primary/10 opacity-50" />
-        <motion.div 
-          animate={reduceMotion ? { rotate: 0 } : { rotate: 360 }}
-          transition={
-            reduceMotion
-              ? { duration: 0 }
-              : { duration: 20, repeat: Infinity, ease: 'linear' }
-          }
-          className="absolute -inset-1 border border-white/15 border-dashed rounded-full" 
-        />
-        <LogoIcon size={sizes[size].icon} />
-      </div>
+      <AthenaLogo
+        variant={size === 'sm' || size === 'md' ? 'mini' : 'badge-dark'}
+        size={Math.max(sizes[size].icon, size === 'sm' ? 22 : size === 'md' ? 28 : sizes[size].icon * 1.65)}
+        decorative={!showText}
+        animated={!reduceMotion}
+        className={cn(!showText && sizes[size].container)}
+      />
       {showText && (
         <div className="flex min-w-0 flex-col">
-          <span className={cn("font-display font-black tracking-tighter text-white italic uppercase", sizes[size].text)}>
-            <span className="text-primary">Athena</span>
+          <span className={cn("font-display font-black uppercase tracking-[0.18em] text-primary", sizes[size].text)}>
+            ATHENA
           </span>
-          <span className="text-[8px] font-premium-mono font-bold text-white/50 uppercase tracking-[0.22em] -mt-1">Plataforma de Estudos</span>
+          <span className="mt-0.5 text-[8px] font-premium-mono font-bold uppercase tracking-[0.18em] text-white/50">Sua IA de estudos</span>
         </div>
       )}
     </motion.div>

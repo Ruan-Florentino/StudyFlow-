@@ -1,6 +1,6 @@
-import React from 'react';
 import { cn } from '../../../components/UI';
 import { ATHENA_CONFIG } from '../constants/config';
+import { AthenaLogo } from '../../../components/brand/AthenaLogo';
 
 type AthenaAvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -27,8 +27,6 @@ export function AthenaAvatar({
   active?: boolean;
   className?: string;
 }) {
-  const [imageOk, setImageOk] = React.useState(true);
-
   return (
     <span
       role="img"
@@ -39,20 +37,12 @@ export function AthenaAvatar({
     >
       <span className="athena-avatar-aura" aria-hidden />
       <span className="athena-avatar-core relative z-10 flex h-full w-full items-center justify-center">
-        {imageOk ? (
-          <img
-            src={ATHENA_CONFIG.ICON_SRC}
-            alt=""
-            className={cn('athena-avatar-image object-contain', imageClasses[size])}
-            draggable={false}
-            decoding="async"
-            onError={() => setImageOk(false)}
-          />
-        ) : (
-          <span className={cn('athena-avatar-fallback leading-none', size === 'sm' ? 'text-lg' : size === 'md' ? 'text-xl' : 'text-3xl')}>
-            {ATHENA_CONFIG.ICON}
-          </span>
-        )}
+        <AthenaLogo
+          variant={active && (size === 'lg' || size === 'xl') ? 'badge-glow' : size === 'sm' ? 'mini' : 'badge-dark'}
+          size={size === 'sm' ? 28 : size === 'md' ? 32 : size === 'lg' ? 52 : 60}
+          decorative
+          className={cn('athena-avatar-image object-contain', imageClasses[size])}
+        />
       </span>
       <span className="athena-avatar-status" aria-hidden />
     </span>
