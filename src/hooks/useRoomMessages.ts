@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { localBackend } from '../lib/localBackend';
 import { useStore } from '../store';
 
 export function useRoomMessages(roomId: string) {
@@ -15,7 +15,7 @@ export function useRoomMessages(roomId: string) {
     }
 
     const fetchMessages = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await localBackend
         .from('room_messages')
         .select('*')
         .eq('room_id', roomId)
@@ -40,7 +40,7 @@ export function useRoomMessages(roomId: string) {
 
     fetchMessages();
 
-    const subscription = supabase
+    const subscription = localBackend
       .channel(`room_messages:${roomId}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
@@ -67,10 +67,10 @@ export function useRoomMessages(roomId: string) {
   }, [roomId]);
 
   const sendMessage = async (text: string, type: 'text' | 'reaction' = 'text') => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await localBackend.auth.getUser();
     if (!user) return;
 
-    await supabase.from('room_messages').insert({
+    await localBackend.from('room_messages').insert({
       room_id: roomId,
       user_id: user.id,
       user_name: userName || 'Estudante',

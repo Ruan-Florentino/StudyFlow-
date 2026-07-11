@@ -5,7 +5,7 @@
 - [ ] `npm run -s lint`
 - [ ] `npm run -s test`
 - [ ] `npm run build`
-- [ ] Env de produção OK (Supabase + pagamento)
+- [ ] Env de produção OK (backend + pagamento)
 
 ## Smoke pós-deploy (5 min)
 

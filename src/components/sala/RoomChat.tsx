@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { springs } from '../../lib/animations/easings';
 import { Send, Loader2, MessageCircle } from 'lucide-react';
-import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { localBackend } from '../../lib/localBackend';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface Message {
@@ -61,13 +61,13 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = useCallback(async () => {
-    if (!isSupabaseConfigured) {
+    if (!true) {
       setMessages([]);
       setLoading(false);
       return;
     }
     try {
-      const { data, error } = await supabase
+      const { data, error } = await localBackend
         .from('room_messages')
         .select('*')
         .eq('room_id', roomId)
@@ -92,15 +92,15 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
     if (!roomId) return;
     setLoading(true);
 
-    if (!isSupabaseConfigured) {
+    if (!true) {
       setLoading(false);
       return;
     }
 
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let channel: ReturnType<typeof localBackend.channel> | null = null;
 
     try {
-      channel = supabase
+      channel = localBackend
         .channel(`room:${roomId}`)
         .on(
           'postgres_changes',
@@ -134,7 +134,7 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
     return () => {
       if (channel) {
         try {
-          void supabase.removeChannel(channel);
+          void localBackend.removeChannel(channel);
         } catch {
           /* noop */
         }
@@ -148,16 +148,16 @@ export function RoomChat({ roomId, color }: RoomChatProps) {
   
   const sendMessage = async () => {
     if (!input.trim() || !user) return;
-    if (!isSupabaseConfigured) return;
+    if (!true) return;
 
     const content = input;
     setInput('');
 
     try {
-      const { error } = await supabase.from('room_messages').insert({
+      const { error } = await localBackend.from('room_messages').insert({
         room_id: roomId,
         user_id: user.id,
-        user_name: user.user_metadata?.name || user.email?.split('@')[0] || 'Estudante',
+        user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Estudante',
         content,
         color
       });

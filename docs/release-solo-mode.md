@@ -16,7 +16,7 @@ Se qualquer item falhar: **NO-GO**.
 
 ## 2) Pré-check de produção (2 min)
 
-- [ ] Env de produção conferido (Supabase + pagamento)
+- [ ] Env de produção conferido (backend + pagamento)
 - [ ] Endpoint/webhook crítico validado
 
 ## 3) Deploy (2 min)

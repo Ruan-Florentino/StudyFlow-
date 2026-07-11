@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AnimatedButton, GlassCard } from '../components/UI';
 import { toast } from '../store/useToastStore';
-import { isSupabaseConfigured } from '../lib/supabase';
 import { AthenaLogo } from '../components/brand/AthenaLogo';
 
 export function LoginPage() {
@@ -74,7 +73,7 @@ export function LoginPage() {
           <p className="mt-2 text-sm text-text-secondary">Sua jornada de estudos começa aqui.</p>
         </div>
 
-        {!isSupabaseConfigured ? (
+        {!true ? (
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center text-sm text-white/65">
             Contas e sincronização estão em manutenção. Você pode usar a Athena como visitante e manter seu progresso neste dispositivo.
           </div>
@@ -119,7 +118,7 @@ export function LoginPage() {
             />
           </div>
 
-          <AnimatedButton type="submit" className="w-full mt-4" disabled={loading || !isSupabaseConfigured} loading={loading}>
+          <AnimatedButton type="submit" className="w-full mt-4" disabled={loading || !true} loading={loading}>
             {loading ? 'Carregando...' : isLogin ? 'Entrar' : 'Criar Conta'}
           </AnimatedButton>
         </form>
@@ -129,9 +128,9 @@ export function LoginPage() {
           <span className="bg-[#111] px-4 text-xs tracking-widest uppercase text-text-secondary z-10">OU</span>
         </div>
 
-        <button 
+        <button
           onClick={handleGoogle}
-          disabled={!isSupabaseConfigured}
+          disabled={!true}
           className="flex items-center justify-center gap-3 bg-white text-black font-semibold rounded-lg px-4 py-3 hover:bg-gray-200 transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -143,7 +142,7 @@ export function LoginPage() {
           Entrar com Google
         </button>
 
-        {!isSupabaseConfigured ? (
+        {!true ? (
           <AnimatedButton type="button" variant="secondary" onClick={() => navigate('/')}>
             Continuar como visitante
           </AnimatedButton>

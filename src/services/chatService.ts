@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { localBackend } from '../lib/localBackend';
 
 export interface ChatMessage {
   id?: string;
@@ -19,10 +19,10 @@ export interface ChatSession {
 
 export const chatService = {
   async createSession(topic: string, title: string): Promise<string> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await localBackend.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await localBackend
       .from('chat_sessions')
       .insert({
         user_id: user.id,
@@ -34,17 +34,17 @@ export const chatService = {
       .single();
 
     if (error) {
-      console.error('Supabase Error:', error);
+      console.error('backend Error:', error);
       throw error;
     }
     return data.id;
   },
 
   async getSessions(topic?: string): Promise<ChatSession[]> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await localBackend.auth.getUser();
     if (!user) return [];
 
-    let query = supabase
+    let query = localBackend
       .from('chat_sessions')
       .select('*')
       .eq('user_id', user.id)
@@ -56,7 +56,7 @@ export const chatService = {
     
     const { data, error } = await query;
     if (error) {
-      console.error('Supabase Error:', error);
+      console.error('backend Error:', error);
       return [];
     }
 
@@ -71,11 +71,11 @@ export const chatService = {
   },
 
   async addMessage(sessionId: string, message: Omit<ChatMessage, 'id' | 'timestamp'>): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await localBackend.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     // Add message
-    const { error: msgError } = await supabase
+    const { error: msgError } = await localBackend
       .from('messages')
       .insert({
         session_id: sessionId,
@@ -86,12 +86,12 @@ export const chatService = {
       });
 
     if (msgError) {
-      console.error('Supabase error adding message:', msgError);
+      console.error('backend error adding message:', msgError);
       throw msgError;
     }
 
     // Update session last message and timestamp
-    const { error: sessionError } = await supabase
+    const { error: sessionError } = await localBackend
       .from('chat_sessions')
       .update({
         last_message: message.text.substring(0, 100),
@@ -100,19 +100,19 @@ export const chatService = {
       .eq('id', sessionId);
 
     if (sessionError) {
-      console.error('Supabase error updating session:', sessionError);
+      console.error('backend error updating session:', sessionError);
     }
   },
 
   async getMessages(sessionId: string): Promise<ChatMessage[]> {
-    const { data, error } = await supabase
+    const { data, error } = await localBackend
       .from('messages')
       .select('*')
       .eq('session_id', sessionId)
       .order('timestamp', { ascending: true });
 
     if (error) {
-      console.error('Supabase Error:', error);
+      console.error('backend Error:', error);
       return [];
     }
 

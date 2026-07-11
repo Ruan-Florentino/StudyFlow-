@@ -30,8 +30,8 @@ Configurado pra Vercel via `vercel.json`. Push pra main = deploy automático.
 ## Ambientes e variáveis
 Congelamento lógico (staging vs produção, quem acessa o quê): [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md). Variáveis de exemplo: [`.env.example`](.env.example).
 
-## Migrations Supabase
-Ordem, pré-requisitos e comandos (`npx supabase db push` ou SQL Editor): [`docs/SUPABASE_MIGRATIONS.md`](docs/SUPABASE_MIGRATIONS.md).
+## Migrations backend
+Ordem, pré-requisitos e comandos (`npx backend db push` ou SQL Editor): [`docs/backend_MIGRATIONS.md`](docs/backend_MIGRATIONS.md).
 
 ## Segredos e rotação
 Runbook após vazamento ou revisão de produção: [`docs/SECRETS_ROTATION.md`](docs/SECRETS_ROTATION.md).

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { localBackend } from '../lib/localBackend';
 
 export interface RoomUser {
   id: string;
@@ -15,7 +15,7 @@ export function useRoomUsers(roomId: string) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    localBackend.auth.getUser().then(({ data: { user } }) => {
       setCurrentUserId(user?.id || null);
     });
   }, []);
@@ -27,7 +27,7 @@ export function useRoomUsers(roomId: string) {
     }
 
     const fetchUsers = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await localBackend
         .from('room_presence')
         .select('*')
         .eq('room_id', roomId);
@@ -49,7 +49,7 @@ export function useRoomUsers(roomId: string) {
 
     fetchUsers();
 
-    const subscription = supabase
+    const subscription = localBackend
       .channel(`room_presence:${roomId}`)
       .on('postgres_changes', { 
         event: '*', 

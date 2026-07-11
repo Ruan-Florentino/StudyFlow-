@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJsonStorage } from '../lib/safeJsonStorage';
 import { ensureNoteUuid } from '../lib/ensureNoteUuid';
-import { syncNoteToSupabase } from '../lib/supabase/syncNoteToSupabase';
 import { toast } from './useToastStore';
 import type { StudySession, StudyRoutine, Message, Note, MindMap, Essay } from './types';
 
@@ -108,12 +107,6 @@ export const useSessionStore = create<SessionStore>()(
         set((state) => ({
           notes: [normalized, ...state.notes.filter((n) => n.id !== id)],
         }));
-        void syncNoteToSupabase(normalized).catch(() => {
-          toast.error(
-            'Notas',
-            'Não foi possível salvar na nuvem. Verifique a conexão; a nota permanece neste aparelho.'
-          );
-        });
       },
       addMindMap: (map) => set((state) => ({ mindMaps: [map, ...state.mindMaps] })),
       addEssay: (essay) => set((state) => ({ essays: [essay, ...state.essays] })),

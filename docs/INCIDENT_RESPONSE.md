@@ -31,7 +31,7 @@ Runbook para quando **produção** ou **dados** estiverem em risco. Mantenha est
 | Papel | Responsabilidade |
 |-------|------------------|
 | **Incident commander** | Decide conter vs continuar investigando; cronometra |
-| **Executor** | Deploy, SQL, painel Supabase/Vercel |
+| **Executor** | Deploy, SQL, painel backend/Vercel |
 | **Comms** | Texto pro usuário se S1/S2 |
 
 Num time de uma pessoa, você faz os três com checklist.
@@ -40,7 +40,7 @@ Num time de uma pessoa, você faz os três com checklist.
 
 ## 4. Checklist S1 (segredo vazado)
 
-- [ ] Revogar/regenerar chave **agora** (OpenRouter / Supabase service role).  
+- [ ] Revogar/regenerar chave **agora** (OpenRouter / backend service role).  
 - [ ] Atualizar env no **host** + redeploy.  
 - [ ] Buscar no repo e histórico se o segredo foi commitado (git log, GitHub secret scan).  
 - [ ] Se commit público: assumir chave comprometida mesmo após delete do commit.  

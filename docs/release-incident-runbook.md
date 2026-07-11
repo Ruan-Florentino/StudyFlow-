@@ -12,7 +12,7 @@ Restaurar operação rapidamente em produção quando houver falha crítica apó
 
 ---
 
-## 1) Falha de autenticação (Supabase/Auth)
+## 1) Falha de autenticação (backend/Auth)
 
 ### Sintomas
 
@@ -22,8 +22,8 @@ Restaurar operação rapidamente em produção quando houver falha crítica apó
 
 ### Checagem rápida
 
-- Validar `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no ambiente de produção.
-- Confirmar domínio/redirect permitido no painel do Supabase.
+- Validar `VITE_BACKEND_URL` e `VITE_BACKEND_KEY` no ambiente de produção.
+- Confirmar domínio/redirect permitido no painel do backend.
 - Verificar erros 401/403 no DevTools (Network) e console.
 
 ### Mitigação imediata
@@ -60,14 +60,14 @@ Restaurar operação rapidamente em produção quando houver falha crítica apó
 
 1. **Webhook:** painel Mercado Pago → integrações / webhooks → últimas entregas: status HTTP (esperado 2xx). Corpo rejeitado ou timeout?
 2. **Função receptora:** logs no Vercel (ou host da Edge Function) no horário do pagamento; assinatura secreta do webhook validada?
-3. **Supabase:** registro do usuário / tabela de assinatura (conforme schema do projeto): campo de plano ou `premium_until` atualizado?
+3. **backend:** registro do usuário / tabela de assinatura (conforme schema do projeto): campo de plano ou `premium_until` atualizado?
 4. **Cliente:** usuário fez logout/login após alguns minutos? Cache de sessão antiga?
 5. **Ambiente:** webhook aponta para URL de **produção**, não preview antigo; secret MP corresponde ao ambiente (prod vs sandbox).
 
 **Mitigação imediata:**
 
 - Corrigir URL/secret do webhook e redeploy; reenviar notificação de teste no MP quando disponível.
-- **Atendimento:** atualizar plano manualmente no Supabase **só** com procedimento interno documentado e comprovante (evitar bypass sistemático).
+- **Atendimento:** atualizar plano manualmente no backend **só** com procedimento interno documentado e comprovante (evitar bypass sistemático).
 - Comunicar ao usuário pelo canal de suporte com prazo de regularização.
 
 **Pós-incidente:** adicionar alerta manual pós-deploy (primeira compra do dia) conforme [`OBSERVABILITY.md`](OBSERVABILITY.md).
@@ -79,9 +79,9 @@ Restaurar operação rapidamente em produção quando houver falha crítica apó
 **Checagem rápida:**
 
 1. **Recibo / Purchase Token:** backend está recebendo e validando com a API da Google ou Apple?
-2. **Logs** da função de validação (Vercel/Supabase): 401, assinatura inválida, bundle ID errado?
+2. **Logs** da função de validação (Vercel/backend): 401, assinatura inválida, bundle ID errado?
 3. **Sandbox vs produção:** conta de teste na loja correta; produto e grupo de assinatura batendo com o app publicado.
-4. **Supabase:** atualização de `plan` / entitlement após validação bem-sucedida.
+4. **backend:** atualização de `plan` / entitlement após validação bem-sucedida.
 
 **Mitigação:** corrigir credenciais da loja no servidor, mapeamento de `productId`, ou bug na persistência; atendimento manual só com comprovante da loja.
 

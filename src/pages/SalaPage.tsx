@@ -158,7 +158,7 @@ export function SalaPage({ roomId, onLeave }: { roomId: string; onLeave: () => v
                       boxShadow: `0 0 16px rgba(var(--hub-primary-rgb),0.35), 0 0 8px rgba(${subject.glow},0.25)`,
                     }}
                   >
-                    {user.user_metadata?.name?.[0] || 'U'}
+                    {user.user_metadata?.full_name?.[0] || 'U'}
                   </motion.div>
                 )}
                 <div className="w-12 h-12 rounded-full border-2 border-black bg-white/5 flex items-center justify-center text-[10px] text-white/35 backdrop-blur-sm">

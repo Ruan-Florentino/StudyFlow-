@@ -52,7 +52,7 @@ const CONTROLADOR = [
 const DADOS_CADASTRO = [
   'Nome ou apelido utilizado para exibição no perfil e experiência personalizada.',
   'Endereço de e-mail para autenticação, recuperação de acesso e comunicações transacionais.',
-  'Identificadores de conta gerados pelo provedor de autenticação (por exemplo, Supabase Auth).',
+  'Identificadores de conta gerados pelo provedor de autenticação (por exemplo, backend Auth).',
   'Foto de perfil e imagem de capa, quando enviadas voluntariamente pelo Titular.',
   'Biografia ou texto de apresentação opcional no perfil.',
   'Preferências de tema, idioma ou configurações de interface armazenadas localmente ou sincronizadas.',
@@ -164,7 +164,7 @@ const BASES_LEGAIS = [
 
 const COMPARTILHAMENTO = [
   'Dados podem ser compartilhados com prestadores que atuam como operadores, sob cláusulas de confidencialidade e segurança.',
-  'Provedores de hospedagem, banco de dados e autenticação (ex.: Supabase) recebem dados estritamente necessários à operação.',
+  'Provedores de hospedagem, banco de dados e autenticação (ex.: backend) recebem dados estritamente necessários à operação.',
   'Processadores de pagamento recebem dados para transação; números completos de cartão não são armazenados pela Athena quando tokenizados pelo parceiro.',
   'Provedores de modelos de IA e infraestrutura podem processar prompts e contexto necessário à geração de respostas.',
   'Ferramentas de monitoramento de erros ou analytics, se usadas, recebem dados pseudonimizados quando possível.',

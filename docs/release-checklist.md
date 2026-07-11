@@ -10,7 +10,7 @@
 ## 2) Verificação de ambiente (2 min)
 
 - [ ] Confirmar variáveis de produção configuradas
-- [ ] Validar `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
+- [ ] Validar `VITE_BACKEND_URL` e `VITE_BACKEND_KEY`
 - [ ] Validar variáveis de pagamento no ambiente correto (sem segredo indevido no client)
 - [ ] Confirmar que webhooks/URLs externas apontam para produção
 - [ ] Se assinatura real: **lojas** (Play/App Store) com produto + validação de recibo testados em staging; ou webhook PSP web se usar checkout fora da loja

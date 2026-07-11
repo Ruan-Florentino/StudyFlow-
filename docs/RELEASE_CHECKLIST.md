@@ -50,7 +50,7 @@ Ajuste rotas se o produto renomear paths; mantenha sempre **6 verificações** c
 
 - [ ] Branch atualizada com `main` (ou PR sem conflitos).
 - [ ] **Variáveis de ambiente** do ambiente alvo conferidas (sem `VITE_*` para segredos).
-- [ ] Se houver **migration nova**: já aplicada em staging e smoke SQL ok — ver [`SUPABASE_MIGRATIONS.md`](SUPABASE_MIGRATIONS.md).
+- [ ] Se houver **migration nova**: já aplicada em staging e smoke SQL ok — ver [`backend_MIGRATIONS.md`](backend_MIGRATIONS.md).
 - [ ] **Diff revisado** (sem arquivo acidental: `.env`, tokens, `dist/` indesejado no git).
 
 ---
@@ -67,7 +67,7 @@ Ajuste rotas se o produto renomear paths; mantenha sempre **6 verificações** c
 | Passo | Doc |
 |-------|-----|
 | Ambientes | [`ENVIRONMENT.md`](ENVIRONMENT.md) |
-| Migrations | [`SUPABASE_MIGRATIONS.md`](SUPABASE_MIGRATIONS.md) |
+| Migrations | [`backend_MIGRATIONS.md`](backend_MIGRATIONS.md) |
 | Segredos | [`SECRETS_ROTATION.md`](SECRETS_ROTATION.md) |
 | Release | Este arquivo |
 | Observabilidade | [`OBSERVABILITY.md`](OBSERVABILITY.md) |

@@ -5,8 +5,6 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { AnimatedButton, GlassCard } from '../../components/UI';
 import { PAYMENT_CONFIG } from '../../config/payment';
 import { resolveExternalCheckoutUrl } from '../../config/checkoutUrls';
-import { isSupabaseConfigured } from '../../lib/supabase';
-import { createMpPreferenceCheckout } from '../../lib/supabase/createMpPreference';
 import { trackPremiumEvent } from '../../lib/premiumAnalytics';
 import type { BillingPeriod, PlanTier } from '../../services/paymentService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -41,7 +39,7 @@ export function PremiumCheckoutPage() {
 
   const externalCheckoutUrl = resolveExternalCheckoutUrl(plan, period);
   const edgePreferenceEnabled = import.meta.env.VITE_ENABLE_MP_EDGE_CHECKOUT === 'true';
-  const canUseEdgeCheckout = edgePreferenceEnabled && isSupabaseConfigured && Boolean(user);
+  const canUseEdgeCheckout = edgePreferenceEnabled && true && Boolean(user);
   const isLiveCheckout = externalCheckoutUrl !== null || canUseEdgeCheckout;
 
   useEffect(() => {
@@ -74,7 +72,7 @@ export function PremiumCheckoutPage() {
           toast.error('Pagamento', 'Entre na sua conta para continuar o checkout.');
           return;
         }
-        const edge = await createMpPreferenceCheckout(plan, period);
+        const edge = await (async () => ({ ok: false, message: "Checkout aguardando backend.", url: "" }))();
         if (edge.ok === false) {
           toast.error('Pagamento', edge.message);
           return;

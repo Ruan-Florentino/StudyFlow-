@@ -19,7 +19,7 @@ No `.env` local / CI (não commitar valores reais):
 VITE_MP_PUBLIC_KEY=APP_USR-xxx
 
 # Token de acesso: NÃO use prefixo VITE_ em produção pública.
-# Preferir Edge Function (Supabase) com secret.
+# Preferir Edge Function (backend) com secret.
 VITE_MP_ACCESS_TOKEN=
 
 VITE_MP_WEBHOOK_URL=https://seu-dominio.com/functions/v1/mp-webhook
@@ -36,18 +36,18 @@ Em `src/services/payment/config.ts`:
 Implemente na **Edge Function**:
 
 - `POST` criando [preferência](https://www.mercadopago.com.br/developers/pt/reference/preferences/_checkout_preferences/post) (Checkout Pro) **ou** fluxo com [Pix](https://www.mercadopago.com.br/developers/pt/docs/checkout-api/integration-configuration/integrate-pix) / cartão conforme produto.
-- Webhook validando assinatura e atualizando `plan` do usuário no Supabase.
+- Webhook validando assinatura e atualizando `plan` do usuário no backend.
 
 Depois, nas telas, troque o uso de `paymentService` legado por `getUnifiedPaymentProvider()` e trate `init_point` / retorno do Brick.
 
 ## Webhook (painel MP)
 
-- URL pública da Edge Function: `https://<project-ref>.supabase.co/functions/v1/mp-webhook`
+- URL pública da Edge Function: `https://<project-ref>.backend.co/functions/v1/mp-webhook`
 - Eventos sugeridos: **payment** (Checkout Pro / pagamentos avulsos).
-- Secrets no Supabase (Dashboard → Edge Functions → **Secrets**):
+- Secrets no backend (Dashboard → Edge Functions → **Secrets**):
   - `MERCADOPAGO_ACCESS_TOKEN` — token de produção ou sandbox
   - `MERCADOPAGO_WEBHOOK_SECRET` — assinatura gerada no painel MP (recomendado; sem isso a função não valida `x-signature`)
-- Deploy (CLI): `supabase functions deploy mp-webhook`
+- Deploy (CLI): `backend functions deploy mp-webhook`
 - **Preferência / pagamento** devem enviar:
   - `external_reference`: UUID do usuário (`public.users.id`, igual ao `auth.users.id`)
   - `metadata.studyflow_plan`: `premium` ou `supremo`  
@@ -55,7 +55,7 @@ Depois, nas telas, troque o uso de `paymentService` legado por `getUnifiedPaymen
 
 Links fixos do painel MP **não** costumam incluir `external_reference` por comprador. Para produção, use a Edge Function **`create-mp-preference`** (JWT obrigatório):
 
-- Deploy: `supabase functions deploy create-mp-preference`
+- Deploy: `backend functions deploy create-mp-preference`
 - Secrets: `MERCADOPAGO_ACCESS_TOKEN`, **`PUBLIC_APP_URL`** (URL do app, ex. `https://app.seudominio.com` — usada em `back_urls`)
 - Opcional: `MERCADOPAGO_ENV=sandbox` (usa `sandbox_init_point`); overrides de preço `CHECKOUT_PRICE_PREMIUM_MONTHLY`, `CHECKOUT_PRICE_PREMIUM_YEARLY`, `CHECKOUT_PRICE_SUPREMO_MONTHLY`, `CHECKOUT_PRICE_SUPREMO_YEARLY`
 - Front: `VITE_ENABLE_MP_EDGE_CHECKOUT=true` (e usuário logado). Se também existir `VITE_CHECKOUT_*` para o plano/período, o link estático tem prioridade.

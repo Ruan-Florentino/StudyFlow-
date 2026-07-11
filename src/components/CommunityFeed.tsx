@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, Heart, Share2, Plus, Image as ImageIcon, Loader2, User } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { localBackend } from '../lib/localBackend';
 import { useAuth } from '../contexts/AuthContext';
 import { GlassCard, AnimatedButton, cn } from './UI';
 import { formatDistanceToNow } from 'date-fns';
@@ -35,7 +35,7 @@ export const CommunityFeed = () => {
     fetchPosts();
     
     // Subscribe to changes
-    const channel = supabase
+    const channel = localBackend
       .channel('public:posts')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
         fetchPosts();
@@ -43,13 +43,13 @@ export const CommunityFeed = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      localBackend.removeChannel(channel);
     };
   }, []);
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await localBackend
         .from('posts')
         .select(`
           *,
@@ -84,7 +84,7 @@ export const CommunityFeed = () => {
     if (!newPostContent.trim() || !user) return;
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('posts').insert({
+      const { error } = await localBackend.from('posts').insert({
         content: newPostContent,
         user_id: user.id,
         type: 'status'
@@ -104,9 +104,9 @@ export const CommunityFeed = () => {
     if (!user) return;
     try {
       if (hasLiked) {
-        await supabase.from('likes').delete().match({ post_id: postId, user_id: user.id });
+        await localBackend.from('likes').delete().match({ post_id: postId, user_id: user.id });
       } else {
-        await supabase.from('likes').insert({ post_id: postId, user_id: user.id });
+        await localBackend.from('likes').insert({ post_id: postId, user_id: user.id });
       }
       fetchPosts();
     } catch (error) {

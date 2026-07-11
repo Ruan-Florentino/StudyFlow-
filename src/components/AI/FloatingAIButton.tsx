@@ -665,7 +665,7 @@ export function FloatingAIButton() {
       clearTimeout(releaseTimer);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
       main?.removeEventListener('scroll', requestSync);
-      document.removeEventListener('scroll', requestSync, true);
+      document.removeEventListener('scroll', requestSync);
       window.removeEventListener('scroll', requestSync);
       window.removeEventListener('wheel', requestSync);
       if (!liteMotion) window.removeEventListener('touchmove', requestSync);

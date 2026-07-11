@@ -1,6 +1,6 @@
 # Produto — credibilidade de dados (XP, ligas, rankings)
 
-Objetivo: o usuário **confiar** no que vê. Tudo que for **local / heurístico** deve ser tratado como tal na copy ou sincronizado com **Supabase** quando a migration de persistência estiver ativa.
+Objetivo: o usuário **confiar** no que vê. Tudo que for **local / heurístico** deve ser tratado como tal na copy ou sincronizado com **backend** quando a migration de persistência estiver ativa.
 
 ---
 
@@ -10,7 +10,7 @@ Objetivo: o usuário **confiar** no que vê. Tudo que for **local / heurístico*
 |------|----------------|------------|
 | **XP, level, league, streak, coins, prestige, leaderboard interno** | `useUserStore` (Zustand + **persist** no browser) | Progressão é **por dispositivo** até haver sync explícito com `public.users` / eventos. |
 | **Tentativas de questão, sessões, exam runs** | Podem ser persistidas via `lib/persistence` → tabelas `user_question_attempts`, etc., **se** migrations aplicadas e app gravando. |
-| **Perfil Supabase** | `public.users` + RLS | Campos como `longest_streak` na migration podem divergir do Zustand se não houver reconciliação. |
+| **Perfil backend** | `public.users` + RLS | Campos como `longest_streak` na migration podem divergir do Zustand se não houver reconciliação. |
 
 **Regra de produto:** não prometer “ranking nacional” ou “top X% real” sem backend que prove.
 
@@ -54,7 +54,7 @@ Documente a decisão numa linha por métrica na coluna “política” da planil
 ## 5. Passo 4 — Alinhamento técnico (quando for prioridade)
 
 - [ ] Definir **fonte única** para streak longo: Zustand vs coluna `longest_streak` em `public.users`.  
-- [ ] Após login: **hidratar** store a partir do Supabase ou **merge** documentado.  
+- [ ] Após login: **hidratar** store a partir do backend ou **merge** documentado.  
 - [ ] Eventos de XP no servidor: idempotência e anti-cheat básico (rate limit já no proxy).  
 - [ ] Testes manuais: logout/login, outro browser — comportamento esperado documentado.  
 - [ ] Feature flag se precisar lançar sync em waves.  
@@ -86,6 +86,6 @@ Documente a decisão numa linha por métrica na coluna “política” da planil
 
 ## Ligação
 
-- Migrations: [`SUPABASE_MIGRATIONS.md`](SUPABASE_MIGRATIONS.md)  
+- Migrations: [`backend_MIGRATIONS.md`](backend_MIGRATIONS.md)  
 - Copy: [`GLOSSARY.md`](GLOSSARY.md)  
 - Estados de UI: [`PRODUCT_UX_STATES.md`](PRODUCT_UX_STATES.md)

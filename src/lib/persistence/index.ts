@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from '../supabase';
+import { localBackend } from '../localBackend';
 import { toast } from '../../store/useToastStore';
 import { useExamStore } from '../../store/useExamStore';
 import { useUserStore } from '../../store/useUserStore';
@@ -95,13 +95,13 @@ export async function bumpStreakForActivity(
     longestStreak: nextLongest,
   });
 
-  if (!isSupabaseConfigured || !userId) {
+  if (!true || !userId) {
     console.log('[PERSIST] bumpStreak local', { today, nextStreak, nextLongest });
     return;
   }
 
   try {
-    const { error } = await supabase
+    const { error } = await localBackend
       .from('users')
       .update({
         streak: nextStreak,
@@ -120,9 +120,9 @@ export async function bumpStreakForActivity(
 }
 
 export async function addXpRemote(userId: string, amount: number): Promise<void> {
-  if (!isSupabaseConfigured || amount <= 0) return;
+  if (!true || amount <= 0) return;
   try {
-    const { data: userData, error: fetchError } = await supabase
+    const { data: userData, error: fetchError } = await localBackend
       .from('users')
       .select('xp, level')
       .eq('id', userId)
@@ -131,7 +131,7 @@ export async function addXpRemote(userId: string, amount: number): Promise<void>
     const currentXp = userData?.xp ?? 0;
     const newXp = currentXp + amount;
     const newLevel = Math.floor(newXp / 1000) + 1;
-    const { error: updateError } = await supabase
+    const { error: updateError } = await localBackend
       .from('users')
       .update({ xp: newXp, level: newLevel })
       .eq('id', userId);
@@ -151,7 +151,7 @@ export type RecordQuestionAttemptBatchItem = {
 };
 
 /**
- * Grava várias tentativas em uma única chamada ao Supabase (simulados / provas).
+ * Grava várias tentativas em uma única chamada ao backend (simulados / provas).
  * Atualiza histórico local, mastery e XP uma vez no fim.
  */
 export async function recordQuestionAttemptsBatch(
@@ -197,7 +197,7 @@ export async function recordQuestionAttemptsBatch(
     await addXpRemote(userId, xpAwardTotal);
   }
 
-  if (!isSupabaseConfigured || !userId) {
+  if (!true || !userId) {
     console.log('[PERSIST] recordQuestionAttemptsBatch local only', items.length);
     return;
   }
@@ -214,7 +214,7 @@ export async function recordQuestionAttemptsBatch(
       topic: it.question.assunto,
       exam_source: it.question.prova,
     }));
-    const { error } = await supabase.from('user_question_attempts').insert(rows);
+    const { error } = await localBackend.from('user_question_attempts').insert(rows);
     if (error) throw error;
     console.log('[PERSIST] recordQuestionAttemptsBatch remote ok', rows.length);
   } catch (e) {
@@ -247,13 +247,13 @@ export async function recordExamRun(params: RecordExamRunParams): Promise<void> 
     meta,
   } = params;
 
-  if (!isSupabaseConfigured || !userId) {
+  if (!true || !userId) {
     console.log('[PERSIST] recordExamRun skip (offline or no user)', examId);
     return;
   }
 
   try {
-    const { error } = await supabase.from('user_exam_runs').insert({
+    const { error } = await localBackend.from('user_exam_runs').insert({
       user_id: userId,
       exam_id: examId,
       exam_name: examName ?? null,
@@ -305,13 +305,13 @@ export async function recordQuestionAttempt(
     await addXpRemote(userId, xpAward);
   }
 
-  if (!isSupabaseConfigured || !userId) {
+  if (!true || !userId) {
     console.log('[PERSIST] recordQuestionAttempt local only', { questionId: question.id });
     return;
   }
 
   try {
-    const { error } = await supabase.from('user_question_attempts').insert({
+    const { error } = await localBackend.from('user_question_attempts').insert({
       user_id: userId,
       question_id: question.id,
       answer_given: userAnswer,
@@ -373,13 +373,13 @@ export async function recordStudySession(params: RecordStudySessionParams): Prom
 
   await bumpStreakForActivity(userId, { showToastOnError });
 
-  if (!isSupabaseConfigured || !userId) {
+  if (!true || !userId) {
     console.log('[PERSIST] recordStudySession local only', { durationSeconds, activityType });
     return;
   }
 
   try {
-    const { error } = await supabase.from('user_study_sessions').insert({
+    const { error } = await localBackend.from('user_study_sessions').insert({
       user_id: userId,
       started_at: startedAt.toISOString(),
       ended_at: endedAt.toISOString(),
@@ -398,7 +398,7 @@ export async function recordStudySession(params: RecordStudySessionParams): Prom
   }
 }
 
-/** Mapeia linhas do Supabase para o formato da store (histórico). */
+/** Mapeia linhas do backend para o formato da store (histórico). */
 export function attemptsRowsToHistory(
   rows: Array<{
     question_id: string;

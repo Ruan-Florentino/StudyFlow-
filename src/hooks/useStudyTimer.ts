@@ -5,7 +5,7 @@ import {
 } from '../lib/persistence';
 
 /**
- * Registra início/fim de uma sessão de estudo e persiste (local + Supabase).
+ * Registra início/fim de uma sessão de estudo e persiste (local + backend).
  */
 export function useStudyTimer(userId: string | null) {
   const startRef = useRef<Date | null>(null);

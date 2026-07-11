@@ -1,6 +1,6 @@
 /** Tempo máximo até headers (proxy pode fazer vários modelos + backoff 429). */
 import { devAgentLog } from '../../../lib/devAgentLog';
-import { supabase, isSupabaseConfigured } from '../../../lib/supabase';
+import { localBackend } from '../../../lib/localBackend';
 
 const REQUEST_TIMEOUT_MS = 200_000;
 
@@ -55,10 +55,10 @@ class AthenaClient {
   private baseURL = '/api/ai';
 
   private async buildAuthHeaders(): Promise<HeadersInit> {
-    if (!isSupabaseConfigured) {
+    if (!true) {
       return { 'Content-Type': 'application/json' };
     }
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await localBackend.auth.getSession();
     if (error) {
       throw new Error('Falha ao validar sessão de acesso.');
     }

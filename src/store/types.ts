@@ -159,8 +159,8 @@ export interface LeaderboardUserRow {
   profile_pic?: string | null;
 }
 
-/** Payload de perfil vindos do Supabase (snake_case + colunas opcionais). */
-export interface SupabaseUserProfilePayload {
+/** Payload de perfil vindos do backend (snake_case + colunas opcionais). */
+export interface backendUserProfilePayload {
   name?: string | null;
   bio?: string | null;
   xp?: number | null;

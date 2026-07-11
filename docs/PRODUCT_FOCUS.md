@@ -42,7 +42,7 @@ Checklist **estratégico** (não é código). Execute na ordem; cada item pode v
 - [ ] Pergunta 1: **objetivo** (vestibular, concurso, reforço).  
 - [ ] Pergunta 2: **tempo semanal** ou “quando estuda”.  
 - [ ] Pergunta 3: **matérias fracas** ou prova alvo.  
-- [ ] Persistir no **perfil** / `localStorage` + sync Supabase quando existir coluna.  
+- [ ] Persistir no **perfil** / `localStorage` + sync backend quando existir coluna.  
 - [ ] Após concluir: **deep link** para jornada principal (passo 1).  
 - [ ] Opção **pular** sem bloquear o app (não prender usuário).
 

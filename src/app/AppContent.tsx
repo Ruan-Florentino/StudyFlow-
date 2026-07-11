@@ -57,9 +57,9 @@ export function AppContent() {
       if (unlocked) return;
       unlocked = true;
       setIsUserInteracted(true);
-      window.removeEventListener('pointerdown', handleInteraction, true);
-      window.removeEventListener('touchstart', handleInteraction, true);
-      window.removeEventListener('click', handleInteraction, true);
+      window.removeEventListener('pointerdown', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('click', handleInteraction);
     };
     const captureOpts = { capture: true, passive: true } as const;
     window.addEventListener('pointerdown', handleInteraction, captureOpts);
@@ -68,9 +68,9 @@ export function AppContent() {
     initAudioUnlocker();
     checkStreak();
     return () => {
-      window.removeEventListener('pointerdown', handleInteraction, true);
-      window.removeEventListener('touchstart', handleInteraction, true);
-      window.removeEventListener('click', handleInteraction, true);
+      window.removeEventListener('pointerdown', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('click', handleInteraction);
     };
   }, [checkStreak]);
 

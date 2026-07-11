@@ -1,6 +1,6 @@
 # Observabilidade mínima (passo 5)
 
-Objetivo: **enxergar falhas** do proxy Node (`server.ts`) e do stack sem montar um APM completo. Comece com **logs do host + Supabase + checklist humano**; evolua para SaaS de erros quando o tráfego justificar.
+Objetivo: **enxergar falhas** do proxy Node (`server.ts`) e do stack sem montar um APM completo. Comece com **logs do host + backend + checklist humano**; evolua para SaaS de erros quando o tráfego justificar.
 
 ---
 
@@ -24,7 +24,7 @@ Em **produção**, prefira **`SECURITY_EVENTS_STDOUT=false`** e persistência no
 - Filtre por: `error`, `OpenRouter`, `Proxy AI`, `429`, `401`, `5xx`.  
 - Se o app for **só static** no Vercel e o **Node rodar em outro host**, os logs do proxy ficam **nesse** host (VPS, Railway, etc.).
 
-### Supabase
+### backend
 
 - **Logs** → API, Auth, Postgres (consultas lentas, erros).  
 - Útil para: picos de 401, falhas RLS, quota.
@@ -73,7 +73,7 @@ Em **produção**, prefira **`SECURITY_EVENTS_STDOUT=false`** e persistência no
 
 - Não logar **corpo completo** de prompts com dados pessoais em produção sem política de retenção.  
 - Correlacionar com **`request id`** se no futuro o middleware adicionar header interno (melhoria opcional).  
-- Manter **timezone UTC** na cabeça ao cruzar Supabase vs host.
+- Manter **timezone UTC** na cabeça ao cruzar backend vs host.
 
 ---
 

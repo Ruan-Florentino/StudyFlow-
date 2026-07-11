@@ -5,7 +5,7 @@ import { useStore } from '../store';
 import { GlassCard, AnimatedButton, cn, Header, Badge } from './UI';
 import { RoomCard } from './Rooms/RoomCard';
 import { RoomInterior } from './Rooms/RoomInterior';
-import { supabase } from '../lib/supabase';
+import { localBackend } from '../lib/localBackend';
 import { ROOMS } from '../data/rooms';
 
 export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
@@ -22,13 +22,13 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    localBackend.auth.getUser().then(({ data: { user } }) => setUser(user));
   }, []);
 
-  // Load Rooms from Supabase
+  // Load Rooms from backend
   useEffect(() => {
     const fetchRooms = async () => {
-      const { data, error } = await supabase.from('study_rooms').select('*');
+      const { data, error } = await localBackend.from('study_rooms').select('*');
       
       if (error) {
         console.error('Error fetching rooms:', error);
@@ -45,8 +45,8 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
           color: r.color,
           icon: r.id
         }));
-        await supabase.from('study_rooms').insert(seedData);
-        const { data: newData } = await supabase.from('study_rooms').select('*');
+        await localBackend.from('study_rooms').insert(seedData);
+        const { data: newData } = await localBackend.from('study_rooms').select('*');
         setRooms(newData || []);
       } else {
         setRooms(data);
@@ -57,7 +57,7 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
     fetchRooms();
 
     // Subscribe to room changes
-    const subscription = supabase
+    const subscription = localBackend
       .channel('study_rooms_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'study_rooms' }, () => {
         fetchRooms();
@@ -104,7 +104,7 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
     if (!user) return;
     const uid = user.id;
     
-    await supabase.from('room_presence').upsert({
+    await localBackend.from('room_presence').upsert({
       room_id: roomId,
       user_id: uid,
       user_name: userName || 'Estudante',
@@ -114,7 +114,7 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
       last_ping: new Date().toISOString()
     });
 
-    await supabase.from('room_messages').insert({
+    await localBackend.from('room_messages').insert({
       room_id: roomId,
       user_id: 'system',
       user_name: 'Sistema',
@@ -123,7 +123,7 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
     });
 
     heartbeatInterval.current = setInterval(() => {
-      supabase.from('room_presence').update({
+      localBackend.from('room_presence').update({
         last_ping: new Date().toISOString()
       }).eq('room_id', roomId).eq('user_id', uid);
     }, 30000);
@@ -141,8 +141,8 @@ export const LiveStudyRooms = ({ onBack }: { onBack: () => void }) => {
     }
 
     try {
-      await supabase.from('room_presence').delete().eq('room_id', roomId).eq('user_id', uid);
-      await supabase.from('room_messages').insert({
+      await localBackend.from('room_presence').delete().eq('room_id', roomId).eq('user_id', uid);
+      await localBackend.from('room_messages').insert({
         room_id: roomId,
         user_id: 'system',
         user_name: 'Sistema',

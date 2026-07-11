@@ -1,8 +1,7 @@
 import React, { ReactNode, useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+
 import { devAgentLog } from '../lib/devAgentLog';
 import { useAuth } from '../contexts/AuthContext';
-import { isSupabaseConfigured } from '../lib/supabase';
 import { useUserStore } from '../store/useUserStore';
 
 /**
@@ -15,7 +14,7 @@ interface AuthWrapperProps {
 
 export function AuthWrapper({ children }: AuthWrapperProps) {
   const { user, loading } = useAuth();
-  const location = useLocation();
+
   const isAuthReady = useUserStore((s) => s.isAuthReady);
 
   const blockingAuth = loading || (Boolean(user) && !isAuthReady);
@@ -37,9 +36,6 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     );
   }
 
-  if (isSupabaseConfigured && !user) {
-    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
-  }
 
   return <>{children}</>;
 }

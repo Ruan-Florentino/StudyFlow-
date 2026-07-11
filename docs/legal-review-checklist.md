@@ -22,7 +22,7 @@ Documento para **advogado** ou responsável legal validar antes de escalar tráf
 
 ## LGPD e dados
 
-- [ ] Política de Privacidade cobre: auth (ex.: Supabase), IA, assinatura nas lojas, notificações de servidor, suporte.
+- [ ] Política de Privacidade cobre: auth (ex.: backend), IA, assinatura nas lojas, notificações de servidor, suporte.
 - [ ] Transferência internacional e subprocessadores: lista e fundamentos revisados.
 - [ ] Canal do titular (Art. 18) testado na prática (e-mail responde no prazo).
 

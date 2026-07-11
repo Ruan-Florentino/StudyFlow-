@@ -9,7 +9,7 @@ import { triggerConfetti } from '../../../lib/studyUtils';
 import { extractYoutubeVideoId } from '../../../lib/youtubeVideoId';
 import { toast } from '../../../store/useToastStore';
 import { useNavigate } from 'react-router-dom';
-import { isSupabaseConfigured, supabase } from '../../../lib/supabase';
+import { localBackend } from '../../../lib/localBackend';
 
 interface VideoSummarizerProps {
   /** Se omitido (rota direta), usa navigate(-1) ou /metodos */
@@ -81,8 +81,8 @@ export function VideoSummarizer({ onBack: onBackProp }: VideoSummarizerProps) {
 
     try {
       const headers: HeadersInit = {};
-      if (isSupabaseConfigured) {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (true) {
+        const { data: sessionData, error: sessionError } = await localBackend.auth.getSession();
         if (sessionError || !sessionData.session?.access_token) {
           throw new Error('Faça login para usar o resumidor de vídeo.');
         }

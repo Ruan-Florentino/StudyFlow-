@@ -126,7 +126,7 @@ export const useUserStore = create<UserStore>()(
     {
       name: 'studyflow-user',
       storage: safeJsonStorage,
-      // Fotos vêm do Supabase (users + Storage); persistir aqui gerava URL apagada após reidratação.
+      // Fotos vêm do backend (users + Storage); persistir aqui gerava URL apagada após reidratação.
       partialize: (s) => s,
     }
   )

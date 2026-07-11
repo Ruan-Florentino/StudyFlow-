@@ -132,8 +132,8 @@ export function useAthena(initialModel: AIModel, _context: string = 'home', cust
     } catch (error: any) {
       console.warn('ATHENA stream handled error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao falar com Athena';
-      const friendlyMessage = /autentic|supabase/i.test(errorMessage)
-        ? 'Nao consegui conectar a IA porque este ambiente ainda nao esta autenticado/configurado. Entre com uma sessao valida ou configure o Supabase para usar a ATHENA.'
+      const friendlyMessage = /autentic|localBackend/i.test(errorMessage)
+        ? 'Nao consegui conectar a IA porque este ambiente ainda nao esta autenticado/configurado. Entre com uma sessao valida ou configure o backend para usar a ATHENA.'
         : `Nao consegui responder agora. ${errorMessage}`;
       setMessages([...newMessages, {
         id: assistantMessageId,

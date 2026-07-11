@@ -11,9 +11,9 @@ Use este runbook quando houver **vazamento passado** (ex.: chave em `VITE_*`, co
 | Segredo | Onde deve existir | Nunca |
 |---------|-------------------|--------|
 | `OPENROUTER_API_KEY` | Servidor (`server.ts`), env **sem** `VITE_` | Bundle do browser, repositório, issue |
-| `SUPABASE_SERVICE_ROLE_KEY` | Só servidor / Edge com privilégio | Cliente, Vite, screenshot |
-| `VITE_SUPABASE_ANON_KEY` | Cliente (público por design) | Tratar como “público”; proteção é RLS |
-| `TEST_SUPABASE_ACCESS_TOKEN` | Máquina local / CI secreto | Git, chat |
+| `BACKEND_SERVICE_ROLE_KEY` | Só servidor / Edge com privilégio | Cliente, Vite, screenshot |
+| `VITE_BACKEND_KEY` | Cliente (público por design) | Tratar como “público”; proteção é RLS |
+| `TEST_backend_ACCESS_TOKEN` | Máquina local / CI secreto | Git, chat |
 
 Se **`VITE_OPENROUTER_API_KEY`** ou chave OpenRouter apareceu no front: considere **comprometida** e rotacione.
 
@@ -30,10 +30,10 @@ Se **`VITE_OPENROUTER_API_KEY`** ou chave OpenRouter apareceu no front: consider
 
 ---
 
-## 3. Supabase
+## 3. backend
 
-1. **Anon key**: exposição no client é esperada; rotacione só se política do time exigir (Dashboard → Settings → API → regenerate anon) e atualize `VITE_SUPABASE_ANON_KEY` + apps.  
-2. **Service role**: se **qualquer** chance de vazamento, **Project Settings → API → service_role** → gere novo segredo, atualize o host, redeploy; em seguida invalide/rotação conforme doc Supabase.  
+1. **Anon key**: exposição no client é esperada; rotacione só se política do time exigir (Dashboard → Settings → API → regenerate anon) e atualize `VITE_BACKEND_KEY` + apps.  
+2. **Service role**: se **qualquer** chance de vazamento, **Project Settings → API → service_role** → gere novo segredo, atualize o host, redeploy; em seguida invalide/rotação conforme doc backend.  
 3. Verifique que **service role** não está em variável `VITE_*` nem em `dist/`.  
 4. Revise **Git history**: se `service_role` entrou em commit, trate como incidente (chave nova + escaneamento).  
 5. Opcional: **JWT secret** / rotação de signing só com planejamento (afeta sessões).  
@@ -56,7 +56,7 @@ Se **`VITE_OPENROUTER_API_KEY`** ou chave OpenRouter apareceu no front: consider
 
 1. `.env` no `.gitignore` — nunca adicionar `-f` com secrets.  
 2. Quem clonou o repo: atualizar `.env` local com chaves **novas** após rotação.  
-3. `TEST_SUPABASE_ACCESS_TOKEN`: gere novo JWT curto de teste se vazou; não reutilizar em prod.  
+3. `TEST_backend_ACCESS_TOKEN`: gere novo JWT curto de teste se vazou; não reutilizar em prod.  
 4. Busca rápida no repo: `sk-or-`, `service_role`, `eyJ` (JWT) — não deve haver matches em arquivos rastreados.  
 5. Se usou chave em script temporário, apagar do histórico de shell compartilhado.  
 6. Opcional: **git-secrets** ou pre-commit que bloqueie padrões de chave.
@@ -66,7 +66,7 @@ Se **`VITE_OPENROUTER_API_KEY`** ou chave OpenRouter apareceu no front: consider
 ## 6. Verificação final
 
 - [ ] OpenRouter: só chave nova ativa; proxy responde em staging.  
-- [ ] Supabase: service role só no servidor; anon no client.  
+- [ ] backend: service role só no servidor; anon no client.  
 - [ ] Painel do host sem variáveis `VITE_*` de API de terceiros sensíveis.  
 - [ ] Smoke manual: login + mentoria + questões (ou script `test-ai.cjs` com token de teste).  
 - [ ] Equipe avisada de invalidação da chave antiga.

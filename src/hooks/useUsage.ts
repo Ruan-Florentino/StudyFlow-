@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { localBackend } from '../lib/localBackend';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserStore } from '../store/useUserStore';
 
@@ -21,7 +21,7 @@ export function useUsage() {
     const id = `${user.id}_${today}`;
 
     // Initial load
-    supabase
+    localBackend
       .from('usage')
       .select('count')
       .eq('id', id)
@@ -30,7 +30,7 @@ export function useUsage() {
         if (data) setUsed(data.count);
       });
     
-    const subscription = supabase
+    const subscription = localBackend
       .channel(`public:usage:id=eq.${id}`)
       .on('postgres_changes', { 
         event: '*', 

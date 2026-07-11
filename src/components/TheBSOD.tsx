@@ -7,8 +7,8 @@ export const TheBSOD = () => {
       e.preventDefault();
       e.stopPropagation();
     };
-    window.addEventListener('keydown', block, true);
-    return () => window.removeEventListener('keydown', block, true);
+    window.addEventListener('keydown', block);
+    return () => window.removeEventListener('keydown', block);
   }, []);
 
   return (

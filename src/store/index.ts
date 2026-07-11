@@ -34,7 +34,7 @@ export const useStore = create<AppStore>(_set => getMergedAppStoreState());
 const syncHubFromSlices: StoreApi<AppStore>['setState'] = useStore.setState;
 
 function sync(): void {
-  syncHubFromSlices(getMergedAppStoreState(), true);
+  syncHubFromSlices(getMergedAppStoreState());
 }
 
 useUserStore.subscribe(sync);

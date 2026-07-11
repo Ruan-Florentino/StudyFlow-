@@ -129,7 +129,7 @@ async function hitRateLimitHybrid(
   maxRequests: number,
   windowMs: number
 ): Promise<{ limited: boolean; remaining: number; resetMs: number }> {
-  const cfg = getSupabaseServiceConfig();
+  const cfg = getbackendServiceConfig();
   if (cfg) {
     try {
       const response = await fetch(`${cfg.url}/rest/v1/rpc/check_api_rate_limit`, {
@@ -164,19 +164,19 @@ async function hitRateLimitHybrid(
   } else if (!warnedDistributedRateLimit) {
     warnedDistributedRateLimit = true;
     console.warn(
-      "[Athena] Rate limit em memória: defina SUPABASE_SERVICE_ROLE_KEY e aplique a migration check_api_rate_limit para limitação distribuída."
+      "[Athena] Rate limit em memória: defina BACKEND_SERVICE_ROLE_KEY e aplique a migration check_api_rate_limit para limitação distribuída."
     );
   }
   return hitRateLimit(key, now, maxRequests, windowMs);
 }
 
 function buildContentSecurityPolicy(): string {
-  let supabaseHost = "";
-  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
+  let backendHost = "";
+  const backendUrl = process.env.BACKEND_URL ?? process.env.VITE_BACKEND_URL ?? "";
   try {
-    supabaseHost = new URL(supabaseUrl).hostname;
+    backendHost = new URL(backendUrl).hostname;
   } catch {
-    supabaseHost = "";
+    backendHost = "";
   }
   const connectParts = [
     "'self'",
@@ -187,8 +187,8 @@ function buildContentSecurityPolicy(): string {
     "https://fonts.googleapis.com",
     "https://fonts.gstatic.com",
   ];
-  if (supabaseHost) {
-    connectParts.push(`https://${supabaseHost}`, `wss://${supabaseHost}`);
+  if (backendHost) {
+    connectParts.push(`https://${backendHost}`, `wss://${backendHost}`);
   }
   const extraConnect = (process.env.CSP_EXTRA_CONNECT ?? "")
     .split(",")
@@ -262,16 +262,16 @@ function clientFacingOpenRouterError(status: number, data: unknown): Record<stri
   return { error: sanitizeUpstreamErrorMessage(String(data)) };
 }
 
-function getSupabaseConfig(): { url: string; anonKey: string } | null {
-  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+function getbackendConfig(): { url: string; anonKey: string } | null {
+  const url = process.env.BACKEND_URL ?? process.env.VITE_BACKEND_URL;
+  const anonKey = process.env.BACKEND_KEY ?? process.env.VITE_BACKEND_KEY;
   if (!url || !anonKey) return null;
   return { url, anonKey };
 }
 
-function getSupabaseServiceConfig(): { url: string; serviceRoleKey: string } | null {
-  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function getbackendServiceConfig(): { url: string; serviceRoleKey: string } | null {
+  const url = process.env.BACKEND_URL ?? process.env.VITE_BACKEND_URL;
+  const serviceRoleKey = process.env.BACKEND_SERVICE_ROLE_KEY;
   if (!url || !serviceRoleKey) return null;
   return { url, serviceRoleKey };
 }
@@ -284,8 +284,8 @@ function getBearerToken(req: express.Request): string | null {
   return token.trim();
 }
 
-async function verifySupabaseToken(token: string): Promise<AuthenticatedUser | null> {
-  const cfg = getSupabaseConfig();
+async function verifybackendToken(token: string): Promise<AuthenticatedUser | null> {
+  const cfg = getbackendConfig();
   if (!cfg) return null;
   try {
     const response = await fetch(`${cfg.url}/auth/v1/user`, {
@@ -350,7 +350,7 @@ async function logSecurityEvent(params: {
     route: params.route ?? null,
     details: params.details ?? null,
   };
-  const cfg = getSupabaseServiceConfig();
+  const cfg = getbackendServiceConfig();
   if (cfg) {
     try {
       await fetch(`${cfg.url}/rest/v1/security_events`, {
@@ -378,13 +378,13 @@ async function logSecurityEvent(params: {
   }
 }
 
-async function authenticateSupabaseUser(
+async function authenticatebackendUser(
   req: express.Request,
   res: express.Response
 ): Promise<AuthenticatedUser | null> {
   const ip = getClientIp(req);
   const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
-  if (!getSupabaseConfig()) {
+  if (!getbackendConfig()) {
     return { id: "guest", plan: "free", role: "free" };
   }
   const token = getBearerToken(req);
@@ -401,7 +401,7 @@ async function authenticateSupabaseUser(
     res.status(401).json({ error: "Autenticação obrigatória." });
     return null;
   }
-  const authenticatedUser = await verifySupabaseToken(token);
+  const authenticatedUser = await verifybackendToken(token);
   if (!authenticatedUser) {
     void logSecurityEvent({
       eventType: "auth_invalid_token",
@@ -533,7 +533,7 @@ export async function createApp(frontendMode: FrontendMode = "none") {
   }
 
   app.get("/api/youtube-transcript", async (req, res) => {
-    const authenticatedUser = await authenticateSupabaseUser(req, res);
+    const authenticatedUser = await authenticatebackendUser(req, res);
     if (!authenticatedUser) return;
     const ip = getClientIp(req);
     const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;
@@ -619,7 +619,7 @@ export async function createApp(frontendMode: FrontendMode = "none") {
 
   // AI Proxy Route
   app.post("/api/ai", async (req, res) => {
-    const authenticatedUser = await authenticateSupabaseUser(req, res);
+    const authenticatedUser = await authenticatebackendUser(req, res);
     if (!authenticatedUser) return;
     const ip = getClientIp(req);
     const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : undefined;

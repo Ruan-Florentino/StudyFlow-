@@ -4,7 +4,7 @@ import { ChevronLeft, Shield, ScrollText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import { toast } from '../../store/useToastStore';
-import { supabase } from '../../lib/supabase';
+import { localBackend } from '../../lib/localBackend';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const DadosPessoais = () => {
@@ -24,11 +24,11 @@ export const DadosPessoais = () => {
         setBio(formData.bio);
         if (user?.id) {
           try {
-            const { error } = await supabase.from('users').update({ name: formData.name, bio: formData.bio }).eq('id', user.id);
+            const { error } = await localBackend.from('users').update({ name: formData.name, bio: formData.bio }).eq('id', user.id);
             if (error) throw error;
             toast.success("Sucesso", "Dados atualizados com sucesso!");
           } catch(err) {
-            console.error('Failed to save to Supabase:', err);
+            console.error('Failed to save to backend:', err);
             toast.error("Erro", "Não foi possível salvar as alterações. Tente novamente.");
           }
         } else {

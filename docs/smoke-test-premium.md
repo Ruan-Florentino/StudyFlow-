@@ -30,7 +30,7 @@ Roteiro para validar **transparência ao consumidor**, fluxo de checkout (web de
 
 - [ ] Concluir compra de teste (sandbox da loja ou fluxo web controlado).
 - [ ] Retorno ao app; mensagem coerente.
-- [ ] **Backend / Supabase:** plano ou entitlement atualizado conforme validação de recibo (regra do projeto).
+- [ ] **Backend / backend:** plano ou entitlement atualizado conforme validação de recibo (regra do projeto).
 - [ ] App: feature premium acessível após refresh ou novo login.
 - [ ] Se plano **não** subir: runbook §2.1 (webhook PSP) ou §2.2 (notificações / recibos das lojas).
 

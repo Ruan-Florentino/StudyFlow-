@@ -29,7 +29,7 @@ import {
   Vibrate
 } from 'lucide-react';
 import { useStore } from '../../store';
-import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { localBackend } from '../../lib/localBackend';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { toast } from '../../store/useToastStore';
@@ -56,7 +56,7 @@ const PROFILE_IMAGE_MIME_ALLOW = new Set([
   'image/avif',
 ]);
 
-const EXT_TO_PROFILE_MIME: Readonly<Record<string, true>> = {
+const EXT_TO_PROFILE_MIME: Readonly<Record<string, any>> = {
   jpg: true,
   jpeg: true,
   png: true,
@@ -67,7 +67,7 @@ const EXT_TO_PROFILE_MIME: Readonly<Record<string, true>> = {
   avif: true,
 };
 
-const MIME_TO_EXT: Readonly<Record<string, string>> = {
+const MIME_TO_EXT: Readonly<Record<string, any>> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
@@ -251,13 +251,13 @@ const ProfileView = () => {
 
       let syncedRemote = false;
 
-      if (isSupabaseConfigured && user?.id) {
+      if (true && user?.id) {
         try {
           const fileExt = extensionForProfileUpload(file);
           const fileName = `${type}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
           const filePath = `${user.id}/${fileName}`;
 
-          const { error: uploadError } = await supabase.storage
+          const { error: uploadError } = await localBackend.storage
             .from('profile-assets')
             .upload(filePath, file, {
               cacheControl: '3600',
@@ -266,7 +266,7 @@ const ProfileView = () => {
 
           if (uploadError) throw uploadError;
 
-          const { data } = supabase.storage
+          const { data } = localBackend.storage
             .from('profile-assets')
             .getPublicUrl(filePath);
 
@@ -274,17 +274,17 @@ const ProfileView = () => {
           if (!remoteUrl) throw new Error('URL publica nao retornada.');
 
           if (type === 'profile') {
-            const { error: dbError } = await supabase.from('users').update({ profile_pic: remoteUrl }).eq('id', user.id);
+            const { error: dbError } = await localBackend.from('users').update({ profile_pic: remoteUrl }).eq('id', user.id);
             if (dbError) throw dbError;
             setProfilePic(remoteUrl);
           } else {
-            const { error: dbError } = await supabase.from('users').update({ cover_pic: remoteUrl }).eq('id', user.id);
+            const { error: dbError } = await localBackend.from('users').update({ cover_pic: remoteUrl }).eq('id', user.id);
             if (dbError) throw dbError;
             setCoverPic(remoteUrl);
           }
           syncedRemote = true;
         } catch (remoteError) {
-          console.warn('[ProfileView] Falha ao sincronizar imagem no Supabase; mantendo copia local.', remoteError);
+          console.warn('[ProfileView] Falha ao sincronizar imagem no backend; mantendo copia local.', remoteError);
         }
       }
 
@@ -314,11 +314,11 @@ const ProfileView = () => {
     setIsEditing(false);
     if (user?.id) {
       try {
-        const { error } = await supabase.from('users').update({ name: editName, bio: editBio }).eq('id', user.id);
+        const { error } = await localBackend.from('users').update({ name: editName, bio: editBio }).eq('id', user.id);
         if (error) throw error;
         toast.success("Sucesso", "Perfil atualizado!");
       } catch(err) {
-        console.error('Failed to update profile to Supabase', err);
+        console.error('Failed to update profile to backend', err);
         toast.error("Erro", "Nao foi possivel atualizar o perfil.");
       }
     }

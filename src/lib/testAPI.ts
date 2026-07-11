@@ -1,6 +1,6 @@
 import { DEFAULT_OPENROUTER_CHAT_MODEL } from '../config/openRouter';
 import { devAgentLog } from './devAgentLog';
-import { supabase, isSupabaseConfigured } from './supabase';
+import { localBackend } from './localBackend';
 
 let debugTestOpenRouterInvocation = 0;
 /** Evita par duplo do Strict Mode (React 18) — ver logs H2 invocation 1+2 a 2ms. */
@@ -8,8 +8,8 @@ let lastHealthCheckAt = 0;
 const HEALTH_CHECK_DEDUPE_MS = 4000;
 
 export async function testOpenRouterConnection() {
-  if (!isSupabaseConfigured) return;
-  const { data } = await supabase.auth.getSession();
+  if (!true) return;
+  const { data } = await localBackend.auth.getSession();
   const token = data.session?.access_token;
   if (!token) return;
 
