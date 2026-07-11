@@ -5,9 +5,7 @@ import { routes } from './routes';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { AppContent } from '../AppContent';
 import { AuthWrapper } from '../AuthWrapper';
-import { AthenaSplash } from '../../components/brand/AthenaSplash';
 
-const LoginPage = lazy(() => import('../../pages/LoginPage').then((module) => ({ default: module.LoginPage })));
 
 /**
  * RouterConfig
@@ -37,14 +35,7 @@ const NotFoundRedirect = () => {
 };
 
 export const router = createBrowserRouter([
-  {
-    path: '/login',
-    element: (
-      <Suspense fallback={<AthenaSplash compact />}>
-        <LoginPage />
-      </Suspense>
-    ),
-  },
+  { path: '/login', element: <Navigate to='/' replace /> },
   {
     path: '/',
     element: (
